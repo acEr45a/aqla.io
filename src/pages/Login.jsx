@@ -16,7 +16,10 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
   // with returnTo so the grant flow can resume). Same-origin paths only.
-  const returnTo = safeReturnTo();
+  // safeReturnTo() falls back to "/" (the public landing page) — signed-in users
+  // belong in the app, so default them to Today instead.
+  const raw = safeReturnTo();
+  const returnTo = raw === "/" ? "/today" : raw;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +48,7 @@ export default function Login() {
         <>
           Don't have an account?{" "}
           <Link
-            to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
+            to={"/register" + (raw !== "/" ? "?returnTo=" + encodeURIComponent(raw) : "")}
             className="text-primary font-medium hover:underline"
           >
             Create one
