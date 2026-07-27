@@ -23,6 +23,7 @@ import Protocols from '@/pages/Protocols';
 import Experiments from '@/pages/Experiments';
 import Progress from '@/pages/Progress';
 import Coach from '@/pages/Coach';
+import CognitiveTests from '@/pages/CognitiveTests';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/coach" element={<Coach />} />
+          <Route path="/tests" element={<CognitiveTests />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

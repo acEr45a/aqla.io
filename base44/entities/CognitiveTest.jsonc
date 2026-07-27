@@ -1,0 +1,33 @@
+{
+  "name": "CognitiveTest",
+  "type": "object",
+  "properties": {
+    "test_type": {
+      "type": "string",
+      "enum": [
+        "reaction_time",
+        "sustained_attention",
+        "memory_recall"
+      ]
+    },
+    "raw_results": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "normalized_score": {
+      "type": "number"
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "valid": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "test_type",
+    "normalized_score"
+  ]
+}
