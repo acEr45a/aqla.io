@@ -1,0 +1,72 @@
+{
+  "name": "Ingredient",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "SPARK",
+        "FLOW",
+        "DRIVE",
+        "LEARN",
+        "RESET"
+      ]
+    },
+    "role": {
+      "type": "string"
+    },
+    "evidence_grade": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "excluded"
+      ]
+    },
+    "evidence_type": {
+      "type": "string"
+    },
+    "studied_population": {
+      "type": "string"
+    },
+    "effect_size": {
+      "type": "string"
+    },
+    "timeframe": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "string"
+    },
+    "safety_info": {
+      "type": "string"
+    },
+    "interactions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "last_reviewed": {
+      "type": "string",
+      "format": "date"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "family",
+    "role",
+    "evidence_grade"
+  ]
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { DOMAINS, primaryBottleneck } from "@/lib/scoring";
 import { PROTOCOL_FAMILIES, protocolFit } from "@/lib/protocols";
+import EligibilityGate from "@/components/protocols/EligibilityGate";
 import { Check, Minus, AlertTriangle } from "lucide-react";
 
 const STATUS_STYLE = {
@@ -43,6 +44,8 @@ export default function Protocols() {
           Your current bottleneck: <span style={{ color: bottleneck.color }}>{bottleneck.label}</span>
         </div>
       )}
+
+      <EligibilityGate />
 
       <div className="mt-10 space-y-4">
         {ordered.map((p) => {

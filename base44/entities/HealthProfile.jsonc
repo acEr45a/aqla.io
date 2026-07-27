@@ -1,0 +1,34 @@
+{
+  "name": "HealthProfile",
+  "type": "object",
+  "properties": {
+    "responses": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "eligibility_status": {
+      "type": "string",
+      "enum": [
+        "eligible",
+        "stimulant_free",
+        "paused",
+        "clinician_review",
+        "medical_evaluation"
+      ]
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "responses",
+    "eligibility_status"
+  ]
+}

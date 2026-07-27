@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, LogOut, Timer } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, LogOut, Timer, BookOpen, Lock } from "lucide-react";
 
 const NAV = [
   { to: "/today", label: "Today", icon: Sun },
@@ -11,9 +11,11 @@ const NAV = [
   { to: "/experiments", label: "Experiments", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "Coach", icon: MessageCircle },
+  { to: "/science", label: "Science", icon: BookOpen },
+  { to: "/trust", label: "Trust", icon: Lock },
 ];
 
-const MOBILE = NAV.filter((n) => !["/experiments", "/tests"].includes(n.to));
+const MOBILE = NAV.filter((n) => ["/today", "/map", "/protocol", "/progress", "/coach"].includes(n.to));
 
 export default function AppLayout() {
   return (

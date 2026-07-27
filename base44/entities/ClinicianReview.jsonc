@@ -1,0 +1,60 @@
+{
+  "name": "ClinicianReview",
+  "type": "object",
+  "properties": {
+    "user_name": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "recommendation": {
+      "type": "string"
+    },
+    "protocol_family": {
+      "type": "string",
+      "enum": [
+        "SPARK",
+        "FLOW",
+        "DRIVE",
+        "LEARN",
+        "RESET"
+      ]
+    },
+    "safety_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_level": {
+      "type": "string"
+    },
+    "ai_reasoning": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "modified",
+        "info_requested",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "decision_notes": {
+      "type": "string"
+    },
+    "decided_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_name",
+    "recommendation",
+    "protocol_family"
+  ]
+}
