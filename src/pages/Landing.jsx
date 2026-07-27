@@ -2,13 +2,21 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import HeroMap from "@/components/landing/HeroMap";
+import NeuralField from "@/components/landing/NeuralField";
 import LandingSections from "@/components/landing/LandingSections";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
+
+const STEPS = [
+  ["01", "Play the baseline tests", "Three short game-like tasks measure your real performance."],
+  ["02", "Create your account", "Your measured scores are saved to your new profile."],
+  ["03", "Get your Brain Map", "AQLA builds your personal protocol from real data."],
+];
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
-      <header className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <NeuralField className="opacity-60 h-[110vh]" />
+      <header className="relative max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
         <div>
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
           <span className="hidden sm:inline ml-3 text-xs text-muted-foreground">Understand your brain. Improve your life.</span>
@@ -19,28 +27,62 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="max-w-6xl mx-auto px-6 pt-16 md:pt-24 pb-12 grid md:grid-cols-2 gap-12 items-center">
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-          <h1 className="text-4xl md:text-6xl font-light leading-[1.08] text-foreground">
-            Your brain is giving you signals.{" "}
-            <span className="text-primary">AQLA helps you understand them.</span>
+      <section className="relative max-w-6xl mx-auto px-6 pt-16 md:pt-24 pb-12 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
+            <Zap className="w-3.5 h-3.5" />
+            New here? Start by playing the baseline tests — no account needed.
+          </motion.div>
+          <h1 className="mt-6 text-4xl md:text-6xl font-light leading-[1.08] text-foreground">
+            {"Your brain is giving you signals.".split(" ").map((word, i) => (
+              <motion.span key={i} className="inline-block mr-[0.25em]"
+                initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.6, delay: 0.15 + i * 0.08 }}>
+                {word}
+              </motion.span>
+            ))}
+            <motion.span className="text-primary inline-block"
+              initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.7, delay: 0.75 }}>
+              AQLA helps you understand them.
+            </motion.span>
           </h1>
-          <p className="mt-6 text-muted-foreground text-lg leading-relaxed max-w-lg">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1 }}
+            className="mt-6 text-muted-foreground text-lg leading-relaxed max-w-lg">
             AQLA analyzes your cognitive performance, lifestyle, sleep, stress, habits, and goals to create a
             personalized brain-health protocol that continuously learns what works for you.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link to="/assessment" className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-              Build My Brain Map <ArrowRight className="w-4 h-4" />
+          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }}
+            className="mt-10 flex flex-wrap gap-4">
+            <Link to="/start" className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
+              <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20 pointer-events-none" />
+              Play the Baseline Tests <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a href="#science" className="inline-flex items-center px-7 py-3.5 rounded-full border border-border text-foreground hover:border-foreground/30 transition-colors">
               Explore the Science
             </a>
-          </div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.3 }}>
+          </motion.div>
+        </div>
+        <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
           <HeroMap />
         </motion.div>
+      </section>
+
+      <section className="relative max-w-6xl mx-auto px-6 pb-16">
+        <div className="grid md:grid-cols-3 gap-4">
+          {STEPS.map(([num, title, desc], i) => (
+            <motion.div key={num} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, delay: i * 0.15 }}
+              className="aqla-panel rounded-2xl p-6">
+              <p className="font-display text-primary/70 text-sm tabular-nums">{num}</p>
+              <p className="mt-2 font-display text-foreground">{title}</p>
+              <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{desc}</p>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       <LandingSections />

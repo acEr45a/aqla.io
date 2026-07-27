@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import GuestTestSync from "@/components/GuestTestSync";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, LogOut, Timer, BookOpen, Lock } from "lucide-react";
 
 const NAV = [
@@ -20,6 +21,7 @@ const MOBILE = NAV.filter((n) => ["/today", "/map", "/protocol", "/progress", "/
 export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background aqla-glow">
+      <GuestTestSync />
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
         <div className="px-6 py-7">
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
