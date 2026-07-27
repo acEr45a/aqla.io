@@ -1,0 +1,34 @@
+{
+  "name": "DailyCheckIn",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "clarity": {
+      "type": "number"
+    },
+    "energy": {
+      "type": "number"
+    },
+    "stress": {
+      "type": "number"
+    },
+    "sleep_quality": {
+      "type": "number"
+    },
+    "side_effects": {
+      "type": "string"
+    },
+    "demand": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "Protocol",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "SPARK",
+        "FLOW",
+        "DRIVE",
+        "LEARN",
+        "RESET",
+        "DIGITAL"
+      ]
+    },
+    "objective": {
+      "type": "string"
+    },
+    "why_selected": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "paused"
+      ],
+      "default": "active"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "duration_days": {
+      "type": "number"
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "time": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "supporting_actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "measuring": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "safety_notes": {
+      "type": "string"
+    },
+    "expected_benefits": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "family",
+    "objective"
+  ]
+}

@@ -1,0 +1,99 @@
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
+import { Shield, ArrowRight } from "lucide-react";
+
+export default function ProtocolPage() {
+  const [protocol, setProtocol] = useState(undefined);
+
+  useEffect(() => {
+    base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
+  }, []);
+
+  if (protocol === undefined) return <div className="p-10 text-sm text-muted-foreground">Loading protocol…</div>;
+
+  if (!protocol) {
+    return (
+      <div className="max-w-lg mx-auto px-6 py-32 text-center">
+        <h1 className="text-2xl font-light text-foreground">No active protocol yet.</h1>
+        <p className="mt-3 text-sm text-muted-foreground">Complete your assessment and AQLA will assign your first protocol.</p>
+        <Link to="/assessment" className="inline-flex items-center gap-2 mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium">
+          Start Assessment <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      <p className="text-xs text-muted-foreground tracking-widest uppercase">Current protocol · {protocol.family}</p>
+      <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">{protocol.name}</h1>
+      <p className="mt-4 text-muted-foreground leading-relaxed max-w-xl">{protocol.objective}</p>
+
+      <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4 text-sm aqla-panel rounded-2xl px-6 py-5">
+        <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Started</p><p className="mt-1 text-foreground tabular-nums">{protocol.start_date || "—"}</p></div>
+        <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Review date</p><p className="mt-1 text-foreground tabular-nums">{protocol.review_date || "—"}</p></div>
+        <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Duration</p><p className="mt-1 text-foreground tabular-nums">{protocol.duration_days ? `${protocol.duration_days} days` : "—"}</p></div>
+      </div>
+
+      {protocol.why_selected && (
+        <section className="mt-10">
+          <h2 className="font-display text-lg text-foreground mb-3">Why it was selected</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">{protocol.why_selected}</p>
+        </section>
+      )}
+
+      <section className="mt-10">
+        <h2 className="font-display text-lg text-foreground mb-4">Daily actions</h2>
+        <div className="space-y-px rounded-2xl overflow-hidden border border-border/60">
+          {(protocol.actions || []).map((a, i) => (
+            <div key={i} className="flex items-center gap-5 bg-card/60 px-6 py-5">
+              <span className="font-display text-xl text-primary/70 tabular-nums">0{i + 1}</span>
+              <div className="flex-1">
+                <p className="text-sm text-foreground">{a.title}</p>
+                {a.detail && <p className="text-xs text-muted-foreground mt-0.5">{a.detail}</p>}
+              </div>
+              {a.time && <span className="text-xs text-muted-foreground tabular-nums">{a.time}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {protocol.expected_benefits?.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-display text-lg text-foreground mb-3">Expected benefits</h2>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            {protocol.expected_benefits.map((b) => <li key={b} className="flex gap-2"><span className="text-primary">+</span>{b}</li>)}
+          </ul>
+        </section>
+      )}
+
+      {protocol.measuring?.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-display text-lg text-foreground mb-3">What AQLA is measuring</h2>
+          <div className="flex flex-wrap gap-2">
+            {protocol.measuring.map((m) => (
+              <span key={m} className="px-4 py-2 rounded-full border border-border text-xs text-muted-foreground">{m}</span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {protocol.safety_notes && (
+        <section className="mt-10 rounded-2xl border border-[#F2C04E]/25 bg-[#F2C04E]/5 p-6 flex gap-4">
+          <Shield className="w-5 h-5 text-[#F2C04E] shrink-0 mt-0.5" strokeWidth={1.5} />
+          <div>
+            <p className="text-sm text-foreground font-medium">Safety notes</p>
+            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{protocol.safety_notes}</p>
+          </div>
+        </section>
+      )}
+
+      <div className="mt-10">
+        <Link to="/protocols" className="text-sm text-primary hover:underline inline-flex items-center gap-1.5">
+          Explore the five protocol families <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}

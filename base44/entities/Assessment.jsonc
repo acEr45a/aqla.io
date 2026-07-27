@@ -1,0 +1,21 @@
+{
+  "name": "Assessment",
+  "type": "object",
+  "properties": {
+    "responses": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0"
+    }
+  },
+  "required": [
+    "responses"
+  ]
+}

@@ -1,12 +1,28 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from '@/components/ProtectedRoute';
 // Add page imports here
+import Landing from '@/pages/Landing';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import AppLayout from '@/components/AppLayout';
+import Assessment from '@/pages/Assessment';
+import Analysis from '@/pages/Analysis';
+import Today from '@/pages/Today';
+import BrainMap from '@/pages/BrainMap';
+import ProtocolPage from '@/pages/ProtocolPage';
+import Protocols from '@/pages/Protocols';
+import Experiments from '@/pages/Experiments';
+import Progress from '@/pages/Progress';
+import Coach from '@/pages/Coach';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +50,24 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/assessment" element={<Assessment />} />
+        <Route path="/analysis" element={<Analysis />} />
+        <Route element={<AppLayout />}>
+          <Route path="/today" element={<Today />} />
+          <Route path="/map" element={<BrainMap />} />
+          <Route path="/protocol" element={<ProtocolPage />} />
+          <Route path="/protocols" element={<Protocols />} />
+          <Route path="/experiments" element={<Experiments />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/coach" element={<Coach />} />
+        </Route>
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
