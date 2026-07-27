@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 const ROUNDS = 24;
-const N = 2;
+const N = 1;
 const LETTERS = "BCDFGHKLMPRT";
 
 function makeSequence() {
@@ -57,11 +57,18 @@ export default function NBackTest({ onComplete }) {
   if (phase === "intro") {
     return (
       <div className="text-center max-w-sm mx-auto">
-        <h2 className="font-display text-2xl text-foreground">Working memory · 2-back</h2>
+        <h2 className="font-display text-2xl text-foreground">Working memory</h2>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          Letters appear one at a time. Tap or press space whenever the letter matches the one shown{" "}
-          <span className="text-foreground">two steps earlier</span>. Stay silent otherwise. About 45 seconds.
+          Letters appear one at a time. Tap the screen whenever a letter is the{" "}
+          <span className="text-foreground">same as the one just before it</span>. Do nothing otherwise.
         </p>
+        <div className="mt-6 flex items-center justify-center gap-2 text-sm">
+          {["K", "M", "M", "B"].map((l, i) => (
+            <span key={i} className={`w-9 h-9 rounded-lg flex items-center justify-center font-display ${
+              i === 2 ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>{l}</span>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">Tap on the highlighted one — it repeats the letter before it.</p>
         <button onClick={() => { setIdx(-1); setPhase("running"); advance(-1); }}
           className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
       </div>
@@ -73,7 +80,8 @@ export default function NBackTest({ onComplete }) {
   return (
     <button onPointerDown={respond} className="w-full h-full flex flex-col items-center justify-center" aria-label="Match">
       <p className="font-display text-7xl text-foreground">{seq.current[idx]}</p>
-      <p className="mt-10 text-xs text-muted-foreground tabular-nums">{idx + 1} / {ROUNDS}</p>
+      <p className="mt-8 text-xs text-muted-foreground">Tap if this is the same as the previous letter</p>
+      <p className="mt-4 text-xs text-muted-foreground tabular-nums">{idx + 1} / {ROUNDS}</p>
     </button>
   );
 }

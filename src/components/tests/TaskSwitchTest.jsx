@@ -50,9 +50,19 @@ export default function TaskSwitchTest({ onComplete }) {
       <div className="text-center max-w-sm mx-auto">
         <h2 className="font-display text-2xl text-foreground">Cognitive flexibility</h2>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          A number appears with a rule above it. The rule keeps changing — answer as fast as you can without slipping
-          into the old rule. About 40 seconds.
+          A number appears with a question above it. Just answer the question shown — it changes from time to time, so
+          read it each round.
         </p>
+        <div className="mt-6 space-y-2 text-left">
+          <div className="aqla-panel rounded-xl px-4 py-3">
+            <p className="text-xs" style={{ color: LABELS.parity.color }}>Odd or even?</p>
+            <p className="text-xs text-muted-foreground mt-1">Answer whether the number is odd or even.</p>
+          </div>
+          <div className="aqla-panel rounded-xl px-4 py-3">
+            <p className="text-xs" style={{ color: LABELS.magnitude.color }}>Below or above 5?</p>
+            <p className="text-xs text-muted-foreground mt-1">Answer whether the number is smaller or bigger than 5.</p>
+          </div>
+        </div>
         <button onClick={() => { start.current = Date.now(); setPhase("running"); }}
           className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
       </div>
@@ -66,8 +76,9 @@ export default function TaskSwitchTest({ onComplete }) {
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      <p className="text-xs uppercase tracking-widest" style={{ color: L.color }}>{L.prompt}</p>
-      <p className="mt-6 font-display text-8xl text-foreground tabular-nums">{t.num}</p>
+      <p className="px-5 py-2 rounded-full text-sm font-medium"
+        style={{ color: L.color, background: `${L.color}1F` }}>{L.prompt}</p>
+      <p className="mt-8 font-display text-8xl text-foreground tabular-nums">{t.num}</p>
       <div className="mt-12 flex gap-4">
         <button onClick={() => answer("a")}
           className="px-8 py-4 rounded-2xl border border-border text-sm text-foreground hover:border-foreground/40 transition-colors">{L.a}</button>

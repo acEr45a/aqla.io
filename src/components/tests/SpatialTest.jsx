@@ -49,11 +49,19 @@ export default function SpatialTest({ onComplete }) {
   if (phase === "intro") {
     return (
       <div className="text-center max-w-sm mx-auto">
-        <h2 className="font-display text-2xl text-foreground">Visual–spatial rotation</h2>
+        <h2 className="font-display text-2xl text-foreground">Visual–spatial</h2>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          Two shapes appear side by side. Decide whether the right one is the{" "}
-          <span className="text-foreground">same shape rotated</span>, or a mirror image. About 1 minute.
+          Two shapes appear side by side. Imagine turning the blue one around.
         </p>
+        <div className="mt-6 space-y-2 text-left text-xs">
+          <p className="aqla-panel rounded-xl px-4 py-3 text-muted-foreground">
+            <span className="text-foreground">Same, turned</span> — turning it would make it match the grey shape.
+          </p>
+          <p className="aqla-panel rounded-xl px-4 py-3 text-muted-foreground">
+            <span className="text-foreground">Flipped</span> — no matter how you turn it, it stays back-to-front.
+          </p>
+        </div>
+        <p className="mt-4 text-[11px] text-muted-foreground">Take your time — accuracy matters most.</p>
         <button onClick={() => { start.current = Date.now(); setPhase("running"); }}
           className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
       </div>
@@ -66,16 +74,23 @@ export default function SpatialTest({ onComplete }) {
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
-      <div className="flex items-center gap-10 md:gap-16">
-        <Glyph color="hsl(35 12% 62%)" />
+      <div className="flex items-end gap-10 md:gap-16">
+        <div className="text-center">
+          <Glyph color="hsl(35 12% 62%)" />
+          <p className="mt-2 text-[11px] text-muted-foreground">Original</p>
+        </div>
         <div className="w-px h-20 bg-border" />
-        <Glyph angle={t.angle} mirrored={t.mirrored} color="#7B94FF" />
+        <div className="text-center">
+          <Glyph angle={t.angle} mirrored={t.mirrored} color="#7B94FF" />
+          <p className="mt-2 text-[11px] text-muted-foreground">This one</p>
+        </div>
       </div>
-      <div className="mt-12 flex gap-4">
+      <p className="mt-8 text-sm text-muted-foreground">Is the blue shape the same shape turned around?</p>
+      <div className="mt-6 flex gap-4">
         <button onClick={() => answer(false)}
-          className="px-8 py-4 rounded-2xl border border-border text-sm text-foreground hover:border-foreground/40 transition-colors">Same, rotated</button>
+          className="px-8 py-4 rounded-2xl border border-border text-sm text-foreground hover:border-foreground/40 transition-colors">Same, turned</button>
         <button onClick={() => answer(true)}
-          className="px-8 py-4 rounded-2xl border border-border text-sm text-foreground hover:border-foreground/40 transition-colors">Mirrored</button>
+          className="px-8 py-4 rounded-2xl border border-border text-sm text-foreground hover:border-foreground/40 transition-colors">Flipped</button>
       </div>
       <p className="mt-10 text-xs text-muted-foreground tabular-nums">{i + 1} / {ROUNDS}</p>
     </div>

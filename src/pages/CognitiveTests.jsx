@@ -13,9 +13,9 @@ const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Processing speed — respond the instant the signal appears.", icon: Zap, minutes: "~1 min", Component: ReactionTest },
   { type: "sustained_attention", name: "Sustained attention", desc: "Go/no-go — respond to every letter except X.", icon: Eye, minutes: "~1 min", Component: AttentionTest },
   { type: "memory_recall", name: "Short-term recall", desc: "Digit span — recall increasingly long sequences.", icon: Layers, minutes: "~2 min", Component: MemoryTest },
-  { type: "working_memory", name: "Working memory", desc: "2-back — hold and update information on the fly.", icon: Brain, minutes: "~1 min", Component: NBackTest },
-  { type: "task_switching", name: "Cognitive flexibility", desc: "Task switching — adapt when the rule keeps changing.", icon: Shuffle, minutes: "~1 min", Component: TaskSwitchTest },
-  { type: "visual_spatial", name: "Visual–spatial", desc: "Mental rotation — same shape turned, or mirrored?", icon: Box, minutes: "~1 min", Component: SpatialTest },
+  { type: "working_memory", name: "Working memory", desc: "Tap when a letter repeats the one right before it.", icon: Brain, minutes: "~1 min", Component: NBackTest },
+  { type: "task_switching", name: "Cognitive flexibility", desc: "Answer a simple question about a number — the question keeps changing.", icon: Shuffle, minutes: "~1 min", Component: TaskSwitchTest },
+  { type: "visual_spatial", name: "Visual–spatial", desc: "Is the shape the same one turned around, or flipped?", icon: Box, minutes: "~1 min", Component: SpatialTest },
 ];
 
 // Blend measured test scores into Brain Map domains: [domain_key, test_type, weight of test]
