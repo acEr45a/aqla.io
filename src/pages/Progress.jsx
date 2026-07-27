@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import TestScoreTimeline from "@/components/progress/TestScoreTimeline";
 
 const INSIGHTS = [
   { text: "Your strongest focus days follow consistent wake times.", conf: "moderate confidence" },
@@ -67,6 +68,8 @@ export default function Progress() {
           </div>
         )}
       </section>
+
+      <TestScoreTimeline />
 
       <section className="mt-8 grid md:grid-cols-2 gap-8">
         <div>
