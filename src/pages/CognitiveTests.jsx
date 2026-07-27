@@ -4,21 +4,32 @@ import { base44 } from "@/api/base44Client";
 import ReactionTest from "@/components/tests/ReactionTest";
 import AttentionTest from "@/components/tests/AttentionTest";
 import MemoryTest from "@/components/tests/MemoryTest";
-import { Zap, Eye, Layers, Check, X } from "lucide-react";
+import NBackTest from "@/components/tests/NBackTest";
+import TaskSwitchTest from "@/components/tests/TaskSwitchTest";
+import SpatialTest from "@/components/tests/SpatialTest";
+import { Zap, Eye, Layers, Brain, Shuffle, Box, Check, X } from "lucide-react";
 
 const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Processing speed — respond the instant the signal appears.", icon: Zap, minutes: "~1 min", Component: ReactionTest },
   { type: "sustained_attention", name: "Sustained attention", desc: "Go/no-go — respond to every letter except X.", icon: Eye, minutes: "~1 min", Component: AttentionTest },
   { type: "memory_recall", name: "Short-term recall", desc: "Digit span — recall increasingly long sequences.", icon: Layers, minutes: "~2 min", Component: MemoryTest },
+  { type: "working_memory", name: "Working memory", desc: "2-back — hold and update information on the fly.", icon: Brain, minutes: "~1 min", Component: NBackTest },
+  { type: "task_switching", name: "Cognitive flexibility", desc: "Task switching — adapt when the rule keeps changing.", icon: Shuffle, minutes: "~1 min", Component: TaskSwitchTest },
+  { type: "visual_spatial", name: "Visual–spatial", desc: "Mental rotation — same shape turned, or mirrored?", icon: Box, minutes: "~1 min", Component: SpatialTest },
 ];
 
 // Blend measured test scores into Brain Map domains: [domain_key, test_type, weight of test]
 const BLEND = [
   ["focus", "sustained_attention", 0.35],
   ["focus", "reaction_time", 0.15],
-  ["memory", "memory_recall", 0.5],
-  ["learning_capacity", "memory_recall", 0.35],
-  ["cognitive_resilience", "reaction_time", 0.3],
+  ["focus", "working_memory", 0.2],
+  ["memory", "memory_recall", 0.4],
+  ["memory", "working_memory", 0.3],
+  ["learning_capacity", "memory_recall", 0.25],
+  ["learning_capacity", "task_switching", 0.2],
+  ["learning_capacity", "visual_spatial", 0.15],
+  ["cognitive_resilience", "reaction_time", 0.2],
+  ["cognitive_resilience", "task_switching", 0.2],
 ];
 
 export default function CognitiveTests() {
@@ -98,8 +109,9 @@ export default function CognitiveTests() {
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Cognitive baseline</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Measure, don't guess.</h1>
       <p className="mt-3 text-sm text-muted-foreground max-w-lg leading-relaxed">
-        Three short tasks measure your actual performance. Complete them in a quiet environment. Results are revealed
-        once all three are done, then blended into your Brain Map.
+        Six short tasks measure your actual performance across speed, attention, memory, flexibility, and spatial
+        reasoning. Complete them in a quiet environment. Results are revealed once all six are done, then blended into
+        your Brain Map.
       </p>
 
       <div className="mt-10 space-y-3">
@@ -128,7 +140,7 @@ export default function CognitiveTests() {
 
       {results && !allDone && Object.keys(results).length > 0 && (
         <p className="mt-6 text-xs text-muted-foreground">
-          Results stay hidden until all three tests are complete — this keeps your baseline unbiased.
+          Results stay hidden until all six tests are complete — this keeps your baseline unbiased.
         </p>
       )}
 
@@ -140,7 +152,7 @@ export default function CognitiveTests() {
           <div className="mt-6 grid grid-cols-3 gap-6">
             {TESTS.map((t) => (
               <div key={t.type}>
-                <p className="font-display text-4xl font-light text-foreground tabular-nums">{Math.round(results[t.type].normalized_score)}</p>
+                <p className="font-display text-3xl md:text-4xl font-light text-foreground tabular-nums">{Math.round(results[t.type].normalized_score)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{t.name}</p>
               </div>
             ))}

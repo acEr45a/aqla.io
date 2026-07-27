@@ -7,7 +7,10 @@
       "enum": [
         "reaction_time",
         "sustained_attention",
-        "memory_recall"
+        "memory_recall",
+        "working_memory",
+        "task_switching",
+        "visual_spatial"
       ]
     },
     "raw_results": {
