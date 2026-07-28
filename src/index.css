@@ -84,6 +84,13 @@
   }
 }
 
+/* Keep supporting labels and disclosures legible across mobile and desktop. */
+.text-\[10px\],
+.text-\[11px\] {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
