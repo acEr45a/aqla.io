@@ -25,9 +25,9 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         const active = activeKey === region.key;
         return (
           <path key={region.key} d={region.path}
-            fill={rank.color} fillOpacity={active ? 0.85 : 0.55}
-            stroke={rank.color} strokeWidth={active ? 2.5 : 1}
-            strokeOpacity={active ? 1 : 0.5}
+            fill={rank.color} fillOpacity={active ? 1 : 0.92}
+            stroke="hsl(26 14% 6%)" strokeWidth={active ? 3 : 1.5}
+            strokeOpacity={active ? 1 : 0.7}
             className="cursor-pointer transition-all duration-200"
             onMouseEnter={() => onHover?.(region.key)}
             onMouseLeave={() => onHover?.(null)}
@@ -37,7 +37,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
 
       <g clipPath="url(#brain-sulci-clip)" pointerEvents="none">
         {SULCI.map((d, i) => (
-          <path key={i} d={d} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.4" strokeWidth="2.5" strokeLinecap="round" />
+          <path key={i} d={d} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.55" strokeWidth="3" strokeLinecap="round" />
         ))}
       </g>
 
