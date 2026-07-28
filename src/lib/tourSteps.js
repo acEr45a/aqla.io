@@ -21,9 +21,14 @@ export const TOUR_STEPS = [
     body: "Under 60 seconds each day. This is what keeps your Brain Map and protocol accurate.",
   },
   {
+    selector: '[data-tour="calendar"]',
+    title: "Never miss a check-in",
+    body: "Add a recurring 8:00 reminder for your whole cycle. Use the Google button, or download the .ics invite — that works with Apple Calendar, Outlook and any other calendar app.",
+  },
+  {
     selector: '[data-tour="coach"]',
-    title: "AQLA Intelligence",
-    body: "Ask why your focus changed or what to adjust first. Answers are grounded in your data and the evidence library.",
+    title: "Meet AQLA Intelligence",
+    body: "This is your personal brain analyst. It reads your check-ins, tests and Brain Map, then explains what changed and what to adjust first — with the evidence behind it, and honest uncertainty when data is thin. Ask it anything in plain language, by text or voice.",
   },
   {
     selector: 'a[href="/map"]',

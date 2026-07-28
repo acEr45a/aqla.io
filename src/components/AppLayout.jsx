@@ -7,6 +7,7 @@ import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
+import AqlaLogo from "@/components/AqlaLogo";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings, ShieldCheck } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
@@ -46,9 +47,12 @@ export default function AppLayout() {
       <DailyCheckInPrompt />
       <PlanReviewGate />
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
-        <div className="px-6 py-7">
-          <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
-          <span className="block text-[11px] text-muted-foreground mt-0.5">Personal Brain OS</span>
+        <div className="px-6 py-7 flex items-center gap-2.5">
+          <AqlaLogo showWordmark={false} className="shrink-0 text-foreground" />
+          <div className="min-w-0">
+            <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
+            <span className="block text-[11px] text-muted-foreground mt-0.5">Personal Brain OS</span>
+          </div>
         </div>
         <nav className="flex-1 px-3 space-y-1">
           {nav.map(({ to, label, icon: Icon }) => (
