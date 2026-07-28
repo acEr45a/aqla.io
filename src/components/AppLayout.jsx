@@ -6,6 +6,7 @@ import ReassessmentPrompt from "@/components/ReassessmentPrompt";
 import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
+import MobileNav from "@/components/nav/MobileNav";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp } from "lucide-react";
 
 const NAV = [
@@ -21,7 +22,11 @@ const NAV = [
   { to: "/help-center", label: "Help", icon: CircleHelp },
 ];
 
-const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Dashboard: "Home" };
+const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
+const PRIMARY_ROUTES = ["/dashboard", "/map", "/protocol", "/coach"];
+const mobileItem = (item) => ({ ...item, label: SHORT_LABELS[item.label] || item.label });
+const PRIMARY_NAV = NAV.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
+const SECONDARY_NAV = NAV.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
 
 export default function AppLayout() {
   return (
@@ -53,18 +58,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-lg">
-        <div className="flex overflow-x-auto scrollbar-none px-2 pb-[env(safe-area-inset-bottom)]">
-          {NAV.map(({ to, label, icon: Icon }) => (
-            <NavLink key={to} to={to} className={({ isActive }) =>
-              `shrink-0 w-[19%] min-w-[68px] flex flex-col items-center gap-1 py-2.5 text-[10px] ${
-                isActive ? "text-primary" : "text-muted-foreground"}`}>
-              <Icon className="w-5 h-5" strokeWidth={1.75} />
-              <span className="whitespace-nowrap">{SHORT_LABELS[label] || label}</span>
-            </NavLink>
-          ))}
-        </div>
-      </nav>
+      <MobileNav primary={PRIMARY_NAV} secondary={SECONDARY_NAV} />
     </div>
   );
 }

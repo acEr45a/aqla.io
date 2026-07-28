@@ -62,12 +62,12 @@ export default function Start() {
   }
 
   return (
-    <div className="min-h-screen bg-background aqla-glow flex items-center justify-center px-6">
+    <div className="min-h-screen bg-background aqla-glow flex items-center justify-center px-4 md:px-6 py-12">
       <AnimatePresence mode="wait">
         {phase === "intro" ? (
           <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-xl w-full">
             <p className="text-xs text-primary tracking-widest uppercase">Step 1 · Cognitive preview</p>
-            <h1 className="mt-3 text-3xl md:text-5xl font-light text-foreground leading-tight">
+            <h1 className="mt-3 text-2xl sm:text-3xl md:text-5xl font-light text-foreground leading-tight">
               Begin with three of the seven baseline tasks.
             </h1>
             <p className="mt-4 text-muted-foreground text-sm leading-relaxed">
@@ -100,10 +100,10 @@ export default function Start() {
               <Check className="w-7 h-7 text-primary" />
             </motion.div>
             <h1 className="mt-6 text-3xl md:text-4xl font-light text-foreground">Preview captured.</h1>
-            <div className="mt-8 grid grid-cols-3 gap-6">
+            <div className="mt-8 grid grid-cols-3 gap-3 md:gap-6">
               {TESTS.map((t, i) => (
                 <motion.div key={t.type} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.15 }}>
-                  <p className="font-display text-4xl font-light text-foreground tabular-nums">{Math.round(scores[t.type].score)}</p>
+                  <p className="font-display text-3xl md:text-4xl font-light text-foreground tabular-nums">{Math.round(scores[t.type].score)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{t.name}</p>
                 </motion.div>
               ))}

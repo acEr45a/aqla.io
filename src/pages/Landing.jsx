@@ -21,25 +21,25 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
       <NeuralField className="opacity-60 h-[110vh]" />
-      <header className="relative max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+      <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
         <div>
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
           <span className="hidden sm:inline ml-3 text-xs text-muted-foreground">Understand your brain. Improve your life.</span>
         </div>
-        <div className="flex items-center gap-3">
-          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2">Sign in</Link>
-          <Link to="/start" className="text-sm px-4 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-foreground">Get started</Link>
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Sign in</Link>
+          <Link to="/start" className="text-sm px-4 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-foreground whitespace-nowrap">Get started</Link>
         </div>
       </header>
 
-      <section className="relative max-w-6xl mx-auto px-6 pt-16 md:pt-24 pb-12 grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-24 pb-10 md:pb-12 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
             <Zap className="w-3.5 h-3.5" />
             New here? Try the first three of seven baseline tasks — no account needed.
           </motion.div>
-          <h1 className="mt-6 text-4xl md:text-6xl font-light leading-[1.08] text-foreground">
+          <h1 className="mt-6 text-3xl sm:text-4xl md:text-6xl font-light leading-[1.12] md:leading-[1.08] text-foreground">
             {"Your brain is giving you signals.".split(" ").map((word, i) => (
               <motion.span key={i} className="inline-block mr-[0.25em]"
                 initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
@@ -56,12 +56,12 @@ export default function Landing() {
             </motion.span>
           </h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1 }}
-            className="mt-6 text-muted-foreground text-lg leading-relaxed max-w-lg">
+            className="mt-5 text-muted-foreground text-base md:text-lg leading-relaxed max-w-lg">
             AQLA analyzes your cognitive performance, lifestyle, sleep, stress, habits, and goals to create a
             personalized brain-health protocol that continuously learns what works for you.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }}
-            className="mt-10 flex flex-wrap gap-4">
+            className="mt-8 md:mt-10 flex flex-wrap gap-3 md:gap-4">
             <Link to="/start" className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
               <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20 pointer-events-none" />
               Get Started <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -80,8 +80,8 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      <section className="relative max-w-6xl mx-auto px-6 pb-16">
-        <div className="grid md:grid-cols-3 gap-4">
+      <section className="relative max-w-6xl mx-auto px-4 md:px-6 pb-14 md:pb-16">
+        <div className="grid md:grid-cols-3 gap-3 md:gap-4">
           {STEPS.map(([num, title, desc], i) => (
             <motion.div key={num} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, delay: i * 0.15 }}

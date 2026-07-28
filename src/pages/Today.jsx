@@ -57,7 +57,7 @@ export default function Today() {
   }).length;
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 md:py-10">
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
         <p className="text-xs text-muted-foreground tracking-widest uppercase">{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
         <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">{greeting}, {firstName}.</h1>
