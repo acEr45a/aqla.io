@@ -92,14 +92,12 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
               onMouseEnter={() => setHover(r.key)}
               onMouseLeave={() => setHover(null)}
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-              className="absolute flex flex-col items-center text-center leading-tight rounded-xl px-2 py-1"
+              className="absolute flex flex-col items-center text-center leading-tight"
               style={{
                 left: `${r.lx ?? r.x}%`, top: `${r.ly ?? r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 5,
-                background: "rgba(6,6,8,0.62)",
-                backdropFilter: "blur(6px)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.85)",
                 cursor: onSelect ? "pointer" : "default",
               }}>
               <span className="text-[10px] md:text-[11px] text-white/85 whitespace-nowrap">{d.label}</span>
