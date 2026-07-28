@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { playTone, unlockAudio } from "@/lib/gameAudio";
 
 const ROUNDS = 30;
 const LETTERS = "ABCDEFGHKMNPRT";
@@ -41,7 +42,11 @@ export default function AttentionTest({ onComplete }) {
     return () => clearTimeout(t);
   }, [phase, idx]);
 
-  const respond = () => { if (phase === "running") responded.current = true; };
+  const respond = () => {
+    if (phase !== "running") return;
+    if (!responded.current) playTone(seq.current[idx] === "X" ? 200 : 760, 0.09, 0.05);
+    responded.current = true;
+  };
 
   useEffect(() => {
     const onKey = (e) => { if (e.code === "Space") { e.preventDefault(); respond(); } };
@@ -57,7 +62,7 @@ export default function AttentionTest({ onComplete }) {
           Letters will flash one at a time. Tap or press space for every letter —{" "}
           <span className="text-foreground">except X</span>. Withhold your response when you see X. About 30 seconds.
         </p>
-        <button onClick={() => { setIdx(-1); setPhase("running"); advance(-1); }}
+        <button onClick={() => { unlockAudio(); setIdx(-1); setPhase("running"); advance(-1); }}
           className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
       </div>
     );
