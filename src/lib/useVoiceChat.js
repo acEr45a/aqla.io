@@ -1,32 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { loadVoicePrefs, moodOf, pickVoice } from "@/lib/voicePrefs";
+import { base44 } from "@/api/base44Client";
+import { loadVoicePrefs } from "@/lib/voicePrefs";
 
 const Recognition = typeof window !== "undefined"
   ? window.SpeechRecognition || window.webkitSpeechRecognition
   : null;
 
-export const speechSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+export const speechSupported = typeof window !== "undefined" && "Audio" in window;
 export const micSupported = !!Recognition;
 export const voiceSupported = speechSupported;
 
-// Browser-native speech in + speech out for AQLA Intelligence.
+const VOICE_BY_MOOD = { calm: "river", neutral: "river", focused: "spark", warm: "honey" };
+
+// Browser speech recognition with high-quality generated speech for AQLA replies.
 export default function useVoiceChat({ onTranscript } = {}) {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const recRef = useRef(null);
-  const utterRef = useRef(null);
+  const audioRef = useRef(null);
   const cbRef = useRef(onTranscript);
   cbRef.current = onTranscript;
-
-  // Chrome loads the voice list asynchronously — warm it up so the first speak() has voices.
-  useEffect(() => {
-    if (!speechSupported) return;
-    const warm = () => window.speechSynthesis.getVoices();
-    warm();
-    window.speechSynthesis.addEventListener?.("voiceschanged", warm);
-    return () => window.speechSynthesis.removeEventListener?.("voiceschanged", warm);
-  }, []);
 
   useEffect(() => {
     if (!Recognition) return;
@@ -34,8 +28,8 @@ export default function useVoiceChat({ onTranscript } = {}) {
     rec.lang = loadVoicePrefs().accent || "en-US";
     rec.interimResults = false;
     rec.continuous = false;
-    rec.onresult = (e) => {
-      const text = e.results[0][0].transcript;
+    rec.onresult = (event) => {
+      const text = event.results[0][0].transcript;
       if (text) cbRef.current?.(text);
     };
     rec.onend = () => setListening(false);
@@ -44,55 +38,44 @@ export default function useVoiceChat({ onTranscript } = {}) {
     return () => { rec.onresult = null; rec.abort?.(); };
   }, []);
 
+  useEffect(() => () => audioRef.current?.pause(), []);
+
+  const stopSpeaking = useCallback(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setSpeaking(false);
+  }, []);
+
   const startListening = useCallback(() => {
     if (!recRef.current || listening) return;
-    window.speechSynthesis?.cancel();
+    stopSpeaking();
     recRef.current.lang = loadVoicePrefs().accent || "en-US";
     setVoiceMode(true);
     setListening(true);
     try { recRef.current.start(); } catch { setListening(false); }
-  }, [listening]);
+  }, [listening, stopSpeaking]);
 
   const stopListening = useCallback(() => {
     recRef.current?.stop();
     setListening(false);
   }, []);
 
-  const speak = useCallback((text) => {
+  const speak = useCallback(async (text) => {
     if (!text || !speechSupported) return;
-    const synth = window.speechSynthesis;
-    synth.cancel();
+    stopSpeaking();
+    setSpeaking(true);
     const prefs = loadVoicePrefs();
-    const mood = moodOf(prefs.mood);
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      const u = new SpeechSynthesisUtterance(text);
-      const voice = pickVoice(prefs.accent);
-      if (voice) u.voice = voice;
-      u.lang = voice?.lang || prefs.accent || "en-US";
-      u.rate = mood.rate;
-      u.pitch = mood.pitch;
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
-      utterRef.current = u; // keep a reference so the utterance isn't garbage-collected mid-speech
-      setSpeaking(true);
-      synth.speak(u);
-    };
-    if (!synth.getVoices().length) {
-      const once = () => { synth.removeEventListener?.("voiceschanged", once); start(); };
-      synth.addEventListener?.("voiceschanged", once);
-      setTimeout(start, 300);
-      return;
-    }
-    start();
-  }, []);
-
-  const stopSpeaking = useCallback(() => {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
-  }, []);
+    const { url } = await base44.integrations.Core.GenerateSpeech({
+      text,
+      voice: VOICE_BY_MOOD[prefs.mood] || "honey",
+      language_code: "en",
+    });
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.onended = () => setSpeaking(false);
+    audio.onerror = () => setSpeaking(false);
+    await audio.play();
+  }, [stopSpeaking]);
 
   return { listening, speaking, voiceMode, setVoiceMode, startListening, stopListening, speak, stopSpeaking };
 }
