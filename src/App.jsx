@@ -36,6 +36,7 @@ import HelpCenter from '@/pages/HelpCenter';
 import AccountManagement from '@/pages/AccountManagement';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -93,6 +94,7 @@ const AuthenticatedApp = () => {
           <Route path="/evidence-library" element={<EvidenceLibrary />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/account-management" element={<AccountManagement />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

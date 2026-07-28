@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
@@ -7,7 +7,8 @@ import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings, ShieldCheck } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: Sun },
@@ -30,6 +31,11 @@ const PRIMARY_NAV = NAV.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(m
 const SECONDARY_NAV = NAV.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
 
 export default function AppLayout() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => { base44.auth.me().then((user) => setIsAdmin(user.role === "admin")); }, []);
+  const nav = isAdmin ? [...NAV, { to: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
+  const primaryNav = nav.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
+  const secondaryNav = nav.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
@@ -43,7 +49,7 @@ export default function AppLayout() {
           <span className="block text-[11px] text-muted-foreground mt-0.5">Personal Brain OS</span>
         </div>
         <nav className="flex-1 px-3 space-y-1">
-          {NAV.map(({ to, label, icon: Icon }) => (
+          {nav.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
                 isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}>
@@ -59,7 +65,7 @@ export default function AppLayout() {
         <Outlet />
       </main>
 
-      <MobileNav primary={PRIMARY_NAV} secondary={SECONDARY_NAV} />
+      <MobileNav primary={primaryNav} secondary={secondaryNav} />
     </div>
   );
 }
