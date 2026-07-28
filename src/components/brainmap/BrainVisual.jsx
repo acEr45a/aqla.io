@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { REGIONS, SILHOUETTE, SULCI } from "./brainShapes";
+import { REGIONS, SILHOUETTE, GYRI } from "./brainShapes";
 
 const GREY_FILL = "hsl(30 6% 22%)";
 const GREY_STROKE = "hsl(35 10% 58%)";
@@ -51,19 +51,18 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                   transition={{ duration: 1, delay: 0.12 * i, ease: [0.22, 1, 0.36, 1] }}
                 />
               </g>
+              <g clipPath={`url(#brainclip-${r.key})`} pointerEvents="none">
+                {(GYRI[r.key] || []).map((p, j) => (
+                  <path key={j} d={p} fill="none" stroke="hsl(26 14% 8%)" strokeOpacity="0.3"
+                    strokeWidth="1.75" strokeLinecap="round" />
+                ))}
+              </g>
               <path d={r.path} fill="none"
                 stroke={active ? d.color : GREY_STROKE}
                 strokeWidth={active ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" />
             </g>
           );
         })}
-
-        <g pointerEvents="none" clipPath="url(#brainclip-outline)">
-          {SULCI.map((p, i) => (
-            <path key={i} d={p} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.28"
-              strokeWidth="1.75" strokeLinecap="round" />
-          ))}
-        </g>
 
         <path d={SILHOUETTE} fill="none" stroke="hsl(40 12% 78%)" strokeWidth="2.5"
           strokeLinejoin="round" pointerEvents="none" />
