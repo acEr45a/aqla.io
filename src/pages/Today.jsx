@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import CheckInDialog from "@/components/today/CheckInDialog";
+import WeeklySummary from "@/components/today/WeeklySummary";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
@@ -19,6 +20,7 @@ export default function Today() {
   const [user, setUser] = useState(null);
   const [protocol, setProtocol] = useState(null);
   const [checkIns, setCheckIns] = useState([]);
+  const [domains, setDomains] = useState([]);
   const [showSupport, setShowSupport] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
 
@@ -26,6 +28,7 @@ export default function Today() {
     base44.auth.me().then(setUser).catch(() => {});
     base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
+    base44.entities.BrainDomain.list("-updated_date").then(setDomains);
   };
   useEffect(() => {
     load();
@@ -44,6 +47,12 @@ export default function Today() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const firstName = user?.full_name?.split(" ")[0] || "there";
+  const weakest = domains.length ? domains.reduce((a, b) => (b.score < a.score ? b : a)) : null;
+  const weekCount = checkIns.filter((c) => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 7);
+    return new Date(c.date) >= cutoff;
+  }).length;
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
@@ -51,27 +60,31 @@ export default function Today() {
         <p className="text-xs text-muted-foreground tracking-widest uppercase">{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
         <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">{greeting}, {firstName}.</h1>
         <p className="mt-2 text-muted-foreground">
-          {protocol?.family === "RESET" ? "Your system is prioritizing recovery today." : "Your system is watching your signals today."}
+          {domains.length === 0
+            ? "Complete your assessment to activate your Brain Map."
+            : protocol?.family === "RESET" ? "Your system is prioritizing recovery today." : "Your system is watching your signals today."}
         </p>
       </motion.div>
 
       <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 aqla-panel rounded-2xl px-6 py-5">
         <Signal label="Cognitive readiness" value={readiness != null ? `${readiness}%` : "—"} color={readiness >= 65 ? "#C9F24E" : readiness != null ? "#F2C04E" : undefined} />
         <Signal label="Sleep recovery" value={latest?.sleep_quality != null ? `${latest.sleep_quality}/10` : "—"} color="#5FD4E8" />
-        <Signal label="Focus window" value="9:30–12:00" />
-        <Signal label="Energy-risk period" value="2–4 PM" color="#F2C04E" />
+        <Signal label="Primary bottleneck" value={weakest ? weakest.domain_name : "—"} color="#F2C04E" />
+        <Signal label="Check-ins (7 days)" value={`${weekCount}/7`} />
       </div>
 
-      {/* Priority */}
-      <div className="mt-8 rounded-3xl border border-primary/25 bg-primary/5 p-8">
-        <p className="text-xs uppercase tracking-widest text-primary flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5" /> Today's priority
-        </p>
-        <h2 className="mt-3 font-display text-2xl text-foreground">Protect your 9:30 AM–12:00 PM focus window</h2>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xl">
-          Your recovery pattern suggests your best sustained attention occurs late morning. Guard it before anything else.
-        </p>
-      </div>
+      {/* Priority — only from real protocol data */}
+      {protocol && (
+        <div className="mt-8 rounded-3xl border border-primary/25 bg-primary/5 p-8">
+          <p className="text-xs uppercase tracking-widest text-primary flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5" /> Today's priority
+          </p>
+          <h2 className="mt-3 font-display text-2xl text-foreground">{protocol.actions?.[0]?.title || protocol.objective}</h2>
+          {protocol.actions?.[0]?.detail && (
+            <p className="mt-2 text-sm text-muted-foreground max-w-xl">{protocol.actions[0].detail}</p>
+          )}
+        </div>
+      )}
 
       {/* Protocol actions */}
       <div className="mt-8">
@@ -132,13 +145,17 @@ export default function Today() {
         </Link>
       </div>
 
-      {/* Insight */}
-      <div className="mt-8 border-l-2 border-primary/50 pl-5 py-1">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">Today's insight</p>
-        <p className="mt-2 text-sm text-foreground/90 leading-relaxed max-w-xl">
-          Your strongest attention scores occur after nights with at least seven hours of sleep and a consistent wake time.
-        </p>
-      </div>
+      <WeeklySummary />
+
+      {/* Insight — derived from the user's own Brain Map */}
+      {weakest && (weakest.next_action || weakest.summary) && (
+        <div className="mt-8 border-l-2 border-primary/50 pl-5 py-1">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Your current focus</p>
+          <p className="mt-2 text-sm text-foreground/90 leading-relaxed max-w-xl">
+            {weakest.domain_name} is your lowest domain at {Math.round(weakest.score)}. {weakest.next_action || weakest.summary}
+          </p>
+        </div>
+      )}
 
       <CheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} onSaved={load} />
     </div>
