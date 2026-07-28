@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, LogOut, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, Lock, LogOut, ShieldCheck, Loader2 } from "lucide-react";
 import SettingRow from "@/components/settings/SettingRow";
 import SettingsSection from "@/components/settings/SettingsSection";
 
@@ -32,6 +32,7 @@ const DEFAULTS = {
 const DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 export default function Settings() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [prefs, setPrefs] = useState(DEFAULTS);
   const [saving, setSaving] = useState(false);
@@ -58,6 +59,9 @@ export default function Settings() {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto px-5 md:px-10 pt-10 md:pt-14">
+      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 -ml-3 gap-2 text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Button>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Account</p>
