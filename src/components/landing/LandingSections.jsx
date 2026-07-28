@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
+import ProtocolHoverCard from "@/components/landing/ProtocolHoverCard";
 import { Shield, FlaskConical, ArrowRight } from "lucide-react";
 
 const LOOP = [
@@ -71,12 +72,8 @@ export default function LandingSections() {
           <p className="text-sm text-muted-foreground tracking-widest uppercase mb-3">Five protocols</p>
           <h2 className="text-3xl font-light text-foreground mb-12">Cognitive-performance protocols — not powders.</h2>
           <div className="grid md:grid-cols-5 gap-4">
-            {PROTOCOL_FAMILIES.map((p) => (
-              <div key={p.key} className="group rounded-2xl border border-border/50 p-6 hover:border-border transition-colors bg-background/60">
-                <div className="w-2 h-2 rounded-full mb-5" style={{ background: p.color }} />
-                <p className="font-display font-semibold tracking-wide text-foreground">{p.name}</p>
-                <p className="mt-3 text-xs text-muted-foreground leading-relaxed">{p.purpose}</p>
-              </div>
+            {PROTOCOL_FAMILIES.map((protocol) => (
+              <ProtocolHoverCard key={protocol.key} protocol={protocol} />
             ))}
           </div>
         </div>
