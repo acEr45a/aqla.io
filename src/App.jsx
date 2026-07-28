@@ -71,7 +71,8 @@ const AuthenticatedApp = () => {
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route element={<AppLayout />}>
-          <Route path="/today" element={<Today />} />
+          <Route path="/dashboard" element={<Today />} />
+          <Route path="/today" element={<Navigate to="/dashboard" replace />} />
           <Route path="/map" element={<BrainMap />} />
           <Route path="/protocol" element={<ProtocolPage />} />
           <Route path="/protocols" element={<Protocols />} />

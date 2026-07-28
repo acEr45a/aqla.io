@@ -9,7 +9,7 @@ import UserAccountBox from "@/components/UserAccountBox";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp } from "lucide-react";
 
 const NAV = [
-  { to: "/today", label: "Today", icon: Sun },
+  { to: "/dashboard", label: "Dashboard", icon: Sun },
   { to: "/map", label: "Brain Map", icon: Radar },
   { to: "/tests", label: "Tests", icon: Timer },
   { to: "/games", label: "Train", icon: Gamepad2 },
@@ -21,7 +21,7 @@ const NAV = [
   { to: "/help-center", label: "Help", icon: CircleHelp },
 ];
 
-const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials" };
+const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Dashboard: "Home" };
 
 export default function AppLayout() {
   return (
