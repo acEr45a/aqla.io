@@ -49,8 +49,8 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 }}
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}cc 40%, ${rank.color}66 62%, ${rank.color}1a 78%, transparent 90%)`,
-                  filter: `blur(${active ? 8 : 10}px) saturate(1.5)`,
+                  background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}e6 52%, ${rank.color}99 72%, ${rank.color}40 86%, transparent 97%)`,
+                  filter: `blur(${active ? 14 : 16}px) saturate(1.5)`,
                   cursor: onSelect ? "pointer" : "default",
                 }}
               />
