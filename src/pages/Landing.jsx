@@ -63,7 +63,7 @@ export default function Landing() {
             className="mt-10 flex flex-wrap gap-4">
             <Link to="/start" className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
               <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20 pointer-events-none" />
-              Discover Your Cognitive Profile <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              Get Started <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a href="#science" className="inline-flex items-center px-7 py-3.5 rounded-full border border-border text-foreground hover:border-foreground/30 transition-colors">
               Explore the Science
