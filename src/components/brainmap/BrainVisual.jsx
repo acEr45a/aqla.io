@@ -105,11 +105,12 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.lx ?? r.x}%`, top: `${r.ly ?? r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 5,
-                textShadow: "0 1px 3px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.85)",
+                textShadow:
+                  "-1px -1px 0 rgba(0,0,0,0.9), 1px -1px 0 rgba(0,0,0,0.9), -1px 1px 0 rgba(0,0,0,0.9), 1px 1px 0 rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,1), 0 0 18px rgba(0,0,0,0.95)",
                 cursor: onSelect ? "pointer" : "default",
               }}>
-              <span className="text-[10px] md:text-[11px] text-white/85 whitespace-nowrap">{d.label}</span>
-              <span className="font-display text-lg md:text-xl font-semibold text-white tabular-nums leading-none">{d.score}</span>
+              <span className="text-[10px] md:text-[11px] font-medium text-white whitespace-nowrap">{d.label}</span>
+              <span className="font-display text-lg md:text-xl font-bold text-white tabular-nums leading-none">{d.score}</span>
               <span className="mt-1 w-6 h-[2px] rounded-full" style={{ background: rank.color, boxShadow: `0 0 6px ${rank.color}` }} />
             </motion.div>
           );
