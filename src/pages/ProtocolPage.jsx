@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import ProtocolPlanCard from "@/components/protocols/ProtocolPlanCard";
 import { Shield, ArrowRight } from "lucide-react";
 
 export default function ProtocolPage() {
-  const [protocol, setProtocol] = useState(undefined);
+  const [protocols, setProtocols] = useState(undefined);
 
   useEffect(() => {
-    base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
+    base44.entities.Protocol.list("-created_date").then(setProtocols);
   }, []);
 
-  if (protocol === undefined) return <div className="p-10 text-sm text-muted-foreground">Loading protocol…</div>;
+  const protocol = protocols?.find((item) => item.status === "active") || null;
+  const otherPlans = protocols?.filter((item) => item.id !== protocol?.id) || [];
+
+  if (protocols === undefined) return <div className="p-10 text-sm text-muted-foreground">Loading protocol…</div>;
 
   if (!protocol) {
     return (
@@ -85,6 +89,16 @@ export default function ProtocolPage() {
           <div>
             <p className="text-sm text-foreground font-medium">Safety notes</p>
             <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{protocol.safety_notes}</p>
+          </div>
+        </section>
+      )}
+
+      {otherPlans.length > 0 && (
+        <section className="mt-12">
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">Plan library</p>
+          <h2 className="mt-2 font-display text-2xl text-foreground">Other performance plans</h2>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {otherPlans.map((plan) => <ProtocolPlanCard key={plan.id} plan={plan} />)}
           </div>
         </section>
       )}
