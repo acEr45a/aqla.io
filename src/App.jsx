@@ -25,6 +25,7 @@ import Experiments from '@/pages/Experiments';
 import Progress from '@/pages/Progress';
 import Coach from '@/pages/Coach';
 import CognitiveTests from '@/pages/CognitiveTests';
+import Games from '@/pages/Games';
 import SafetyScreening from '@/pages/SafetyScreening';
 import Science from '@/pages/Science';
 import Clinician from '@/pages/Clinician';
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
           <Route path="/progress" element={<Progress />} />
           <Route path="/coach" element={<Coach />} />
           <Route path="/tests" element={<CognitiveTests />} />
+          <Route path="/games" element={<Games />} />
           <Route path="/safety" element={<SafetyScreening />} />
           <Route path="/science" element={<Science />} />
           <Route path="/clinician" element={<Clinician />} />

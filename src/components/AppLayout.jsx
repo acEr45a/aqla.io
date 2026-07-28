@@ -2,12 +2,13 @@ import React from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings, Gamepad2 } from "lucide-react";
 
 const NAV = [
   { to: "/today", label: "Today", icon: Sun },
   { to: "/map", label: "Brain Map", icon: Radar },
   { to: "/tests", label: "Tests", icon: Timer },
+  { to: "/games", label: "Train", icon: Gamepad2 },
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
   { to: "/experiments", label: "Experiments", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
