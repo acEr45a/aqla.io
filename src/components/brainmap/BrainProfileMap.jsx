@@ -58,15 +58,15 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           if (!domain) return null;
           const rank = rankFor(domain.score);
           return (
-            <g key={region.key}>
-              <path d={region.path} fill={rank.color} stroke={rank.color} strokeWidth="14" strokeLinejoin="round" pointerEvents="none" />
+            <g key={region.key} className="cursor-pointer"
+              onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
+              onMouseMove={(event) => moveTooltip(event, region.key)}
+              onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
+              onClick={() => onSelect?.(domain)}>
+              <path d={region.path} fill={rank.color} stroke={rank.color} strokeWidth="18" strokeLinejoin="round" />
               <path d={region.path} fill={`url(#glass-${region.key})`} fillOpacity="1"
-                className="cursor-pointer transition-opacity duration-200"
-                opacity={activeKey && activeKey !== region.key ? 0.78 : 1}
-                onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
-                onMouseMove={(event) => moveTooltip(event, region.key)}
-                onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
-                onClick={() => onSelect?.(domain)} />
+                className="transition-opacity duration-200"
+                opacity={activeKey && activeKey !== region.key ? 0.78 : 1} />
             </g>
           );
         })}
