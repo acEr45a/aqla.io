@@ -22,7 +22,9 @@ export default function Landing() {
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
-        <div>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <img src="https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a9749e782_generated_image.png"
+            alt="AQLA logo" className="w-8 h-8 rounded-lg" />
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
           <span className="hidden sm:inline ml-3 text-xs text-muted-foreground">Understand your brain. Improve your life.</span>
         </div>
