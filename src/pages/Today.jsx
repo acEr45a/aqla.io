@@ -6,6 +6,7 @@ import CheckInDialog from "@/components/today/CheckInDialog";
 import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
 import VoiceChatCard from "@/components/today/VoiceChatCard";
+import DashboardTour from "@/components/today/DashboardTour";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
@@ -25,9 +26,13 @@ export default function Today() {
   const [domains, setDomains] = useState([]);
   const [showSupport, setShowSupport] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const load = () => {
-    base44.auth.me().then(setUser).catch(() => {});
+    base44.auth.me().then((u) => {
+      setUser(u);
+      if (!u.dashboard_tour_done) setTourOpen(true);
+    }).catch(() => {});
     base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
     base44.entities.BrainDomain.list("-updated_date").then(setDomains);
@@ -68,7 +73,7 @@ export default function Today() {
         </p>
       </motion.div>
 
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 md:gap-6 aqla-panel rounded-2xl px-5 md:px-6 py-5">
+      <div data-tour="signals" className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 md:gap-6 aqla-panel rounded-2xl px-5 md:px-6 py-5">
         <Signal label="Cognitive readiness" value={readiness != null ? `${readiness}%` : "—"} color={readiness >= 65 ? "#C9F24E" : readiness != null ? "#F2C04E" : undefined} />
         <Signal label="Sleep recovery" value={latest?.sleep_quality != null ? `${latest.sleep_quality}/10` : "—"} color="#5FD4E8" />
         <Signal label="Primary bottleneck" value={weakest ? weakest.domain_name : "—"} color="#F2C04E" />
@@ -89,7 +94,7 @@ export default function Today() {
       )}
 
       {/* Protocol actions */}
-      <div className="mt-8">
+      <div data-tour="protocol" className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
           {protocol && (
@@ -136,12 +141,12 @@ export default function Today() {
 
       {/* Check-in + coach */}
       <div className="mt-8 grid md:grid-cols-2 gap-4">
-        <button onClick={() => setCheckInOpen(true)} disabled={checkedInToday}
+        <button data-tour="checkin" onClick={() => setCheckInOpen(true)} disabled={checkedInToday}
           className={`text-left rounded-2xl p-6 border transition-colors ${checkedInToday ? "border-border/50 bg-card/40" : "border-primary/30 bg-primary/5 hover:bg-primary/10"}`}>
           <p className="font-display text-foreground">{checkedInToday ? "Check-in complete" : "Daily check-in"}</p>
           <p className="mt-1 text-xs text-muted-foreground">{checkedInToday ? "AQLA has updated today's recommendations." : "Takes under 60 seconds. Updates today's protocol."}</p>
         </button>
-        <Link to="/coach" className="rounded-2xl p-6 border border-border/60 bg-card/40 hover:border-border transition-colors">
+        <Link data-tour="coach" to="/coach" className="rounded-2xl p-6 border border-border/60 bg-card/40 hover:border-border transition-colors">
           <p className="font-display text-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-primary" /> AQLA Intelligence</p>
           <p className="mt-1 text-xs text-muted-foreground">Ask why your focus changed, what to adjust first, or what the evidence says.</p>
         </Link>
@@ -164,6 +169,7 @@ export default function Today() {
       )}
 
       <CheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} onSaved={load} />
+      <DashboardTour open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
