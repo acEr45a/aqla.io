@@ -32,6 +32,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.x}%`, top: `${r.y}%`, width: `${r.size}%`,
                 aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
+                zIndex: r.z ?? 1,
               }}>
               <motion.button type="button" aria-label={`${d.label} — ${rank.name}`}
                 onClick={() => onSelect && onSelect(d)}
@@ -49,7 +50,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 className="absolute inset-0 rounded-full"
                 style={{
                   background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}f2 44%, ${rank.color}99 68%, ${rank.color}33 85%, transparent 96%)`,
-                  filter: `blur(${active ? 9 : 13}px)`,
+                  filter: `blur(${active ? 9 : 13}px) saturate(1.25)`,
                   cursor: onSelect ? "pointer" : "default",
                 }}
               />
