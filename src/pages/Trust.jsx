@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Lock, Download, Cpu, ShieldCheck, Eye, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Lock, Download, Cpu, ShieldCheck, Eye, Trash2, ArrowLeft } from "lucide-react";
 
 const SECTIONS = [
   { icon: Eye, title: "What AQLA collects", body: "Your assessment answers, daily check-ins, cognitive test results, protocol history, and experiment outcomes. Nothing is collected silently." },
@@ -30,6 +31,10 @@ export default function Trust() {
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
+      <Link to="/settings"
+        className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
+        <ArrowLeft className="w-4 h-4" /> Back to settings
+      </Link>
       <div className="flex items-center gap-3">
         <Lock className="w-6 h-6 text-primary" strokeWidth={1.5} />
         <h1 className="text-2xl md:text-3xl font-light text-foreground">Trust center</h1>

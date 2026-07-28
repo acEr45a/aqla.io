@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings } from "lucide-react";
@@ -18,7 +18,11 @@ const NAV = [
 
 const MOBILE = NAV.filter((n) => ["/today", "/map", "/protocol", "/progress", "/coach"].includes(n.to));
 
+const SETTINGS_CHILDREN = ["/trust", "/safety"];
+
 export default function AppLayout() {
+  const { pathname } = useLocation();
+  const settingsActive = SETTINGS_CHILDREN.includes(pathname);
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
@@ -32,7 +36,7 @@ export default function AppLayout() {
           {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}>
+                isActive || (to === "/settings" && settingsActive) ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}>
               <Icon className="w-4 h-4" strokeWidth={1.75} />
               {label}
             </NavLink>
