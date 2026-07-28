@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Send, Sparkles, X, ArrowUpRight } from "lucide-react";
 import { useAqlaCoach } from "@/lib/useAqlaCoach";
 import AqlaReply from "@/components/coach/AqlaReply";
+import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
+import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 
 const QUICK = [
   "Why has my focus been worse this week?",
@@ -16,10 +18,24 @@ export default function AqlaAssistant() {
   const [input, setInput] = useState("");
   const { messages, loading, ask, confirmPlanChange, cancelPlanChange } = useAqlaCoach();
   const endRef = useRef(null);
+  const voiceModeRef = useRef(false);
+  const spokenRef = useRef(0);
+  const voice = useVoiceChat({ onTranscript: (text) => { voiceModeRef.current = true; ask(text); } });
 
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading, open]);
 
-  const send = (q) => { setInput(""); ask(q); };
+  // Read AQLA's reply aloud when the question came in by voice.
+  useEffect(() => {
+    if (messages.length <= spokenRef.current) return;
+    spokenRef.current = messages.length;
+    const last = messages[messages.length - 1];
+    if (!voiceModeRef.current || last?.role !== "aqla") return;
+    voice.speak(`${last.observed} ${last.explanation} Recommended next action: ${last.next_action}. Confidence: ${last.confidence}.${last.safety_note ? ` Safety note: ${last.safety_note}` : ""}`);
+  }, [messages, voice]);
+
+  useEffect(() => { if (!open) voice.stopSpeaking(); }, [open, voice]);
+
+  const send = (q) => { voiceModeRef.current = false; setInput(""); ask(q); };
 
   return (
     <>
@@ -74,6 +90,7 @@ export default function AqlaAssistant() {
                   <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> Analyzing your data…
                 </div>
               )}
+              <VoiceStatus listening={voice.listening} speaking={voice.speaking} />
               <div ref={endRef} />
             </div>
 
@@ -81,6 +98,11 @@ export default function AqlaAssistant() {
               <div className="flex items-center gap-2 rounded-full border border-border pl-4 pr-1 py-1">
                 <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask AQLA…"
                   className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none py-2" />
+                {micSupported && (
+                  <VoiceButton listening={voice.listening} speaking={voice.speaking}
+                    onStartListening={voice.startListening} onStopListening={voice.stopListening}
+                    onStopSpeaking={voice.stopSpeaking} />
+                )}
                 <button type="submit" disabled={loading || !input.trim()}
                   className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-30">
                   <Send className="w-3.5 h-3.5" />

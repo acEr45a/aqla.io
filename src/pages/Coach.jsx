@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
-import useVoiceChat, { voiceSupported } from "@/lib/useVoiceChat";
+import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
+import VoiceSettings from "@/components/coach/VoiceSettings";
 import { Send, Sparkles } from "lucide-react";
 
 const SUGGESTED = [
@@ -94,6 +95,10 @@ USER QUESTION: ${question}`,
       <p className="text-xs text-muted-foreground tracking-widest uppercase">AQLA Intelligence</p>
       <h1 className="mt-2 text-3xl font-light text-foreground">Your analyst, grounded in your data.</h1>
 
+      <div className="mt-6">
+        <VoiceSettings onPreview={(text) => voice.speak(text)} />
+      </div>
+
       <div className="flex-1 mt-8 space-y-6">
         {messages.length === 0 && (
           <div className="aqla-panel rounded-3xl p-8">
@@ -166,7 +171,7 @@ USER QUESTION: ${question}`,
         <div className="flex items-center gap-2 aqla-panel rounded-full pl-6 pr-2 py-2">
           <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask AQLA Intelligence…"
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
-          {voiceSupported && (
+          {micSupported && (
             <VoiceButton listening={voice.listening} speaking={voice.speaking}
               onStartListening={voice.startListening} onStopListening={voice.stopListening}
               onStopSpeaking={voice.stopSpeaking} />
