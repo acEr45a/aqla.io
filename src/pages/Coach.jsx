@@ -5,6 +5,7 @@ import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import VoiceSettings from "@/components/coach/VoiceSettings";
 import AqlaReply from "@/components/coach/AqlaReply";
+import AqlaLogo from "@/components/AqlaLogo";
 import replyToSpeech from "@/lib/aqlaSpeech";
 import { Send, Sparkles } from "lucide-react";
 
@@ -99,7 +100,10 @@ USER QUESTION: ${question}`,
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 flex flex-col min-h-[calc(100vh-6rem)]">
-      <p className="text-xs text-muted-foreground tracking-widest uppercase">AQLA Intelligence</p>
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <AqlaLogo showWordmark={false} className="text-primary" />
+        <p className="text-xs tracking-widest uppercase">AQLA Intelligence</p>
+      </div>
       <h1 className="mt-2 text-3xl font-light text-foreground">Your analyst, grounded in your data.</h1>
 
       <div className="mt-6">

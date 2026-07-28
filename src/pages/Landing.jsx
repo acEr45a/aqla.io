@@ -28,6 +28,7 @@ export default function Landing() {
           <span className="hidden sm:inline ml-3 text-xs text-muted-foreground">Understand your brain. Improve your life.</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <AqlaLogo showWordmark={false} className="text-foreground hidden sm:flex" />
           <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Sign in</Link>
           <Link to="/start" className="text-sm px-4 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-foreground whitespace-nowrap">Get started</Link>
         </div>

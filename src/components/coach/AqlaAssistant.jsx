@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Send, Sparkles, X, ArrowUpRight } from "lucide-react";
 import { useAqlaCoach } from "@/lib/useAqlaCoach";
 import AqlaReply from "@/components/coach/AqlaReply";
+import AqlaLogo from "@/components/AqlaLogo";
 import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import replyToSpeech from "@/lib/aqlaSpeech";
@@ -47,7 +48,7 @@ export default function AqlaAssistant() {
             className="fixed z-50 bottom-40 md:bottom-24 right-4 md:right-6 w-[min(24rem,calc(100vw-2rem))] max-h-[70vh] flex flex-col rounded-3xl border border-border/70 bg-background/95 backdrop-blur-xl shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" strokeWidth={1.5} />
+                <AqlaLogo showWordmark={false} className="text-primary" />
                 <span className="text-sm text-foreground">AQLA Intelligence</span>
               </div>
               <div className="flex items-center gap-1">
