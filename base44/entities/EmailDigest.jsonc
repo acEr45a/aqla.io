@@ -1,0 +1,45 @@
+{
+  "name": "EmailDigest",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "end_of_plan"
+      ]
+    },
+    "period_key": {
+      "type": "string"
+    },
+    "protocol_id": {
+      "type": "string"
+    },
+    "sent_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind",
+    "period_key",
+    "sent_date"
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

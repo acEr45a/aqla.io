@@ -1,0 +1,44 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 18 * * *",
+      "one_time_date": null,
+      "timezone": "Asia/Muscat",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Summary Emails",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "summary_emails",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "send_summaries": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sendSummaryEmails"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Send summary emails",
+            "description": "Weekly + end-of-plan"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Sends the weekly summary email and the detailed end-of-plan report email to each user."
+}
