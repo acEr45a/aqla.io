@@ -45,7 +45,7 @@ export default function BrainMap() {
   const r = sel.record;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-10">
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Brain Health Map</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your current profile</h1>
 
@@ -53,18 +53,18 @@ export default function BrainMap() {
         <BrainHealthSummary domains={domains} />
       </div>
 
-      <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-start">
+      <div className="mt-8 md:mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-6 lg:gap-12 items-start">
         <div className="lg:sticky lg:top-10">
           <NeuralBrainVisual domains={domains} selectedKey={sel.key} onSelect={(d) => { setSelected(d); setShowWhy(false); }} />
         </div>
 
         <AnimatePresence mode="wait">
           <motion.div key={sel.key} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.35 }}
-            className="aqla-panel rounded-3xl p-8">
-            <div className="flex items-start justify-between">
+            className="aqla-panel rounded-3xl p-5 md:p-8">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
                 <p className="text-xs uppercase tracking-widest" style={{ color: sel.color }}>{sel.label}</p>
-                <p className="mt-2 font-display text-5xl font-light text-foreground tabular-nums">
+                <p className="mt-2 font-display text-4xl md:text-5xl font-light text-foreground tabular-nums">
                   {sel.score}<span className="text-lg text-muted-foreground"> / 100</span>
                 </p>
               </div>

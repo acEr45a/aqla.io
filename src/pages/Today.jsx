@@ -68,7 +68,7 @@ export default function Today() {
         </p>
       </motion.div>
 
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-6 aqla-panel rounded-2xl px-6 py-5">
+      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-5 md:gap-6 aqla-panel rounded-2xl px-5 md:px-6 py-5">
         <Signal label="Cognitive readiness" value={readiness != null ? `${readiness}%` : "—"} color={readiness >= 65 ? "#C9F24E" : readiness != null ? "#F2C04E" : undefined} />
         <Signal label="Sleep recovery" value={latest?.sleep_quality != null ? `${latest.sleep_quality}/10` : "—"} color="#5FD4E8" />
         <Signal label="Primary bottleneck" value={weakest ? weakest.domain_name : "—"} color="#F2C04E" />
@@ -77,7 +77,7 @@ export default function Today() {
 
       {/* Priority — only from real protocol data */}
       {protocol && (
-        <div className="mt-8 rounded-3xl border border-primary/25 bg-primary/5 p-8">
+        <div className="mt-8 rounded-3xl border border-primary/25 bg-primary/5 p-5 md:p-8">
           <p className="text-xs uppercase tracking-widest text-primary flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5" /> Today's priority
           </p>
@@ -102,7 +102,7 @@ export default function Today() {
           <>
             <div className="space-y-px rounded-2xl overflow-hidden border border-border/60">
               {(protocol.actions || []).slice(0, 3).map((a, i) => (
-                <div key={i} className="flex items-center gap-5 bg-card/60 px-6 py-5">
+                <div key={i} className="flex items-center gap-4 md:gap-5 bg-card/60 px-4 md:px-6 py-4 md:py-5">
                   <span className="font-display text-xl text-primary/70 tabular-nums">0{i + 1}</span>
                   <div className="flex-1">
                     <p className="text-sm text-foreground">{a.title}</p>
@@ -126,7 +126,7 @@ export default function Today() {
             )}
           </>
         ) : (
-          <div className="aqla-panel rounded-2xl p-8 text-center">
+          <div className="aqla-panel rounded-2xl p-6 md:p-8 text-center">
             <p className="text-foreground">No active protocol yet.</p>
             <p className="mt-1 text-sm text-muted-foreground">Complete your assessment and AQLA will build your first protocol.</p>
             <Link to="/assessment" className="inline-block mt-5 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium">Start Assessment</Link>

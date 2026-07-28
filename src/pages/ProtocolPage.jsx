@@ -29,12 +29,12 @@ export default function ProtocolPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-10">
+    <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 md:py-10">
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Current protocol · {protocol.family}</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">{protocol.name}</h1>
       <p className="mt-4 text-muted-foreground leading-relaxed max-w-xl">{protocol.objective}</p>
 
-      <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4 text-sm aqla-panel rounded-2xl px-6 py-5">
+      <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4 text-sm aqla-panel rounded-2xl px-5 md:px-6 py-5">
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Started</p><p className="mt-1 text-foreground tabular-nums">{protocol.start_date || "—"}</p></div>
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Review date</p><p className="mt-1 text-foreground tabular-nums">{protocol.review_date || "—"}</p></div>
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Duration</p><p className="mt-1 text-foreground tabular-nums">{protocol.duration_days ? `${protocol.duration_days} days` : "—"}</p></div>
@@ -51,7 +51,7 @@ export default function ProtocolPage() {
         <h2 className="font-display text-lg text-foreground mb-4">Daily actions</h2>
         <div className="space-y-px rounded-2xl overflow-hidden border border-border/60">
           {(protocol.actions || []).map((a, i) => (
-            <div key={i} className="flex items-center gap-5 bg-card/60 px-6 py-5">
+            <div key={i} className="flex items-center gap-4 md:gap-5 bg-card/60 px-4 md:px-6 py-4 md:py-5">
               <span className="font-display text-xl text-primary/70 tabular-nums">0{i + 1}</span>
               <div className="flex-1">
                 <p className="text-sm text-foreground">{a.title}</p>
@@ -84,7 +84,7 @@ export default function ProtocolPage() {
       )}
 
       {protocol.safety_notes && (
-        <section className="mt-10 rounded-2xl border border-[#F2C04E]/25 bg-[#F2C04E]/5 p-6 flex gap-4">
+        <section className="mt-10 rounded-2xl border border-[#F2C04E]/25 bg-[#F2C04E]/5 p-5 md:p-6 flex gap-3 md:gap-4">
           <Shield className="w-5 h-5 text-[#F2C04E] shrink-0 mt-0.5" strokeWidth={1.5} />
           <div>
             <p className="text-sm text-foreground font-medium">Safety notes</p>
