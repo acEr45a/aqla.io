@@ -1,19 +1,30 @@
-import React from "react";
-import { OUTLINES, REGIONS } from "./brainShapes";
+import React, { useState } from "react";
+import { REGIONS } from "./brainShapes";
+import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
 const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
+  const [tooltip, setTooltip] = useState(null);
   const byKey = {};
   domains.forEach((d) => { byKey[d.key] = d; });
+
+  const moveTooltip = (event, key) => {
+    const svg = event.currentTarget.ownerSVGElement;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const position = point.matrixTransform(svg.getScreenCTM().inverse());
+    setTooltip({ key, x: position.x, y: position.y });
+  };
 
   return (
     <svg viewBox="0 0 660 560" className="w-full h-full">
       <defs>
-        <clipPath id="brain-silhouette">
-          {OUTLINES.map((d, i) => <path key={i} d={d} />)}
-        </clipPath>
+        <mask id="brain-model-mask" maskUnits="userSpaceOnUse" x="80" y="70" width="500" height="460" style={{ maskType: "luminance" }}>
+          <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460" preserveAspectRatio="xMidYMid slice" />
+        </mask>
         <filter id="brain-halo" x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation="16" />
         </filter>
@@ -32,7 +43,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
       </defs>
 
       {/* hologram bloom around the volume */}
-      <g filter="url(#brain-halo)" opacity="0.45" pointerEvents="none">
+      <g mask="url(#brain-model-mask)" filter="url(#brain-halo)" opacity="0.45" pointerEvents="none">
         {REGIONS.map((region) => {
           const domain = byKey[region.key];
           if (!domain) return null;
@@ -40,11 +51,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         })}
       </g>
 
-      <g clipPath="url(#brain-silhouette)">
-        {OUTLINES.map((d, i) => (
-          <path key={i} d={d} fill="hsl(26 12% 9%)" />
-        ))}
-
+      <g mask="url(#brain-model-mask)">
         {REGIONS.map((region) => {
           const domain = byKey[region.key];
           if (!domain) return null;
@@ -54,8 +61,9 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
             <path key={region.key} d={region.path} fill={`url(#glass-${region.key})`} fillOpacity={active ? 1 : 0.8}
               stroke={rank.color} strokeWidth={active ? 2.5 : 1} strokeOpacity={active ? 1 : 0.6}
               className="cursor-pointer transition-all duration-200"
-              onMouseEnter={() => onHover?.(region.key)}
-              onMouseLeave={() => onHover?.(null)}
+              onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
+              onMouseMove={(event) => moveTooltip(event, region.key)}
+              onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
               onClick={() => onSelect?.(domain)} />
           );
         })}
@@ -69,9 +77,9 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           style={{ mixBlendMode: "overlay" }} pointerEvents="none" />
       </g>
 
-      {OUTLINES.map((d, i) => (
-        <path key={`edge-${i}`} d={d} fill="none" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="1.5" pointerEvents="none" />
-      ))}
+      <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+        preserveAspectRatio="xMidYMid slice" opacity="0.2"
+        style={{ mixBlendMode: "screen" }} pointerEvents="none" />
 
       {REGIONS.map((region) => {
         const domain = byKey[region.key];
@@ -93,6 +101,12 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           </g>
         );
       })}
+
+      <BrainRankTooltip
+        domain={tooltip ? byKey[tooltip.key] : null}
+        x={tooltip?.x || 0}
+        y={tooltip?.y || 0}
+      />
     </svg>
   );
 }
