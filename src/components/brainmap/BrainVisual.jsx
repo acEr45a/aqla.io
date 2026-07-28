@@ -109,8 +109,8 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                   "-1px -1px 0 rgba(0,0,0,0.9), 1px -1px 0 rgba(0,0,0,0.9), -1px 1px 0 rgba(0,0,0,0.9), 1px 1px 0 rgba(0,0,0,0.9), 0 2px 6px rgba(0,0,0,1), 0 0 18px rgba(0,0,0,0.95)",
                 cursor: onSelect ? "pointer" : "default",
               }}>
-              <span className="text-[10px] md:text-[11px] font-medium text-white whitespace-nowrap">{d.label}</span>
-              <span className="font-display text-lg md:text-xl font-bold text-white tabular-nums leading-none">{d.score}</span>
+              <span className="font-display text-[10px] md:text-[11px] font-medium tracking-tight text-white whitespace-nowrap">{d.label}</span>
+              <span className="font-display text-lg md:text-xl font-bold tracking-tight text-white tabular-nums leading-none">{d.score}</span>
               <span className="mt-1 w-6 h-[2px] rounded-full" style={{ background: rank.color, boxShadow: `0 0 6px ${rank.color}` }} />
             </motion.div>
           );
