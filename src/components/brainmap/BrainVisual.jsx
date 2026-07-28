@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { REGIONS, SILHOUETTE, SULCI } from "./brainShapes";
 
-const GREY_FILL = "hsl(30 6% 24%)";
-const GREY_STROKE = "hsl(30 8% 42%)";
+const GREY_FILL = "hsl(30 6% 22%)";
+const GREY_STROKE = "hsl(35 10% 58%)";
 
 // Simplified anatomical brain: every region is a gauge that fills bottom-up
 // to its score — grey when empty, domain color when filled.
@@ -15,14 +15,16 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
 
   return (
     <div>
-      <svg viewBox="0 0 660 560" className="w-full max-w-[560px] mx-auto block select-none">
+      <svg viewBox="0 0 660 560" className="w-full max-w-[560px] mx-auto block select-none"
+        shapeRendering="geometricPrecision">
         <defs>
           {REGIONS.map((r) => (
             <clipPath key={r.key} id={`brainclip-${r.key}`}><path d={r.path} /></clipPath>
           ))}
+          <clipPath id="brainclip-outline"><path d={SILHOUETTE} /></clipPath>
         </defs>
 
-        <path d={SILHOUETTE} fill="hsl(30 6% 20%)" stroke={GREY_STROKE} strokeWidth="1.5" strokeLinejoin="round" />
+        <path d={SILHOUETTE} fill="hsl(30 6% 18%)" />
 
         {REGIONS.map((r, i) => {
           const d = byKey[r.key];
@@ -38,25 +40,33 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
               style={{ cursor: onSelect ? "pointer" : "default" }}>
               <path d={r.path} fill={GREY_FILL} />
               <g clipPath={`url(#brainclip-${r.key})`}>
-                <motion.rect x={bx - 6} width={bw + 12} fill={d.color}
+                <motion.rect x={bx - 8} width={bw + 16} fill={d.color}
                   initial={{ y: by + bh, height: 0 }}
-                  animate={{ y: by + bh - fillH, height: fillH, opacity: active ? 1 : 0.85 }}
+                  animate={{ y: by + bh - fillH, height: fillH, opacity: active ? 1 : 0.9 }}
+                  transition={{ duration: 1, delay: 0.12 * i, ease: [0.22, 1, 0.36, 1] }}
+                />
+                <motion.rect x={bx - 8} width={bw + 16} height={2.5} fill="hsl(40 30% 98%)"
+                  initial={{ y: by + bh, opacity: 0 }}
+                  animate={{ y: by + bh - fillH, opacity: 0.85 }}
                   transition={{ duration: 1, delay: 0.12 * i, ease: [0.22, 1, 0.36, 1] }}
                 />
               </g>
               <path d={r.path} fill="none"
                 stroke={active ? d.color : GREY_STROKE}
-                strokeWidth={active ? 2.5 : 1.5} strokeLinejoin="round" />
+                strokeWidth={active ? 3 : 2} strokeLinejoin="round" strokeLinecap="round" />
             </g>
           );
         })}
 
-        <g pointerEvents="none">
+        <g pointerEvents="none" clipPath="url(#brainclip-outline)">
           {SULCI.map((p, i) => (
-            <path key={i} d={p} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.4"
-              strokeWidth="2" strokeLinecap="round" />
+            <path key={i} d={p} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.28"
+              strokeWidth="1.75" strokeLinecap="round" />
           ))}
         </g>
+
+        <path d={SILHOUETTE} fill="none" stroke="hsl(40 12% 78%)" strokeWidth="2.5"
+          strokeLinejoin="round" pointerEvents="none" />
 
         {REGIONS.map((r) => {
           const d = byKey[r.key];
