@@ -49,7 +49,7 @@ export default function BrainMap() {
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your current profile</h1>
       <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-start">
         <div className="lg:sticky lg:top-10">
-          <BrainVisual domains={domains} onSelect={(d) => { setSelected(d); setShowWhy(false); }} selectedKey={sel.key} />
+          <BrainVisual domains={domains} onSelect={(d) => { setSelected(d); setShowWhy(false); }} showRankNames />
         </div>
 
         <AnimatePresence mode="wait">
