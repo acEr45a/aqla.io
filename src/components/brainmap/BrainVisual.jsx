@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { REGIONS, SILHOUETTE, SULCI } from "./brainShapes";
+import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
 
 const GREY_FILL = "hsl(30 6% 22%)";
 const GREY_STROKE = "hsl(35 10% 58%)";
@@ -21,10 +21,12 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           {REGIONS.map((r) => (
             <clipPath key={r.key} id={`brainclip-${r.key}`}><path d={r.path} /></clipPath>
           ))}
-          <clipPath id="brainclip-outline"><path d={SILHOUETTE} /></clipPath>
+          <clipPath id="brainclip-outline">
+            {OUTLINES.map((p, i) => <path key={i} d={p} />)}
+          </clipPath>
         </defs>
 
-        <path d={SILHOUETTE} fill="hsl(30 6% 18%)" />
+        {OUTLINES.map((p, i) => <path key={i} d={p} fill="hsl(30 6% 18%)" />)}
 
         {REGIONS.map((r, i) => {
           const d = byKey[r.key];
@@ -65,8 +67,10 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           ))}
         </g>
 
-        <path d={SILHOUETTE} fill="none" stroke="hsl(40 12% 78%)" strokeWidth="2.5"
-          strokeLinejoin="round" pointerEvents="none" />
+        {OUTLINES.map((p, i) => (
+          <path key={i} d={p} fill="none" stroke="hsl(40 12% 78%)" strokeWidth="2.5"
+            strokeLinejoin="round" pointerEvents="none" />
+        ))}
 
         {REGIONS.map((r) => {
           const d = byKey[r.key];
