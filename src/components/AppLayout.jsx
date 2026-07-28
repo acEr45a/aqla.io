@@ -2,7 +2,7 @@ import React from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings, Gamepad2, Library, CircleHelp } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings, Gamepad2, CircleHelp } from "lucide-react";
 
 const NAV = [
   { to: "/today", label: "Today", icon: Sun },
@@ -13,8 +13,7 @@ const NAV = [
   { to: "/experiments", label: "Experiments", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "Coach", icon: MessageCircle },
-  { to: "/science", label: "Science", icon: BookOpen },
-  { to: "/evidence-library", label: "Evidence", icon: Library },
+  { to: "/evidence-library", label: "Science", icon: BookOpen },
   { to: "/help-center", label: "Help", icon: CircleHelp },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
