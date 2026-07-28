@@ -1,8 +1,7 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
 import GuestTestSync from "@/components/GuestTestSync";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, LogOut, Timer, BookOpen, Lock } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings } from "lucide-react";
 
 const NAV = [
   { to: "/today", label: "Today", icon: Sun },
@@ -13,7 +12,7 @@ const NAV = [
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "Coach", icon: MessageCircle },
   { to: "/science", label: "Science", icon: BookOpen },
-  { to: "/trust", label: "Trust", icon: Lock },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const MOBILE = NAV.filter((n) => ["/today", "/map", "/protocol", "/progress", "/coach"].includes(n.to));
@@ -37,10 +36,6 @@ export default function AppLayout() {
             </NavLink>
           ))}
         </nav>
-        <button onClick={() => base44.auth.logout("/")}
-          className="flex items-center gap-3 px-6 py-5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-          <LogOut className="w-4 h-4" strokeWidth={1.75} /> Sign out
-        </button>
       </aside>
 
       <main className="md:pl-56 pb-24 md:pb-10">
