@@ -47,7 +47,7 @@ export default function AdminDashboard() {
         <div className="rounded-xl bg-primary/10 p-2.5 text-primary"><ShieldCheck className="h-5 w-5" /></div>
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-primary">Admin console</p>
-          <h1 className="mt-1 text-3xl font-light text-foreground">AQLA B</h1>
+          <h1 className="mt-1 text-3xl font-light text-foreground">AQLA Backend </h1>
           <p className="mt-2 text-sm text-muted-foreground">Analytics, member access, and backend operations in one place.</p>
         </div>
       </div>
