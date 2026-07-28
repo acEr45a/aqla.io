@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const START = 3;
-const MAX = 8;
-const SPAN_SCORE = { 2: 25, 3: 42, 4: 56, 5: 70, 6: 81, 7: 90, 8: 96 };
+const START = 4;
+const MAX = 10;
+const SPAN_SCORE = { 2: 25, 3: 42, 4: 56, 5: 70, 6: 81, 7: 90, 8: 96, 9: 98, 10: 100 };
 
 const makeDigits = (len) => Array.from({ length: len }, () => Math.floor(Math.random() * 10)).join("");
 
@@ -37,7 +37,7 @@ export default function MemoryTest({ onComplete }) {
   const finish = () => {
     const span = best.current;
     setPhase("done");
-    onComplete({ raw: { max_span: span }, score: SPAN_SCORE[Math.max(2, Math.min(8, span))] });
+    onComplete({ raw: { max_span: span }, score: SPAN_SCORE[Math.max(2, Math.min(MAX, span))] });
   };
 
   const submit = (e) => {
