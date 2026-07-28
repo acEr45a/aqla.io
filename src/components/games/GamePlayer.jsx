@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 
-// Plays a game, records the session as a cognitive test, then shows the score.
+// Plays a training game and stores its session separately from scored cognitive tests.
 export default function GamePlayer({ game, best, onClose, onRecorded }) {
   const [result, setResult] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -11,12 +11,11 @@ export default function GamePlayer({ game, best, onClose, onRecorded }) {
 
   const complete = async ({ raw, score }) => {
     setSaving(true);
-    await base44.entities.CognitiveTest.create({
-      test_type: game.testType,
-      raw_results: { ...raw, game_id: game.id },
-      normalized_score: score,
+    await base44.entities.GameSession.create({
+      game_id: game.id,
+      raw_results: raw,
+      score,
       completed_date: new Date().toISOString(),
-      valid: true,
     });
     setSaving(false);
     setResult(Math.round(score));

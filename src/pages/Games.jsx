@@ -10,7 +10,7 @@ export default function Games() {
   const [active, setActive] = useState(null);
 
   const load = useCallback(async () => {
-    setRows(await base44.entities.CognitiveTest.list("-created_date", 300));
+    setRows(await base44.entities.GameSession.list("-created_date", 300));
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -18,10 +18,10 @@ export default function Games() {
   const stats = useMemo(() => {
     const s = {};
     rows.forEach((r) => {
-      const key = r.raw_results?.game_id || r.test_type;
+      const key = r.game_id;
       const e = s[key] || { best: null, plays: 0 };
       e.plays += 1;
-      const v = Math.round(r.normalized_score);
+      const v = Math.round(r.score);
       e.best = e.best == null ? v : Math.max(e.best, v);
       s[key] = e;
     });
@@ -43,8 +43,8 @@ export default function Games() {
           Train the functions you want to change.
         </h1>
         <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">
-          Every game targets a specific mental function and is scored the same way each time — so repeated sessions
-          become a trend, not a guess. Results feed your Progress timeline and Brain Map.
+          Every game targets a specific mental function and tracks your training progress independently. Game results
+          never change your cognitive test scores or Brain Map.
         </p>
       </div>
 

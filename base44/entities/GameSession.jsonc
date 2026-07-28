@@ -1,0 +1,25 @@
+{
+  "name": "GameSession",
+  "type": "object",
+  "properties": {
+    "game_id": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "raw_results": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "game_id",
+    "score",
+    "completed_date"
+  ]
+}

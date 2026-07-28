@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import ReactionTest from "@/components/tests/ReactionTest";
@@ -36,15 +37,26 @@ const BLEND = [
 ];
 
 export default function CognitiveTests() {
+  const navigate = useNavigate();
   const [results, setResults] = useState(null); // { test_type: record }
   const [active, setActive] = useState(null);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
 
   const load = async () => {
-    const rows = await base44.entities.CognitiveTest.list("-created_date");
+    const [rows, assessments] = await Promise.all([
+      base44.entities.CognitiveTest.list("-created_date"),
+      base44.entities.Assessment.list("-completed_date", 2),
+    ]);
+    const cycleStart = assessments.length > 1
+      ? new Date(assessments[0].completed_date || assessments[0].created_date).getTime()
+      : null;
     const latest = {};
-    rows.forEach((r) => { if (!latest[r.test_type]) latest[r.test_type] = r; });
+    rows.forEach((r) => {
+      const completedAt = new Date(r.completed_date || r.created_date).getTime();
+      if (r.raw_results?.game_id || r.valid === false || (cycleStart && completedAt < cycleStart)) return;
+      if (!latest[r.test_type]) latest[r.test_type] = r;
+    });
     setResults(latest);
     return latest;
   };
@@ -129,7 +141,10 @@ export default function CognitiveTests() {
               </div>
               <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">{t.minutes}</span>
               {done ? (
-                <span className="inline-flex items-center gap-1.5 text-xs text-primary"><Check className="w-3.5 h-3.5" /> Recorded</span>
+                <button onClick={() => { setApplied(false); setActive(t.type); }}
+                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:opacity-80">
+                  <Check className="w-3.5 h-3.5" /> Retake
+                </button>
               ) : (
                 <button onClick={() => setActive(t.type)}
                   className="px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity">
@@ -166,9 +181,9 @@ export default function CognitiveTests() {
           </p>
           <div className="mt-6 flex gap-3">
             <a href="/map" className="px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium">View Brain Map</a>
-            <button onClick={() => { setApplied(false); setResults({}); }}
+            <button onClick={() => navigate("/assessment")}
               className="px-6 py-3 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Retake baseline
+              Retake questionnaire
             </button>
           </div>
         </motion.div>
