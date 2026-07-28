@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import CheckInDialog from "@/components/today/CheckInDialog";
 import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
+import VoiceChatCard from "@/components/today/VoiceChatCard";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
@@ -145,6 +146,8 @@ export default function Today() {
           <p className="mt-1 text-xs text-muted-foreground">Ask why your focus changed, what to adjust first, or what the evidence says.</p>
         </Link>
       </div>
+
+      <VoiceChatCard />
 
       {checkIns.length < 3 && <AddToCalendarCard protocol={protocol} />}
 

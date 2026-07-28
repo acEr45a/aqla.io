@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
+import useVoiceChat, { voiceSupported } from "@/lib/useVoiceChat";
+import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import { Send, Sparkles } from "lucide-react";
 
 const SUGGESTED = [
@@ -18,6 +20,7 @@ export default function Coach() {
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState(null);
   const endRef = useRef(null);
+  const voiceModeRef = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -68,7 +71,12 @@ USER QUESTION: ${question}`,
 
     setMessages((m) => [...m, { role: "aqla", ...res }]);
     setLoading(false);
+    if (voiceModeRef.current) {
+      voice.speak(`${res.observed} ${res.explanation} Recommended next action: ${res.next_action}. Confidence: ${res.confidence}.${res.safety_note ? ` Safety note: ${res.safety_note}` : ""}`);
+    }
   };
+
+  const voice = useVoiceChat({ onTranscript: (text) => { voiceModeRef.current = true; ask(text); } });
 
   const confirmPlanChange = async (index) => {
     const message = messages[index];
@@ -144,6 +152,8 @@ USER QUESTION: ${question}`,
           )
         )}
 
+        <VoiceStatus listening={voice.listening} speaking={voice.speaking} />
+
         {loading && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" /> AQLA is analyzing your data…
@@ -156,7 +166,12 @@ USER QUESTION: ${question}`,
         <div className="flex items-center gap-2 aqla-panel rounded-full pl-6 pr-2 py-2">
           <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask AQLA Intelligence…"
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none" />
-          <button type="submit" disabled={loading || !input.trim()}
+          {voiceSupported && (
+            <VoiceButton listening={voice.listening} speaking={voice.speaking}
+              onStartListening={voice.startListening} onStopListening={voice.stopListening}
+              onStopSpeaking={voice.stopSpeaking} />
+          )}
+          <button type="submit" onClick={() => { voiceModeRef.current = false; }} disabled={loading || !input.trim()}
             className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-30 transition-opacity">
             <Send className="w-4 h-4" />
           </button>
