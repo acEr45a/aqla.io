@@ -1,17 +1,18 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
+import { Image } from "@/components/ui/image";
 
 export default function GameCard({ game, best, plays, onPlay }) {
-  const Icon = game.icon;
   return (
     <motion.button type="button" onClick={() => onPlay(game)} whileHover={{ y: -6, scale: 1.03 }}
       transition={{ type: "spring", stiffness: 320, damping: 24 }}
       className="group relative w-[228px] shrink-0 text-left aqla-panel rounded-2xl overflow-hidden">
-      <div className="h-28 relative flex items-center justify-center bg-gradient-to-br from-primary/15 via-transparent to-chart-2/15">
-        <Icon className="w-8 h-8 text-primary" strokeWidth={1.4} />
-        <span className="absolute top-2.5 right-3 text-[10px] text-muted-foreground tabular-nums">{game.minutes}</span>
-        <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-background/70">
+      <div className="h-28 relative overflow-hidden bg-secondary">
+        <Image src={game.thumbnail} alt={`${game.name} game artwork`} className="absolute inset-0 h-full w-full transition-transform duration-500 group-hover:scale-105" fittingType="fill" />
+        <span className="absolute inset-0 bg-gradient-to-t from-background/65 via-transparent to-background/20" />
+        <span className="absolute top-2.5 right-3 rounded-full bg-background/75 px-2 py-1 text-[10px] text-foreground tabular-nums backdrop-blur-sm">{game.minutes}</span>
+        <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-background/45">
           <Play className="w-7 h-7 text-foreground" strokeWidth={1.5} />
         </span>
       </div>
