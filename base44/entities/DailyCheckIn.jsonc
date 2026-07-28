@@ -18,6 +18,12 @@
     "sleep_quality": {
       "type": "number"
     },
+    "caffeine_servings": {
+      "type": "number"
+    },
+    "caffeine_last_time": {
+      "type": "string"
+    },
     "side_effects": {
       "type": "string"
     },

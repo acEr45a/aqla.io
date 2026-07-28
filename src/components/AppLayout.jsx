@@ -6,7 +6,7 @@ import ReassessmentPrompt from "@/components/ReassessmentPrompt";
 import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, NotebookPen } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp } from "lucide-react";
 
 const NAV = [
   { to: "/today", label: "Today", icon: Sun },
@@ -15,7 +15,6 @@ const NAV = [
   { to: "/games", label: "Train", icon: Gamepad2 },
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
   { to: "/experiments", label: "Experiments", icon: FlaskConical },
-  { to: "/experimental-logs", label: "Logs", icon: NotebookPen },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
   { to: "/evidence-library", label: "Science", icon: BookOpen },

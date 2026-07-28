@@ -14,8 +14,18 @@ const FIELDS = [
 
 const DEMANDS = ["Deep focused work", "Meetings & people", "Learning", "Creative work", "Recovery day"];
 
+const CAFFEINE = [
+  { value: 0, label: "None" },
+  { value: 1, label: "1 drink" },
+  { value: 2, label: "2 drinks" },
+  { value: 3, label: "3 drinks" },
+  { value: 4, label: "4+ drinks" },
+];
+
 export default function CheckInDialog({ open, onOpenChange, onSaved }) {
   const [values, setValues] = useState({ clarity: 5, energy: 5, stress: 5, sleep_quality: 5 });
+  const [caffeine, setCaffeine] = useState(0);
+  const [caffeineTime, setCaffeineTime] = useState("");
   const [demand, setDemand] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -24,7 +34,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
     setSaving(true);
     await base44.entities.DailyCheckIn.create({
       date: localDateKey(),
-      ...values, demand, note,
+      ...values, caffeine_servings: caffeine, caffeine_last_time: caffeineTime, demand, note,
     });
     setSaving(false);
     onOpenChange(false);
@@ -48,6 +58,25 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
                 onValueChange={([v]) => setValues({ ...values, [f.key]: v })} />
             </div>
           ))}
+          <div>
+            <p className="text-sm text-foreground mb-3">How much caffeine did you have today?</p>
+            <div className="flex flex-wrap gap-2">
+              {CAFFEINE.map((c) => (
+                <button key={c.value} type="button" onClick={() => setCaffeine(c.value)}
+                  className={`px-3.5 py-2 rounded-full border text-xs transition-all ${
+                    caffeine === c.value ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            {caffeine > 0 && (
+              <div className="mt-3 flex items-center justify-between gap-4">
+                <span className="text-sm text-muted-foreground">Time of last caffeine</span>
+                <input type="time" value={caffeineTime} onChange={(e) => setCaffeineTime(e.target.value)}
+                  className="rounded-lg border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
+              </div>
+            )}
+          </div>
           <div>
             <p className="text-sm text-foreground mb-3">What is the main demand on your brain today?</p>
             <div className="flex flex-wrap gap-2">
