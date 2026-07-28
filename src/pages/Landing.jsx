@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import AqlaLogo from "@/components/AqlaLogo";
 import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import BrainHealthSummary from "@/components/brainmap/BrainHealthSummary";
 import { DOMAINS } from "@/lib/scoring";
@@ -23,9 +24,7 @@ export default function Landing() {
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
-          <img src="https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a9749e782_generated_image.png"
-            alt="AQLA logo" className="w-8 h-8 rounded-lg" />
-          <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
+          <AqlaLogo className="text-foreground" />
           <span className="hidden sm:inline ml-3 text-xs text-muted-foreground">Understand your brain. Improve your life.</span>
         </div>
         <div className="flex items-center gap-1 sm:gap-3 shrink-0">
