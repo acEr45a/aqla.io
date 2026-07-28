@@ -24,8 +24,8 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           if (!d) return null;
           const rank = rankFor(d.score);
           const active = activeKey === r.key;
-          const intensity = 0.45 + (d.score / 100) * 0.5;
-          const size = r.size * (0.82 + (d.score / 100) * 0.3);
+          const intensity = 0.5 + (d.score / 100) * 0.45;
+          const size = r.size;
           return (
             <motion.button key={r.key} type="button" aria-label={`${d.label} — ${rank.name}`}
               onClick={() => onSelect && onSelect(d)}
@@ -45,8 +45,8 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.x}%`, top: `${r.y}%`, width: `${size}%`,
                 aspectRatio: "1 / 0.85",
                 transform: "translate(-50%, -50%)",
-                background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}d9 38%, ${rank.color}59 64%, transparent 78%)`,
-                filter: `blur(${active ? 5 : 8}px)`,
+                background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}e6 46%, ${rank.color}8c 70%, ${rank.color}26 86%, transparent 94%)`,
+                filter: `blur(${active ? 8 : 12}px)`,
                 cursor: onSelect ? "pointer" : "default",
               }}
             />
@@ -86,7 +86,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="absolute flex flex-col items-center text-center leading-tight"
               style={{
-                left: `${r.x}%`, top: `${r.y}%`, width: "30%",
+                left: `${r.lx ?? r.x}%`, top: `${r.ly ?? r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 textShadow: "0 1px 6px rgba(0,0,0,0.9)",
                 cursor: onSelect ? "pointer" : "default",
