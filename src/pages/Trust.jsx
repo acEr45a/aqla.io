@@ -32,7 +32,7 @@ export default function Trust() {
       base44.entities.HealthProfile.deleteMany(q),
     ]);
     setDeleting(false);
-    window.location.href = "/assessment";
+    window.location.href = "/";
   };
 
   const exportData = async () => {
