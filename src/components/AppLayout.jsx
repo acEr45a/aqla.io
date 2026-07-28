@@ -7,7 +7,7 @@ import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings } from "lucide-react";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: Sun },
@@ -20,6 +20,7 @@ const NAV = [
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
   { to: "/evidence-library", label: "Science", icon: BookOpen },
   { to: "/help-center", label: "Help", icon: CircleHelp },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
