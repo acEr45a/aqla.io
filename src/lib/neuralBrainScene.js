@@ -11,44 +11,78 @@ const nearest = (point, domains) => domains.reduce((best, domain) => {
   return !best || distance < best.distance ? { domain, distance } : best;
 }, null)?.domain;
 
+// Cerebrum lobes shaped to a lateral brain profile (x-: anterior, x+: posterior).
 const LOBES = [
-  { weight: 0.22, center: [-1.2, 0.38, 0], radii: [1.2, 1.18, 0.9] },
-  { weight: 0.2, center: [-0.15, 0.9, 0], radii: [1.25, 0.98, 0.96] },
-  { weight: 0.16, center: [1.05, 0.62, 0], radii: [1.08, 1.0, 0.86] },
-  { weight: 0.18, center: [1.55, 0.05, 0], radii: [0.82, 0.92, 0.72] },
-  { weight: 0.17, center: [0.05, -0.42, 0.08], radii: [1.38, 0.78, 0.84] },
-  { weight: 0.07, center: [-1.0, -0.42, 0], radii: [0.82, 0.72, 0.7] },
+  { weight: 0.24, center: [-1.3, 0.25, 0], radii: [1.0, 1.02, 0.82], seed: 1.3 },   // frontal
+  { weight: 0.24, center: [-0.1, 0.8, 0], radii: [1.3, 0.92, 0.92], seed: 3.1 },    // parietal crown
+  { weight: 0.18, center: [1.35, 0.35, 0], radii: [0.98, 0.88, 0.78], seed: 5.4 },  // occipital
+  { weight: 0.24, center: [-0.35, -0.42, 0.04], radii: [1.3, 0.6, 0.82], seed: 7.2 }, // temporal (hangs low)
+  { weight: 0.1, center: [0.7, -0.2, 0], radii: [0.9, 0.7, 0.78], seed: 9.8 },      // posterior-inferior fill
 ];
 
-function lobePoint(lobe, u, v, phase) {
-  const wrinkle = 1 + 0.09 * Math.sin(u * 9 + phase) * Math.cos(v * 8) + 0.035 * Math.sin(u * 17 - v * 11);
+// Gyri: points cluster along winding ridge bands and bulge outward on them.
+function gyriField(u, v, seed) {
+  return Math.sin(u * 6 + Math.sin(v * 4 + u * 2) * 1.6 + seed) * Math.cos(v * 3.2 + seed);
+}
+
+function cerebrumPoint() {
+  let cursor = Math.random();
+  const lobe = LOBES.find((entry) => ((cursor -= entry.weight) <= 0)) || LOBES[0];
+  const u = Math.random() * Math.PI * 2;
+  const v = Math.asin(Math.random() * 2 - 1);
+  const g = gyriField(u, v, lobe.seed);
+  // Reject points between ridges so the stripes read as folded gyri.
+  if (Math.random() > 0.25 + 0.75 * g * g) return null;
+  const bulge = 1 + 0.055 * g + 0.02 * Math.sin(u * 15 - v * 9);
+  const point = {
+    x: lobe.center[0] + lobe.radii[0] * Math.cos(v) * Math.cos(u) * bulge,
+    y: lobe.center[1] + lobe.radii[1] * Math.sin(v) * bulge,
+    z: lobe.center[2] + lobe.radii[2] * Math.cos(v) * Math.sin(u) * bulge,
+  };
+  // Longitudinal fissure: thin the midline on top of the cerebrum.
+  if (point.y > 0.55 && Math.abs(point.z) < 0.07 && Math.random() < 0.85) return null;
+  // Keep the underside clean where the temporal lobe meets the stem.
+  if (point.y < -1.05 && point.x > 0.2) return null;
+  return point;
+}
+
+function cerebellumPoint() {
+  const u = Math.random() * Math.PI * 2;
+  const v = Math.asin(Math.random() * 2 - 1);
+  // Fine horizontal striations, the cerebellum's signature texture.
+  const band = Math.sin(v * 16);
+  if (Math.random() > 0.2 + 0.8 * band * band) return null;
+  const bulge = 1 + 0.035 * band;
   return {
-    x: lobe.center[0] + lobe.radii[0] * Math.cos(v) * Math.cos(u) * wrinkle,
-    y: lobe.center[1] + lobe.radii[1] * Math.sin(v) * wrinkle,
-    z: lobe.center[2] + lobe.radii[2] * Math.cos(v) * Math.sin(u) * wrinkle,
+    x: 1.2 + 0.78 * Math.cos(v) * Math.cos(u) * bulge,
+    y: -0.95 + 0.52 * Math.sin(v) * bulge,
+    z: 0.62 * Math.cos(v) * Math.sin(u) * bulge,
+  };
+}
+
+function brainstemPoint() {
+  const t = Math.random();
+  const angle = Math.random() * Math.PI * 2;
+  const radius = (0.22 - 0.09 * t) * Math.sqrt(Math.random());
+  return {
+    x: 0.35 + 0.3 * t + radius * Math.cos(angle),
+    y: -0.85 - 1.05 * t,
+    z: radius * Math.sin(angle),
   };
 }
 
 function createPoints(domains, rankFor) {
-  return Array.from({ length: 12000 }, () => {
+  const points = [];
+  let attempts = 0;
+  while (points.length < 12500 && attempts < 60000) {
+    attempts += 1;
     const part = Math.random();
-    const u = Math.random() * Math.PI * 2;
-    const v = Math.asin(Math.random() * 2 - 1);
-    let point;
-    if (part < 0.86) {
-      let cursor = Math.random();
-      const lobe = LOBES.find((entry) => ((cursor -= entry.weight) <= 0)) || LOBES[0];
-      point = lobePoint(lobe, u, v, part * 100);
-    } else if (part < 0.96) {
-      const wrinkle = 1 + 0.11 * Math.sin(u * 11) * Math.cos(v * 7);
-      point = { x: 1.05 + 0.82 * Math.cos(v) * Math.cos(u) * wrinkle, y: -1.02 + 0.62 * Math.sin(v) * wrinkle, z: 0.65 * Math.cos(v) * Math.sin(u) * wrinkle };
-    } else {
-      const t = Math.random(); const angle = Math.random() * Math.PI * 2; const radius = 0.2 * (1 - t * 0.5);
-      point = { x: 0.58 + 0.25 * t + radius * Math.cos(angle), y: -1.18 - 1.15 * t, z: radius * Math.sin(angle) };
-    }
+    const point = part < 0.84 ? cerebrumPoint() : part < 0.95 ? cerebellumPoint() : brainstemPoint();
+    if (!point) continue;
     point.color = rankFor(nearest(point, domains)?.score || 0).color;
-    return point;
-  });
+    points.push(point);
+  }
+  return points;
 }
 
 const rotate = (point, rotationX, rotationY) => {
