@@ -6,6 +6,7 @@ import RankCard from "./RankCard";
 import RankLegend from "./RankLegend";
 
 const clampPct = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const LABEL_LEFT_OFFSET = 11;
 
 // Glass brain: every region is filled with its rank colour, breathing softly,
 // with an anchored rank callout on the active region.
@@ -101,7 +102,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
               onMouseLeave={() => setHover(null)}
               className="absolute flex flex-col items-center text-center leading-tight"
               style={{
-                left: `${r.x - 11}%`, top: `${r.y}%`, width: "30%",
+                left: `${r.x - LABEL_LEFT_OFFSET}%`, top: `${r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 5,
                 textShadow:
