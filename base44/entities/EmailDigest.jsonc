@@ -6,7 +6,8 @@
       "type": "string",
       "enum": [
         "weekly",
-        "end_of_plan"
+        "end_of_plan",
+        "manual"
       ]
     },
     "period_key": {

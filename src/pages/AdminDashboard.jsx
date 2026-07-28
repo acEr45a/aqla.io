@@ -12,6 +12,7 @@ import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
 import EmailLogPanel from "@/components/admin/EmailLogPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
 import SiteDataPanel from "@/components/admin/SiteDataPanel";
+import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -27,15 +28,14 @@ export default function AdminDashboard() {
   const [allowed, setAllowed] = useState(true);
   const [tab, setTab] = useState("overview");
 
-  useEffect(() => {
-    const load = async () => {
-      const user = await base44.auth.me();
-      if (user.role !== "admin") return setAllowed(false);
-      const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
-      setData(response.data);
-    };
-    load();
+  const load = React.useCallback(async () => {
+    const user = await base44.auth.me();
+    if (user.role !== "admin") return setAllowed(false);
+    const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
+    setData(response.data);
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   if (!allowed) {
     return (
@@ -82,7 +82,12 @@ export default function AdminDashboard() {
           </>
         }
         {tab === "analytics" && <AnalyticsPanel analytics={data.analytics} />}
-        {tab === "emails" && <EmailLogPanel stats={data.emails.stats} log={data.emails.log} />}
+        {tab === "emails" &&
+        <>
+            <ManualEmailComposer users={data.allUsers} onSent={load} />
+            <EmailLogPanel stats={data.emails.stats} log={data.emails.log} />
+          </>
+        }
         {tab === "siteData" && <SiteDataPanel siteData={data.siteData} days={data.days} />}
         {tab === "users" &&
         <>

@@ -124,6 +124,7 @@ export default async function(req: Request): Promise<Response> {
       total: emails.length,
       weekly: emails.filter((item) => item.kind === "weekly").length,
       endOfPlan: emails.filter((item) => item.kind === "end_of_plan").length,
+      manual: emails.filter((item) => item.kind === "manual").length,
       last7: emails.filter((item) => dateKey(item.sent_date) >= weekAgo).length,
       lastSent: emails[0]?.sent_date || null,
       recipients: new Set(emails.map((item) => item.created_by_id)).size,
@@ -136,6 +137,9 @@ export default async function(req: Request): Promise<Response> {
       analytics,
       siteData: { inventory, eligibility, dataPoints: inventory.reduce((sum, item) => sum + item.count, 0) },
       emails: { stats: emailStats, log: emailLog },
+      allUsers: users.filter((item) => item.email).map((item) => ({
+        id: item.id, name: item.full_name || "Unnamed user", email: item.email, joined: item.created_date,
+      })),
       recentUsers: users.slice(0, 8).map((item) => ({
         id: item.id,
         name: item.full_name || "Unnamed user",
