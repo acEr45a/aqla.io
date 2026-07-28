@@ -22,7 +22,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
         <div className="absolute inset-0" style={{
           zIndex: 3,
           WebkitMaskImage: `url(${BRAIN_IMAGE})`, maskImage: `url(${BRAIN_IMAGE})`,
-          WebkitMaskSize: "contain", maskSize: "contain",
+          WebkitMaskSize: "94% 94%", maskSize: "94% 94%",
           WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
           WebkitMaskPosition: "center", maskPosition: "center",
           maskMode: "luminance", WebkitMaskSourceType: "luminance",
