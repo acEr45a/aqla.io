@@ -7,7 +7,13 @@ export default function BrainRankTooltip({ domain, region, x, y }) {
   const remaining = next ? Math.max(0, next.min - domain.score) : 0;
 
   return (
-    <foreignObject x={Math.min(x + 14, 408)} y={Math.max(y - 146, 8)} width="238" height="138" pointerEvents="none">
+    <foreignObject
+      x={Math.max(8, Math.min(x + 14, 660 - 246))}
+      y={Math.max(8, Math.min(y - 170, 560 - 170))}
+      width="238"
+      height="162"
+      pointerEvents="none"
+    >
       <div className="rounded-xl border border-border/80 bg-background/95 p-3 shadow-2xl backdrop-blur-md">
         <div className="flex items-start justify-between gap-3">
           <div>
