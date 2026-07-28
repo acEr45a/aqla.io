@@ -102,7 +102,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="absolute flex flex-col items-center text-center leading-tight"
               style={{
-                left: `${r.lx ?? r.x}%`, top: `${r.ly ?? r.y}%`, width: "30%",
+                left: `${r.x}%`, top: `${r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 5,
                 textShadow:
