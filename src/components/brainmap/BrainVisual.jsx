@@ -101,7 +101,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
               onMouseLeave={() => setHover(null)}
               className="absolute flex flex-col items-center text-center leading-tight"
               style={{
-                left: `${r.x}%`, top: `${r.y}%`, width: "30%",
+                left: `${r.x - 3}%`, top: `${r.y}%`, width: "30%",
                 transform: "translate(-50%, -50%)",
                 zIndex: 5,
                 textShadow:
