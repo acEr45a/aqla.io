@@ -16,34 +16,59 @@ const PHRASES = [
 
 const clean = (value) => value.toLowerCase().trim().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ");
 
+const speak = (text, options = {}) => new Promise((resolve) => {
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.volume = options.volume ?? 1;
+  voice.rate = options.rate ?? 0.92;
+  voice.pitch = options.pitch ?? 1;
+  voice.onend = resolve;
+  voice.onerror = resolve;
+  window.speechSynthesis.speak(voice);
+});
+
+async function speakWithProgressiveEcho(phrase, level) {
+  const words = phrase.split(" ");
+  const splitAt = Math.max(1, Math.ceil(words.length / 2));
+  const clearPart = words.slice(0, splitAt).join(" ");
+  const echoPart = words.length === 1 ? words : words.slice(splitAt);
+  await speak(clearPart, { volume: 1, rate: 0.9 });
+
+  for (let wordIndex = 0; wordIndex < echoPart.length; wordIndex++) {
+    const severity = (wordIndex + 1) / echoPart.length;
+    await speak(echoPart[wordIndex], { volume: 0.94, rate: 0.9 });
+    const echoCount = 1 + Math.floor(severity * 2) + Math.floor(level / 3);
+    for (let echo = 0; echo < echoCount; echo++) {
+      const volume = Math.max(0.025, 0.48 * Math.pow(0.38, echo) * (1 - severity * 0.28));
+      await speak(echoPart[wordIndex], {
+        volume,
+        rate: 0.98 + severity * 0.18 + echo * 0.08,
+        pitch: Math.max(0.55, 0.94 - severity * 0.12 - echo * 0.08),
+      });
+    }
+  }
+}
+
 export default function EchoChamberGame({ onComplete }) {
   const [phase, setPhase] = useState("intro");
   const [level, setLevel] = useState(0);
   const [answer, setAnswer] = useState("");
-  const timer = useRef(null);
+  const playback = useRef(0);
   const input = useRef(null);
 
   useEffect(() => { if (phase === "input") input.current?.focus(); }, [phase]);
   useEffect(() => () => {
-    clearTimeout(timer.current);
+    playback.current += 1;
     window.speechSynthesis?.cancel();
   }, []);
 
-  const playLevel = (nextLevel) => {
+  const playLevel = async (nextLevel) => {
     window.speechSynthesis.cancel();
+    const playbackId = ++playback.current;
     setLevel(nextLevel);
     setAnswer("");
     setPhase("listening");
-    const phrase = PHRASES[nextLevel];
-    const echoes = nextLevel + 2;
-    for (let i = 0; i < echoes; i++) {
-      const voice = new SpeechSynthesisUtterance(phrase);
-      voice.rate = 0.9 + i * 0.055;
-      voice.pitch = Math.max(0.55, 1 - i * 0.045);
-      voice.volume = Math.max(0.08, 0.9 - nextLevel * 0.065 - i * 0.075);
-      window.speechSynthesis.speak(voice);
-    }
-    timer.current = setTimeout(() => setPhase("input"), 900 + echoes * 620);
+    await speakWithProgressiveEcho(PHRASES[nextLevel], nextLevel);
+    if (playbackId === playback.current) setPhase("input");
   };
 
   const submit = (event) => {
@@ -69,7 +94,7 @@ export default function EchoChamberGame({ onComplete }) {
     <div className="max-w-sm mx-auto text-center">
       <AudioLines className="w-10 h-10 mx-auto text-primary" />
       <h2 className="mt-4 font-display text-2xl text-foreground">Echo Chamber</h2>
-      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Type exactly what you hear. Each level adds more echoes while the voice gets quieter and the phrase gets longer. Your run ends when the message is lost.</p>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Type exactly what you hear. Each phrase begins clearly, then its second half develops deeper echoes that fade exponentially and worsen toward the end. Your run ends when the message is lost.</p>
       <p className="mt-3 text-xs text-muted-foreground">Headphones recommended.</p>
       <button onClick={() => playLevel(0)} className="mt-8 rounded-full bg-primary px-7 py-3.5 text-sm font-medium text-primary-foreground">Enter the chamber</button>
     </div>
