@@ -1,6 +1,7 @@
 import React from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
+import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Settings } from "lucide-react";
 
 const NAV = [
@@ -21,6 +22,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
+      <AqlaAssistant />
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
         <div className="px-6 py-7">
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>
