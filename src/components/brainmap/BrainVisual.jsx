@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { REGIONS, SILHOUETTE } from "./brainShapes";
+import { REGIONS, SILHOUETTE, SULCI } from "./brainShapes";
 
 const GREY_FILL = "hsl(30 6% 24%)";
 const GREY_STROKE = "hsl(30 8% 42%)";
@@ -50,6 +50,13 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
             </g>
           );
         })}
+
+        <g pointerEvents="none">
+          {SULCI.map((p, i) => (
+            <path key={i} d={p} fill="none" stroke="hsl(26 14% 6%)" strokeOpacity="0.4"
+              strokeWidth="2" strokeLinecap="round" />
+          ))}
+        </g>
 
         {REGIONS.map((r) => {
           const d = byKey[r.key];
