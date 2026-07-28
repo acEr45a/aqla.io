@@ -24,7 +24,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           if (!d) return null;
           const rank = rankFor(d.score);
           const active = activeKey === r.key;
-          const intensity = Math.min(1, (0.4 + (d.score / 100) * 0.28) * (r.boost ?? 1));
+          const intensity = 0.6 + (d.score / 100) * 0.3;
           const period = active ? 2.2 : 4.6 + i * 0.35;
           return (
             <div key={r.key} className="absolute"
@@ -32,7 +32,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.x}%`, top: `${r.y}%`, width: `${r.size}%`,
                 aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
-                zIndex: r.z ?? 1,
+                zIndex: 3,
               }}>
               <motion.button type="button" aria-label={`${d.label} — ${rank.name}`}
                 onClick={() => onSelect && onSelect(d)}
@@ -50,7 +50,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 className="absolute inset-0 rounded-full"
                 style={{
                   background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}cc 40%, ${rank.color}66 62%, ${rank.color}1a 78%, transparent 90%)`,
-                  filter: `blur(${active ? 8 : r.boost ? 7 : 11}px) saturate(1.5)`,
+                  filter: `blur(${active ? 8 : 10}px) saturate(1.5)`,
                   cursor: onSelect ? "pointer" : "default",
                 }}
               />
