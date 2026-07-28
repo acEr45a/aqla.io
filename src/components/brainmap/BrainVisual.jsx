@@ -19,6 +19,14 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
   return (
     <div>
       <div className="relative w-full max-w-[540px] mx-auto aspect-square select-none">
+        <div className="absolute inset-0" style={{
+          zIndex: 3,
+          WebkitMaskImage: `url(${BRAIN_IMAGE})`, maskImage: `url(${BRAIN_IMAGE})`,
+          WebkitMaskSize: "contain", maskSize: "contain",
+          WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center", maskPosition: "center",
+          maskMode: "luminance", WebkitMaskSourceType: "luminance",
+        }}>
         {REGIONS.map((r, i) => {
           const d = byKey[r.key];
           if (!d) return null;
@@ -32,7 +40,6 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.x}%`, top: `${r.y}%`, width: `${r.size}%`,
                 aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
-                zIndex: 3,
               }}>
               <motion.button type="button" aria-label={`${d.label} — ${rank.name}`}
                 onClick={() => onSelect && onSelect(d)}
@@ -49,14 +56,15 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 }}
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: `radial-gradient(circle at 50% 45%, ${rank.color}d9 0%, ${rank.color}99 40%, ${rank.color}40 62%, transparent 80%)`,
-                  filter: `blur(${active ? 10 : 12}px) saturate(1.4)`,
+                  background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}e6 52%, ${rank.color}99 72%, ${rank.color}40 86%, transparent 97%)`,
+                  filter: `blur(${active ? 14 : 16}px) saturate(1.5)`,
                   cursor: onSelect ? "pointer" : "default",
                 }}
               />
             </div>
           );
         })}
+        </div>
 
         {/* ignition ripple on the active region */}
         <AnimatePresence>
