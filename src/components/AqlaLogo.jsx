@@ -1,17 +1,18 @@
 import React from "react";
 
-// AQLA mark: monospaced brackets enclosing a glowing neural node.
+// Original AQLA neural mark: an open signal path converging around a single active node.
 export default function AqlaLogo({ className = "", showWordmark = true }) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0" aria-hidden="true">
-        <path d="M14 7 H7 V33 H14" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square" />
-        <path d="M26 7 H33 V33 H26" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square" />
-        <circle cx="20" cy="20" r="5.2" fill="hsl(var(--primary))" />
-        <circle cx="20" cy="20" r="9" fill="hsl(var(--primary))" opacity="0.16" />
+      <svg viewBox="0 0 44 44" className="w-9 h-9 shrink-0" aria-hidden="true">
+        <path d="M8 31.5 18.2 10.5 28 31.5" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="m28 31.5 8-9.2" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" />
+        <path d="m12.4 22.5 8.2 0" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" />
+        <circle cx="22.4" cy="22.5" r="3.4" fill="hsl(var(--primary))" />
+        <circle cx="22.4" cy="22.5" r="6.9" fill="hsl(var(--primary))" opacity="0.13" />
       </svg>
       {showWordmark && (
-        <span className="font-mono text-lg tracking-[0.18em] uppercase text-foreground">Aqla</span>
+        <span className="font-display text-lg font-medium tracking-[0.16em] uppercase text-foreground">AQLA</span>
       )}
     </div>
   );
