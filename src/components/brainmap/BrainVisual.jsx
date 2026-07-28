@@ -9,7 +9,7 @@ const clampPct = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // Glass brain: every region is filled with its rank colour, breathing softly,
 // with an anchored rank callout on the active region.
-export default function BrainVisual({ domains = [], onSelect, selectedKey, showRankNames = false }) {
+export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
   const [hover, setHover] = useState(null);
   const byKey = Object.fromEntries(domains.map((d) => [d.key, d]));
   const activeKey = hover || selectedKey;
@@ -110,14 +110,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
               }}>
               <span className="font-display text-[10px] md:text-[11px] font-medium tracking-tight text-white whitespace-nowrap">{d.label}</span>
               <span className="font-display text-lg md:text-xl font-bold tracking-tight text-white tabular-nums leading-none">{d.score}</span>
-              {showRankNames && (
-                <span className="mt-0.5 text-[10px] font-semibold whitespace-nowrap" style={{ color: rank.color }}>
-                  {rank.name}
-                </span>
-              )}
-              {!showRankNames && (
-                <span className="mt-1 w-6 h-[2px] rounded-full" style={{ background: rank.color, boxShadow: `0 0 6px ${rank.color}` }} />
-              )}
+              <span className="mt-1 w-6 h-[2px] rounded-full" style={{ background: rank.color, boxShadow: `0 0 6px ${rank.color}` }} />
             </div>
           );
         })}
