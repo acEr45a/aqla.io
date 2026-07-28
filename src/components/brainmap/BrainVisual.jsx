@@ -99,7 +99,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
               onClick={() => onSelect && onSelect(d)}
               onMouseEnter={() => setHover(r.key)}
               onMouseLeave={() => setHover(null)}
-              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
               className="absolute flex flex-col items-center text-center leading-tight"
               style={{
                 left: `${r.x}%`, top: `${r.y}%`, width: "30%",
