@@ -36,14 +36,6 @@ export default function VoiceSettings({ onPreview }) {
         <p className="text-[13px] text-foreground mb-2">Mood</p>
         <Chips items={MOODS} active={prefs.mood} onPick={(mood) => update({ mood })} />
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3">
-        <p className="text-[13px] text-foreground">Speak replies aloud</p>
-        <button type="button" onClick={() => update({ speakReplies: !prefs.speakReplies })}
-          className={`px-3.5 py-1.5 rounded-full border text-xs transition-colors ${
-            prefs.speakReplies ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
-          {prefs.speakReplies ? "On" : "Off"}
-        </button>
-      </div>
       <p className="mt-4 text-xs text-muted-foreground">Available accents depend on the voices installed on your device.</p>
     </div>
   );

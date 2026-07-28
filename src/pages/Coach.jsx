@@ -6,7 +6,6 @@ import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import VoiceSettings from "@/components/coach/VoiceSettings";
 import AqlaReply from "@/components/coach/AqlaReply";
 import replyToSpeech from "@/lib/aqlaSpeech";
-import { loadVoicePrefs } from "@/lib/voicePrefs";
 import { Send, Sparkles } from "lucide-react";
 
 const SUGGESTED = [
@@ -80,7 +79,7 @@ USER QUESTION: ${question}`,
 
     setMessages((m) => [...m, { role: "aqla", ...res }]);
     setLoading(false);
-    if (voiceModeRef.current || loadVoicePrefs().speakReplies) {
+    if (voiceModeRef.current) {
       voice.speak(replyToSpeech(res));
     }
   };
