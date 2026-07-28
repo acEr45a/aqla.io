@@ -13,7 +13,7 @@ const NAV = [
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
   { to: "/experiments", label: "Experiments", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
-  { to: "/coach", label: "Coach", icon: MessageCircle },
+  { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
   { to: "/evidence-library", label: "Science", icon: BookOpen },
   { to: "/help-center", label: "Help", icon: CircleHelp },
   { to: "/settings", label: "Settings", icon: Settings },
