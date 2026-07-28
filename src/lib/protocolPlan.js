@@ -1,5 +1,7 @@
 import { base44 } from "@/api/base44Client";
 import { localDateKey } from "@/lib/dateKey";
+import { PROTOCOL_FAMILIES } from "@/lib/protocols";
+import { PROTOCOL_DETAILS } from "@/lib/protocolDetails";
 
 export function planReviewDate() {
   const date = new Date();
@@ -9,8 +11,17 @@ export function planReviewDate() {
 
 export async function activateProtocolFamily(family, replacedStatus = "paused") {
   const protocols = await base44.entities.Protocol.list("-created_date");
-  const target = protocols.find((plan) => plan.family === family);
-  if (!target) throw new Error(`${family} plan is unavailable.`);
+  let target = protocols.find((plan) => plan.family === family);
+  if (!target) {
+    const catalog = PROTOCOL_FAMILIES.find((plan) => plan.key === family);
+    const details = PROTOCOL_DETAILS[family];
+    target = await base44.entities.Protocol.create({
+      name: `${catalog.name} 14-Day Plan`, family, objective: catalog.purpose,
+      why_selected: "Selected from your completed assessment or your confirmed choice.",
+      status: "paused", start_date: localDateKey(), review_date: planReviewDate(), duration_days: 14,
+      expected_benefits: details?.benefits || [], measuring: ["Clarity", "Energy", "Stress", "Sleep quality"],
+    });
+  }
 
   const updates = protocols
     .filter((plan) => plan.status === "active" && plan.id !== target.id)

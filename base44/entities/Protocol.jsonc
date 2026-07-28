@@ -40,7 +40,8 @@
       "format": "date"
     },
     "duration_days": {
-      "type": "number"
+      "type": "number",
+      "default": 14
     },
     "actions": {
       "type": "array",
@@ -85,5 +86,19 @@
     "name",
     "family",
     "objective"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
 }
