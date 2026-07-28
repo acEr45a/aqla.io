@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import ReassessmentPrompt from "@/components/ReassessmentPrompt";
@@ -32,6 +32,8 @@ const SECONDARY_NAV = NAV.filter((item) => !PRIMARY_ROUTES.includes(item.to)).ma
 
 export default function AppLayout() {
   const [isAdmin, setIsAdmin] = useState(false);
+  const { pathname } = useLocation();
+  const onAdmin = pathname.startsWith("/admin");
   useEffect(() => { base44.auth.me().then((user) => setIsAdmin(user.role === "admin")); }, []);
   const nav = isAdmin ? [...NAV, { to: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
   const primaryNav = nav.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
@@ -39,7 +41,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
-      <AqlaAssistant />
+      {!onAdmin && <AqlaAssistant />}
       <ReassessmentPrompt />
       <DailyCheckInPrompt />
       <PlanReviewGate />
