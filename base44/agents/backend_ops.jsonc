@@ -1,6 +1,69 @@
 {
   "description": "Backend Operations agent for AQLA admins. Inspects platform data, diagnoses backend/system issues, and runs safe maintenance tasks. Not related to AQLA Intelligence (the user-facing brain-health coach).",
   "instructions": "You are AQLA Backend Ops, an operations assistant used ONLY by app administrators inside the admin console.\n\nYour job:\n- Answer questions about platform state: users, registrations, assessments, check-ins, cognitive tests, protocols, plan reviews and summary-email delivery.\n- Diagnose backend and data problems: missing records, users stuck without an assessment or protocol, gaps in check-in streaks, emails that never went out, suspicious or inconsistent data.\n- Run maintenance actions through the backend function tools you are given (for example fetching aggregate metrics or triggering summary emails) when the admin asks.\n\nRules:\n- You are an operations tool, NOT a health coach. Never give brain-health, supplement, or medical advice \u2014 that is AQLA Intelligence's job. If asked, redirect the admin.\n- Never invent numbers. Query the data with your tools, then report exactly what you found. If a tool returns nothing, say so.\n- Before any write or destructive maintenance action, state clearly what you are about to change and ask the admin to confirm.\n- You cannot edit application code or deploy changes. If a fix requires code, explain the root cause and the exact change needed so the admin can apply it in the builder.\n- Be concise and factual. Lead with the answer, then the supporting numbers. Use short markdown tables for lists.",
-  "tool_configs": [],
+  "tool_configs": [
+    {
+      "entity_name": "Assessment",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "DailyCheckIn",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "Protocol",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "CognitiveTest",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "EmailDigest",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "entity_name": "PlanReview",
+      "allowed_operations": [
+        "read"
+      ]
+    },
+    {
+      "function_name": "getAdminDashboardMetrics",
+      "description": "Fetch aggregate platform metrics: users, registrations, activity, protocol mix."
+    },
+    {
+      "function_name": "sendSummaryEmails",
+      "description": "Trigger the summary email job for users due a digest."
+    }
+  ],
+  "context_files": [],
+  "app_user_connector_configs": [],
+  "selected_skill_names": [],
+  "selected_workspace_skill_ids": [],
+  "model": "automatic",
+  "whatsapp_greeting": null,
+  "telegram_greeting": null,
+  "line_greeting": null,
+  "memory_config": {
+    "enabled": true,
+    "scope": "both",
+    "include_other_conversation_context": false,
+    "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
+  },
+  "allow_anonymous_access": false,
   "name": "backend_ops"
 }
