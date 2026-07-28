@@ -37,6 +37,7 @@ import AccountManagement from '@/pages/AccountManagement';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import AdminDashboard from '@/pages/AdminDashboard';
+import CommunityInsights from '@/pages/CommunityInsights';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -83,6 +84,7 @@ const AuthenticatedApp = () => {
           <Route path="/protocols" element={<Protocols />} />
           <Route path="/experiments" element={<Experiments />} />
           <Route path="/progress" element={<Progress />} />
+          <Route path="/community-insights" element={<CommunityInsights />} />
           <Route path="/coach" element={<Coach />} />
           <Route path="/tests" element={<CognitiveTests />} />
           <Route path="/games" element={<Games />} />

@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Users, ArrowRight } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import TestScoreTimeline from "@/components/progress/TestScoreTimeline";
@@ -30,9 +32,21 @@ export default function Progress() {
   }));
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Progress & insights</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your signal landscape</h1>
+
+      <Link to="/community-insights"
+        className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/60 bg-card/40 p-5 hover:bg-secondary/40 transition-colors">
+        <div className="flex items-start gap-3">
+          <div className="rounded-xl bg-primary/10 p-2 text-primary"><Users className="h-4 w-4" /></div>
+          <div>
+            <p className="font-display text-foreground">Community insights</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">See how your signals and domain scores compare with anonymised member averages.</p>
+          </div>
+        </div>
+        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       <section className="mt-10 aqla-panel rounded-3xl p-6 md:p-8">
         <h2 className="font-display text-lg text-foreground mb-1">Cognitive signal timeline</h2>
