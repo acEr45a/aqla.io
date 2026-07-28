@@ -116,6 +116,8 @@ export default async function(req: Request): Promise<Response> {
       subject: item.subject || "(no subject)",
       period: item.period_key,
       sent_date: item.sent_date,
+      status: item.status || "delivered",
+      error_message: item.error_message || "",
       recipient: userById[item.created_by_id]?.email || "unknown recipient",
       recipientName: userById[item.created_by_id]?.full_name || "Unknown user",
     }));
@@ -126,6 +128,8 @@ export default async function(req: Request): Promise<Response> {
       endOfPlan: emails.filter((item) => item.kind === "end_of_plan").length,
       manual: emails.filter((item) => item.kind === "manual").length,
       last7: emails.filter((item) => dateKey(item.sent_date) >= weekAgo).length,
+      delivered: emails.filter((item) => (item.status || "delivered") === "delivered").length,
+      failed: emails.filter((item) => item.status === "failed").length,
       lastSent: emails[0]?.sent_date || null,
       recipients: new Set(emails.map((item) => item.created_by_id)).size,
     };

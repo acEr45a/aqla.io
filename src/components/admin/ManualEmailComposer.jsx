@@ -4,7 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Send, ArrowDownWideNarrow, ArrowUpWideNarrow, Search } from "lucide-react";
+import { Send, ArrowDownWideNarrow, ArrowUpWideNarrow, Search, ClipboardPaste } from "lucide-react";
+
+const REGISTRATION_TEMPLATE = {
+  subject: "Welcome to AQLA",
+  message: "Welcome to AQLA. Your account is verified and ready. You can now begin your assessment and build your personalised Brain Map.\n\nAQLA is a neural-wellness platform and does not provide medical advice.",
+};
 
 export default function ManualEmailComposer({ users = [], onSent }) {
   const [subject, setSubject] = useState("");
@@ -44,8 +49,16 @@ export default function ManualEmailComposer({ users = [], onSent }) {
 
   return (
     <div className="aqla-panel rounded-2xl p-5">
-      <p className="font-display text-foreground">Send an email</p>
-      <p className="mt-0.5 text-xs text-muted-foreground">Compose a message and send it to selected members or everyone.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="font-display text-foreground">Send an email</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Compose a message and send it to selected members or everyone.</p>
+        </div>
+        <Button type="button" variant="outline" size="sm"
+          onClick={() => { setSubject(REGISTRATION_TEMPLATE.subject); setMessage(REGISTRATION_TEMPLATE.message); }}>
+          <ClipboardPaste className="mr-1.5 h-3.5 w-3.5" />Paste registration email
+        </Button>
+      </div>
 
       <div className="mt-5 space-y-3">
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />

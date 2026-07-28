@@ -22,6 +22,17 @@
     },
     "subject": {
       "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "delivered",
+        "failed"
+      ],
+      "default": "delivered"
+    },
+    "error_message": {
+      "type": "string"
     }
   },
   "required": [

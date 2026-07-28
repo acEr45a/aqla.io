@@ -40,10 +40,20 @@ export default async function(req: Request): Promise<Response> {
           period_key: `manual-${now}`,
           sent_date: now,
           subject: subject.trim(),
+          status: "delivered",
           created_by_id: target.id,
         });
         sent.push(target.email);
       } catch (error) {
+        await svc.entities.EmailDigest.create({
+          kind: "manual",
+          period_key: `manual-${now}`,
+          sent_date: now,
+          subject: subject.trim(),
+          status: "failed",
+          error_message: error.message,
+          created_by_id: target.id,
+        });
         failed.push({ email: target.email, reason: error.message });
       }
     }
