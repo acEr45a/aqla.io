@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import BrainFigure from "@/components/brainmap/BrainFigure";
+import BrainVisual from "@/components/brainmap/BrainVisual";
 import { DOMAINS } from "@/lib/scoring";
 
 const DEMO_SCORES = { focus: 62, memory: 74, mental_energy: 58, stress_regulation: 47, sleep_recovery: 66, cognitive_resilience: 71, lifestyle_protection: 79, learning_capacity: 68 };
@@ -71,8 +71,8 @@ export default function Landing() {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
-          <BrainFigure domains={DEMO_DOMAINS} />
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">Example Brain Map — each region fills to its measured score.</p>
+          <BrainVisual domains={DEMO_DOMAINS} />
+          <p className="mt-1 text-center text-[11px] text-muted-foreground">Example Brain Map — your real scores replace these after the baseline tests.</p>
         </motion.div>
       </section>
 
