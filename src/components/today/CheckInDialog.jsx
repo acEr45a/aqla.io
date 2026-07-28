@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { localDateKey } from "@/lib/dateKey";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,7 +23,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
   const save = async () => {
     setSaving(true);
     await base44.entities.DailyCheckIn.create({
-      date: new Date().toISOString().slice(0, 10),
+      date: localDateKey(),
       ...values, demand, note,
     });
     setSaving(false);

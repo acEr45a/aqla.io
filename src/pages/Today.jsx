@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import CheckInDialog from "@/components/today/CheckInDialog";
+import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
 function Signal({ label, value, color }) {
@@ -26,9 +27,13 @@ export default function Today() {
     base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
   };
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    window.addEventListener("aqla:check-in-saved", load);
+    return () => window.removeEventListener("aqla:check-in-saved", load);
+  }, []);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateKey();
   const checkedInToday = checkIns.some((c) => c.date === today);
   const latest = checkIns[0];
   const readiness = latest ? Math.round(((latest.clarity + latest.energy + latest.sleep_quality + (10 - latest.stress)) / 40) * 100) : null;
