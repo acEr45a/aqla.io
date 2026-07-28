@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Lock, Download, Cpu, ShieldCheck, Eye, Trash2, ArrowLeft } from "lucide-react";
 
 const SECTIONS = [
@@ -12,6 +16,24 @@ const SECTIONS = [
 
 export default function Trust() {
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const deleteAllData = async () => {
+    setDeleting(true);
+    const me = await base44.auth.me();
+    const q = { created_by_id: me.id };
+    await Promise.all([
+      base44.entities.Assessment.deleteMany(q),
+      base44.entities.CognitiveTest.deleteMany(q),
+      base44.entities.Protocol.deleteMany(q),
+      base44.entities.Experiment.deleteMany(q),
+      base44.entities.DailyCheckIn.deleteMany(q),
+      base44.entities.BrainDomain.deleteMany(q),
+      base44.entities.HealthProfile.deleteMany(q),
+    ]);
+    setDeleting(false);
+    window.location.href = "/assessment";
+  };
 
   const exportData = async () => {
     setExporting(true);
@@ -64,6 +86,39 @@ export default function Trust() {
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50">
           <Download className="w-3.5 h-3.5" /> {exporting ? "Preparing…" : "Download export"}
         </button>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-destructive/40 bg-destructive/5 p-6 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="font-display text-destructive">🗑️ Delete my data</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm leading-relaxed">
+            Permanently erases your assessments, tests, brain map, protocols, experiments and check-ins. This cannot be undone.
+          </p>
+        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button disabled={deleting}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-destructive text-destructive-foreground text-xs font-medium disabled:opacity-50">
+              <Trash2 className="w-3.5 h-3.5" /> {deleting ? "Deleting…" : "Delete all data"}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete all your data?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Every assessment, cognitive test, brain map score, protocol, experiment and check-in will be permanently deleted.
+                Consider downloading an export first.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteAllData}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Yes, delete everything
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <p className="mt-10 text-[11px] text-muted-foreground border-t border-border/50 pt-6">
