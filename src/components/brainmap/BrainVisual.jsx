@@ -87,7 +87,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey, showR
           style={{ zIndex: 2 }}
           className="absolute inset-0 w-full h-full object-contain pointer-events-none mix-blend-screen opacity-90" />
 
-        {/* region pills */}
+        {/* region labels */}
         {REGIONS.map((r) => {
           const d = byKey[r.key];
           if (!d) return null;
