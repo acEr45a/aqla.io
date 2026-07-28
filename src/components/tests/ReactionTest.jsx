@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { playFeedback, playTone, unlockAudio } from "@/lib/gameAudio";
 
 const TRIALS = 5;
 
@@ -10,9 +11,11 @@ export default function ReactionTest({ onComplete }) {
   const timer = useRef(null);
 
   const startTrial = () => {
+    unlockAudio();
     setPhase("waiting");
     timer.current = setTimeout(() => {
       goAt.current = performance.now();
+      playTone(740, 0.13, 0.06);
       setPhase("go");
     }, 1200 + Math.random() * 2500);
   };
@@ -20,11 +23,13 @@ export default function ReactionTest({ onComplete }) {
   const react = () => {
     if (phase === "waiting") {
       clearTimeout(timer.current);
+      playFeedback(false);
       setPhase("tooSoon");
       return;
     }
     if (phase !== "go") return;
     const ms = Math.round(performance.now() - goAt.current);
+    playFeedback(true);
     const next = [...times, ms];
     setTimes(next);
     if (next.length >= TRIALS) {
