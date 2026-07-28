@@ -24,7 +24,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           if (!d) return null;
           const rank = rankFor(d.score);
           const active = activeKey === r.key;
-          const intensity = 0.4 + (d.score / 100) * 0.28;
+          const intensity = Math.min(1, (0.4 + (d.score / 100) * 0.28) * (r.boost ?? 1));
           const period = active ? 2.2 : 4.6 + i * 0.35;
           return (
             <div key={r.key} className="absolute"
@@ -50,7 +50,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 className="absolute inset-0 rounded-full"
                 style={{
                   background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}cc 40%, ${rank.color}66 62%, ${rank.color}1a 78%, transparent 90%)`,
-                  filter: `blur(${active ? 8 : 11}px) saturate(1.5)`,
+                  filter: `blur(${active ? 8 : r.boost ? 7 : 11}px) saturate(1.5)`,
                   cursor: onSelect ? "pointer" : "default",
                 }}
               />
@@ -76,6 +76,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
         </AnimatePresence>
 
         <img src={BRAIN_IMAGE} alt="Translucent glass brain" draggable={false}
+          style={{ zIndex: 2 }}
           className="absolute inset-0 w-full h-full object-contain pointer-events-none mix-blend-screen opacity-90" />
 
         {/* region pills */}
