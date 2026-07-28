@@ -17,7 +17,7 @@ const NAV = [
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-const MOBILE = NAV.filter((n) => ["/today", "/map", "/protocol", "/progress", "/coach"].includes(n.to));
+const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials" };
 
 const SETTINGS_CHILDREN = ["/trust", "/safety"];
 
@@ -50,12 +50,13 @@ export default function AppLayout() {
       </main>
 
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-lg">
-        <div className="grid grid-cols-5">
-          {MOBILE.map(({ to, label, icon: Icon }) => (
+        <div className="flex overflow-x-auto scrollbar-none px-2 pb-[env(safe-area-inset-bottom)]">
+          {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-3 text-[10px] ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+              `shrink-0 w-[19%] min-w-[68px] flex flex-col items-center gap-1 py-2.5 text-[10px] ${
+                isActive || (to === "/settings" && settingsActive) ? "text-primary" : "text-muted-foreground"}`}>
               <Icon className="w-5 h-5" strokeWidth={1.75} />
-              {label === "Brain Map" ? "Map" : label}
+              <span className="whitespace-nowrap">{SHORT_LABELS[label] || label}</span>
             </NavLink>
           ))}
         </div>
