@@ -4,14 +4,16 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => localStorage.getItem("aqla_remembered_email") || "");
   const [password, setPassword] = useState("");
+  const [rememberEmail, setRememberEmail] = useState(() => !!localStorage.getItem("aqla_remembered_email"));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
@@ -25,6 +27,8 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
+    if (rememberEmail) localStorage.setItem("aqla_remembered_email", email);
+    else localStorage.removeItem("aqla_remembered_email");
     try {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = returnTo;
@@ -119,6 +123,11 @@ export default function Login() {
             />
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Checkbox id="remember-email" checked={rememberEmail} onCheckedChange={setRememberEmail} />
+          <Label htmlFor="remember-email" className="text-sm font-normal text-muted-foreground">Remember my email on this device</Label>
+        </div>
+        <p className="text-xs text-muted-foreground">You stay signed in on this device until you sign out.</p>
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>
