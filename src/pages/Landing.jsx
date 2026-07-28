@@ -1,7 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import HeroMap from "@/components/landing/HeroMap";
+import BrainFigure from "@/components/brainmap/BrainFigure";
+import { DOMAINS } from "@/lib/scoring";
+
+const DEMO_SCORES = { focus: 62, memory: 74, mental_energy: 58, stress_regulation: 47, sleep_recovery: 66, cognitive_resilience: 71, lifestyle_protection: 79, learning_capacity: 68 };
+const DEMO_DOMAINS = DOMAINS.map((d) => ({ ...d, score: DEMO_SCORES[d.key] }));
 import NeuralField from "@/components/landing/NeuralField";
 import LandingSections from "@/components/landing/LandingSections";
 import { ArrowRight, Zap } from "lucide-react";
@@ -67,7 +71,8 @@ export default function Landing() {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
-          <HeroMap />
+          <BrainFigure domains={DEMO_DOMAINS} />
+          <p className="mt-2 text-center text-[11px] text-muted-foreground">Example Brain Map — each region fills to its measured score.</p>
         </motion.div>
       </section>
 
