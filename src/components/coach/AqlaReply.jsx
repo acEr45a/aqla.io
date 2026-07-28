@@ -7,7 +7,7 @@ const FIELDS = [
   ["Recommended next action", "next_action"],
 ];
 
-export default function AqlaReply({ message, compact = false }) {
+export default function AqlaReply({ message, compact = false, onConfirmPlanChange, onCancelPlanChange }) {
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className={`aqla-panel rounded-3xl rounded-bl-sm space-y-4 ${compact ? "p-4" : "p-6"}`}>
@@ -22,6 +22,16 @@ export default function AqlaReply({ message, compact = false }) {
       </span>
       {message.safety_note && (
         <p className="text-xs text-[#F2C04E] border-t border-border/40 pt-3">{message.safety_note}</p>
+      )}
+      {message.plan_change_requested && message.recommended_family !== "NONE" && (
+        <div className="border-t border-border/40 pt-3">
+          {message.plan_change_status ? <p className="text-xs text-muted-foreground">Plan change {message.plan_change_status}.</p> : (
+            <div className="flex gap-2">
+              <button onClick={onCancelPlanChange} className="flex-1 rounded-full border border-border py-2 text-xs">Keep current</button>
+              <button onClick={onConfirmPlanChange} className="flex-1 rounded-full bg-primary py-2 text-xs font-medium text-primary-foreground">Confirm {message.recommended_family}</button>
+            </div>
+          )}
+        </div>
       )}
     </motion.div>
   );

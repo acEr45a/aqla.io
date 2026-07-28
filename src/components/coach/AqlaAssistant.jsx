@@ -14,7 +14,7 @@ const QUICK = [
 export default function AqlaAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, loading, ask } = useAqlaCoach();
+  const { messages, loading, ask, confirmPlanChange, cancelPlanChange } = useAqlaCoach();
   const endRef = useRef(null);
 
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading, open]);
@@ -66,7 +66,7 @@ export default function AqlaAssistant() {
                   <p className="max-w-[85%] bg-secondary rounded-2xl rounded-br-sm px-4 py-2.5 text-[13px] text-foreground">{m.text}</p>
                 </div>
               ) : (
-                <AqlaReply key={i} message={m} compact />
+                <AqlaReply key={i} message={m} compact onConfirmPlanChange={() => confirmPlanChange(i)} onCancelPlanChange={() => cancelPlanChange(i)} />
               ))}
 
               {loading && (

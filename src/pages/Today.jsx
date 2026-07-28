@@ -30,7 +30,11 @@ export default function Today() {
   useEffect(() => {
     load();
     window.addEventListener("aqla:check-in-saved", load);
-    return () => window.removeEventListener("aqla:check-in-saved", load);
+    window.addEventListener("aqla:protocol-changed", load);
+    return () => {
+      window.removeEventListener("aqla:check-in-saved", load);
+      window.removeEventListener("aqla:protocol-changed", load);
+    };
   }, []);
 
   const today = localDateKey();

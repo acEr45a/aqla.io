@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { computeDomains, primaryBottleneck } from "@/lib/scoring";
 import RadialMap from "@/components/brainmap/RadialMap";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import RecommendedPlanStart from "@/components/protocols/RecommendedPlanStart";
+import { protocolFit } from "@/lib/protocols";
+import { ChevronDown } from "lucide-react";
 
 const STAGES = [
   "Mapping your cognitive rhythm",
@@ -19,10 +20,10 @@ const STAGES = [
 const ANALYZED = ["Self-reported cognitive experience", "Daily rhythm and energy curve", "Sleep timing and recovery quality", "Stress and workload signals", "Caffeine, hydration, and activity patterns"];
 
 export default function Analysis() {
-  const navigate = useNavigate();
   const [stage, setStage] = useState(0);
   const [domains, setDomains] = useState([]);
   const [done, setDone] = useState(false);
+  const [recommendedFamily, setRecommendedFamily] = useState(null);
   const [open, setOpen] = useState(false);
   const ran = useRef(false);
 
@@ -41,6 +42,9 @@ export default function Analysis() {
       }
 
       const bottleneck = primaryBottleneck(computed);
+      const fits = protocolFit(bottleneck.key);
+      const recommended = Object.keys(fits).find((family) => fits[family].status === "Recommended") || "RESET";
+      setRecommendedFamily(recommended);
       const existing = await base44.entities.BrainDomain.list();
       if (existing.length) await base44.entities.BrainDomain.deleteMany({});
       await base44.entities.BrainDomain.bulkCreate(computed.map((d) => ({
@@ -56,7 +60,7 @@ export default function Analysis() {
           ? ["Irregular sleep timing", "Low morning light exposure", "Late caffeine exposure"]
           : [],
         protective_factors: d.score >= 65 ? ["Consistent self-reported patterns in this domain"] : [],
-        next_action: d.key === bottleneck.key ? "Follow your RESET digital protocol for 14 days" : "Continue daily check-ins to refine this score",
+        next_action: d.key === bottleneck.key ? `Follow your ${recommended} protocol for 14 days` : "Continue daily check-ins to refine this score",
         data_sources: ["Onboarding assessment"],
       })));
       setDone(true);
@@ -79,10 +83,7 @@ export default function Analysis() {
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <p className="text-foreground font-display text-xl">Your questionnaire profile is ready.</p>
-                <button onClick={() => navigate("/tests")}
-                  className="mt-5 inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-                  Complete measured baseline <ArrowRight className="w-4 h-4" />
-                </button>
+                <RecommendedPlanStart family={recommendedFamily} />
               </motion.div>
             )}
           </AnimatePresence>

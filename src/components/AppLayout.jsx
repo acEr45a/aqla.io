@@ -4,6 +4,7 @@ import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import ReassessmentPrompt from "@/components/ReassessmentPrompt";
 import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
+import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp } from "lucide-react";
 
@@ -29,6 +30,7 @@ export default function AppLayout() {
       <AqlaAssistant />
       <ReassessmentPrompt />
       <DailyCheckInPrompt />
+      <PlanReviewGate />
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
         <div className="px-6 py-7">
           <span className="font-display text-xl tracking-tight text-foreground">AQLA</span>

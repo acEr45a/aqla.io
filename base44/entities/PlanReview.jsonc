@@ -1,0 +1,73 @@
+{
+  "name": "PlanReview",
+  "type": "object",
+  "properties": {
+    "protocol_id": {
+      "type": "string"
+    },
+    "protocol_family": {
+      "type": "string",
+      "enum": [
+        "SPARK",
+        "FLOW",
+        "DRIVE",
+        "LEARN",
+        "RESET"
+      ]
+    },
+    "cycle_started_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "responses": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "analysis_summary": {
+      "type": "string"
+    },
+    "observed_results": {
+      "type": "string"
+    },
+    "recommendation_reason": {
+      "type": "string"
+    },
+    "recommended_family": {
+      "type": "string",
+      "enum": [
+        "SPARK",
+        "FLOW",
+        "DRIVE",
+        "LEARN",
+        "RESET"
+      ]
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "moderate",
+        "high"
+      ]
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "switch"
+      ]
+    },
+    "completed_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "protocol_id",
+    "protocol_family",
+    "cycle_started_date",
+    "responses",
+    "decision",
+    "completed_date"
+  ]
+}
