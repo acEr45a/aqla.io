@@ -60,12 +60,26 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           );
         })}
 
-        <g pointerEvents="none" clipPath="url(#brainclip-outline)">
-          {SULCI.map((p, i) => (
-            <path key={i} d={p} fill="none" stroke="hsl(26 14% 8%)" strokeOpacity="0.32"
-              strokeWidth="1.75" strokeLinecap="round" />
-          ))}
-        </g>
+        {/* Gyri lines are clipped region by region so they never cross a lobe border */}
+        {REGIONS.map((r) => (
+          <g key={`sulci-${r.key}`} pointerEvents="none" clipPath={`url(#brainclip-${r.key})`}>
+            {SULCI.map((p, i) => (
+              <path key={i} d={p} fill="none" stroke="hsl(26 14% 8%)" strokeOpacity="0.32"
+                strokeWidth="1.75" strokeLinecap="butt" />
+            ))}
+          </g>
+        ))}
+
+        {REGIONS.map((r) => {
+          const d = byKey[r.key];
+          if (!d) return null;
+          const active = hover === r.key || selectedKey === r.key;
+          return (
+            <path key={`edge-${r.key}`} d={r.path} fill="none" pointerEvents="none"
+              stroke={active ? d.color : GREY_STROKE} strokeWidth={active ? 3 : 2}
+              strokeLinejoin="round" strokeLinecap="round" />
+          );
+        })}
 
         {OUTLINES.map((p, i) => (
           <path key={i} d={p} fill="none" stroke="hsl(40 12% 78%)" strokeWidth="2.5"
