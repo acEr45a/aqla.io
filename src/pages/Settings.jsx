@@ -8,15 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Lock, LogOut, ShieldCheck, Loader2 } from "lucide-react";
 import SettingRow from "@/components/settings/SettingRow";
+import SettingsSection from "@/components/settings/SettingsSection";
 
 const DEFAULTS = {
+  // notifications
   daily_reminder: true,
   reminder_time: "08:00",
   weekly_review_day: "sunday",
+  protocol_alerts: true,
+  experiment_alerts: true,
   email_updates: false,
+  // experience
   show_uncertainty: true,
   supplement_content: true,
   reduced_motion: false,
+  // privacy
+  research_contribution: false,
+  clinician_sharing: false,
+  ai_memory: true,
+  usage_analytics: true,
 };
 
 const DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -41,21 +51,25 @@ export default function Settings() {
     setSaving(false);
   };
 
+  const toggle = (key) => (
+    <Switch checked={!!prefs[key]} onCheckedChange={(v) => update({ [key]: v })} />
+  );
+
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       className="max-w-2xl mx-auto px-5 md:px-10 pt-10 md:pt-14">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-1">{user?.email || "—"}</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Account</p>
+          <h1 className="mt-2 font-display text-3xl md:text-4xl font-light tracking-tight text-foreground">Settings</h1>
+          <p className="text-sm text-muted-foreground mt-2">{user?.email || "—"}</p>
         </div>
-        {saving && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+        {saving && <Loader2 className="w-4 h-4 mt-2 animate-spin text-muted-foreground" />}
       </div>
 
-      <section className="aqla-panel rounded-2xl px-5 py-2 mt-8">
-        <p className="text-[11px] uppercase tracking-widest text-muted-foreground pt-4">Rhythm & reminders</p>
+      <SettingsSection title="Notifications" hint="How and when AQLA reaches out to you.">
         <SettingRow title="Daily check-in reminder" description="A nudge to log clarity, energy, stress and sleep.">
-          <Switch checked={prefs.daily_reminder} onCheckedChange={(v) => update({ daily_reminder: v })} />
+          {toggle("daily_reminder")}
         </SettingRow>
         <SettingRow title="Reminder time">
           <Input type="time" value={prefs.reminder_time} className="w-28"
@@ -69,26 +83,42 @@ export default function Settings() {
             </SelectContent>
           </Select>
         </SettingRow>
-        <SettingRow title="Email updates" description="Weekly progress summaries by email.">
-          <Switch checked={prefs.email_updates} onCheckedChange={(v) => update({ email_updates: v })} />
+        <SettingRow title="Protocol alerts" description="Notify me when a protocol starts, ends or is due for review.">
+          {toggle("protocol_alerts")}
         </SettingRow>
-      </section>
+        <SettingRow title="Experiment alerts" description="Notify me when an experiment reaches a decision point.">
+          {toggle("experiment_alerts")}
+        </SettingRow>
+        <SettingRow title="Email updates" description="Weekly progress summaries by email.">
+          {toggle("email_updates")}
+        </SettingRow>
+      </SettingsSection>
 
-      <section className="aqla-panel rounded-2xl px-5 py-2 mt-6">
-        <p className="text-[11px] uppercase tracking-widest text-muted-foreground pt-4">Experience</p>
+      <SettingsSection title="Experience" hint="How insights are presented across the app.">
         <SettingRow title="Show uncertainty indicators" description="Display confidence levels and evidence limits alongside insights.">
-          <Switch checked={prefs.show_uncertainty} onCheckedChange={(v) => update({ show_uncertainty: v })} />
+          {toggle("show_uncertainty")}
         </SettingRow>
         <SettingRow title="Supplement content" description="Include ingredient protocols and evidence passports.">
-          <Switch checked={prefs.supplement_content} onCheckedChange={(v) => update({ supplement_content: v })} />
+          {toggle("supplement_content")}
         </SettingRow>
         <SettingRow title="Reduce motion" description="Minimise animated visuals across the app.">
-          <Switch checked={prefs.reduced_motion} onCheckedChange={(v) => update({ reduced_motion: v })} />
+          {toggle("reduced_motion")}
         </SettingRow>
-      </section>
+      </SettingsSection>
 
-      <section className="aqla-panel rounded-2xl px-5 py-2 mt-6">
-        <p className="text-[11px] uppercase tracking-widest text-muted-foreground pt-4">Safety & privacy</p>
+      <SettingsSection title="Data & privacy" hint="You stay in control of how your cognitive data is used.">
+        <SettingRow title="Contribute to research" description="Share fully anonymised, aggregated results to improve AQLA's models.">
+          {toggle("research_contribution")}
+        </SettingRow>
+        <SettingRow title="Clinician sharing" description="Allow a reviewing clinician to see your protocols and safety flags.">
+          {toggle("clinician_sharing")}
+        </SettingRow>
+        <SettingRow title="AQLA Intelligence memory" description="Let the coach reference your history for more personalised answers.">
+          {toggle("ai_memory")}
+        </SettingRow>
+        <SettingRow title="Usage analytics" description="Anonymous product analytics that help improve the experience.">
+          {toggle("usage_analytics")}
+        </SettingRow>
         <SettingRow title="Safety screening" description="Review your eligibility answers and flags.">
           <Link to="/safety">
             <Button variant="outline" size="sm" className="gap-2"><ShieldCheck className="w-4 h-4" /> Open</Button>
@@ -99,7 +129,7 @@ export default function Settings() {
             <Button variant="outline" size="sm" className="gap-2"><Lock className="w-4 h-4" /> Open</Button>
           </Link>
         </SettingRow>
-      </section>
+      </SettingsSection>
 
       <div className="mt-6 mb-10">
         <Button variant="ghost" onClick={() => base44.auth.logout("/")}
