@@ -11,9 +11,9 @@ import LandingSections from "@/components/landing/LandingSections";
 import { ArrowRight, Zap } from "lucide-react";
 
 const STEPS = [
-  ["01", "Play the baseline tests", "Three short game-like tasks measure your real performance."],
-  ["02", "Create your account", "Your measured scores are saved to your new profile."],
-  ["03", "Get your Brain Map", "AQLA builds your personal protocol from real data."],
+  ["01", "Try three preview tasks", "Start the seven-part cognitive baseline with three short tasks—no account needed."],
+  ["02", "Add your questionnaire", "Create an account, save those results, and capture your sleep, stress, rhythm, and habits."],
+  ["03", "Complete your Brain Map", "Finish the four remaining measured tasks and combine them with your questionnaire."],
 ];
 
 export default function Landing() {
@@ -27,7 +27,7 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-3">
           <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2">Sign in</Link>
-          <Link to="/register" className="text-sm px-4 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-foreground">Get started</Link>
+          <Link to="/start" className="text-sm px-4 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-foreground">Get started</Link>
         </div>
       </header>
 
@@ -36,7 +36,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
             <Zap className="w-3.5 h-3.5" />
-            New here? Start by playing the baseline tests — no account needed.
+            New here? Try the first three of seven baseline tasks — no account needed.
           </motion.div>
           <h1 className="mt-6 text-4xl md:text-6xl font-light leading-[1.08] text-foreground">
             {"Your brain is giving you signals.".split(" ").map((word, i) => (
@@ -63,7 +63,7 @@ export default function Landing() {
             className="mt-10 flex flex-wrap gap-4">
             <Link to="/start" className="group relative inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
               <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping opacity-20 pointer-events-none" />
-              Play the Baseline Tests <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              Start the Cognitive Preview <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a href="#science" className="inline-flex items-center px-7 py-3.5 rounded-full border border-border text-foreground hover:border-foreground/30 transition-colors">
               Explore the Science
@@ -72,7 +72,7 @@ export default function Landing() {
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
           <BrainVisual domains={DEMO_DOMAINS} />
-          <p className="mt-1 text-center text-[11px] text-muted-foreground">Example Brain Map — your real scores replace these after the baseline tests.</p>
+          <p className="mt-1 text-center text-[11px] text-muted-foreground">Example Brain Map — your questionnaire and seven measured tasks build your real profile.</p>
         </motion.div>
       </section>
 

@@ -66,14 +66,14 @@ export default function Start() {
       <AnimatePresence mode="wait">
         {phase === "intro" ? (
           <motion.div key="intro" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-xl w-full">
-            <p className="text-xs text-primary tracking-widest uppercase">Step 1 of 3 · Your baseline</p>
+            <p className="text-xs text-primary tracking-widest uppercase">Step 1 · Cognitive preview</p>
             <h1 className="mt-3 text-3xl md:text-5xl font-light text-foreground leading-tight">
-              Start by playing the three baseline tests.
+              Begin with three of the seven baseline tasks.
             </h1>
             <p className="mt-4 text-muted-foreground text-sm leading-relaxed">
-              Before anything else, AQLA measures your real cognitive performance — three short, game-like tasks
-              taking about four minutes total. Complete all three, then create your account and your results carry
-              straight into your Brain Map.
+              These three short tasks take about four minutes and measure speed, attention, and recall. After creating
+              your account, they count automatically toward the full seven-task baseline. Your questionnaire measures
+              sleep, stress, daily rhythm, habits, and goals.
             </p>
             <div className="mt-8 space-y-3">
               {TESTS.map((t, i) => (
@@ -90,7 +90,7 @@ export default function Start() {
             <p className="mt-5 text-[11px] text-muted-foreground">Find a quiet spot — accuracy matters more than speed of setup.</p>
             <button onClick={() => setPhase("testing")}
               className="mt-6 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-              Begin test 1 of 3 <ArrowRight className="w-4 h-4" />
+              Begin preview task 1 of 3 <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
         ) : (
@@ -99,7 +99,7 @@ export default function Start() {
               className="mx-auto w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center">
               <Check className="w-7 h-7 text-primary" />
             </motion.div>
-            <h1 className="mt-6 text-3xl md:text-4xl font-light text-foreground">Baseline captured.</h1>
+            <h1 className="mt-6 text-3xl md:text-4xl font-light text-foreground">Preview captured.</h1>
             <div className="mt-8 grid grid-cols-3 gap-6">
               {TESTS.map((t, i) => (
                 <motion.div key={t.type} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.15 }}>
@@ -109,9 +109,9 @@ export default function Start() {
               ))}
             </div>
             <p className="mt-8 text-sm text-muted-foreground leading-relaxed">
-              Step 2: create your account. Your measured scores will be saved to your profile and woven into your Brain Map.
+              Next, create your account and complete the questionnaire. These three scores will be saved and count toward your seven-task baseline.
             </p>
-            <button onClick={() => navigate("/register")}
+            <button onClick={() => navigate("/register?returnTo=%2Fassessment")}
               className="mt-6 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
               Create my account <ArrowRight className="w-4 h-4" />
             </button>

@@ -113,8 +113,8 @@ export default function CognitiveTests() {
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Measure, don't guess.</h1>
       <p className="mt-3 text-sm text-muted-foreground max-w-lg leading-relaxed">
         Seven short tasks measure performance across speed, attention, memory, flexibility, spatial reasoning, and
-        verbal fluency. Other wellbeing signals are captured through your questionnaire. Complete these in a quiet
-        environment; results are revealed once all seven are done, then blended into your Brain Map.
+        verbal fluency. If you completed the three-task preview, those results count automatically here. Sleep, stress,
+        rhythm, habits, and goals come from your questionnaire. Results appear when all seven tasks are complete.
       </p>
 
       <div className="mt-10 space-y-3">

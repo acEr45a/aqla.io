@@ -13,7 +13,7 @@ const STAGES = [
   "Evaluating stimulant exposure",
   "Detecting conflicting habits",
   "Ranking your highest-impact opportunities",
-  "Building your first protocol",
+  "Building your questionnaire profile",
 ];
 
 const ANALYZED = ["Self-reported cognitive experience", "Daily rhythm and energy curve", "Sleep timing and recovery quality", "Stress and workload signals", "Caffeine, hydration, and activity patterns"];
@@ -78,10 +78,10 @@ export default function Analysis() {
               </motion.p>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <p className="text-foreground font-display text-xl">Your Brain Health Map is ready.</p>
-                <button onClick={() => navigate("/map")}
+                <p className="text-foreground font-display text-xl">Your questionnaire profile is ready.</p>
+                <button onClick={() => navigate("/tests")}
                   className="mt-5 inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-                  View my Brain Map <ArrowRight className="w-4 h-4" />
+                  Complete measured baseline <ArrowRight className="w-4 h-4" />
                 </button>
               </motion.div>
             )}
