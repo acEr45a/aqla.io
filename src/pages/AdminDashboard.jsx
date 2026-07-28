@@ -9,8 +9,15 @@ import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
 
+import EmailLogPanel from "@/components/admin/EmailLogPanel";
+import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
+import SiteDataPanel from "@/components/admin/SiteDataPanel";
+
 const TABS = [
 { id: "overview", label: "Overview" },
+{ id: "analytics", label: "Analytics" },
+{ id: "emails", label: "Emails" },
+{ id: "siteData", label: "Site data" },
 { id: "users", label: "Users & access" },
 { id: "ops", label: "Backend Ops" }];
 
@@ -74,6 +81,9 @@ export default function AdminDashboard() {
             <ProtocolChart data={data.protocolFamilies} />
           </>
         }
+        {tab === "analytics" && <AnalyticsPanel analytics={data.analytics} />}
+        {tab === "emails" && <EmailLogPanel stats={data.emails.stats} log={data.emails.log} />}
+        {tab === "siteData" && <SiteDataPanel siteData={data.siteData} days={data.days} />}
         {tab === "users" &&
         <>
             <AdminRolePanel />
