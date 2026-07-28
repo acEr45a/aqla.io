@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { DOMAINS } from "@/lib/scoring";
-import RadialMap from "@/components/brainmap/RadialMap";
+import BrainFigure from "@/components/brainmap/BrainFigure";
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
 
 const TrendIcon = ({ trend }) =>
@@ -49,8 +49,8 @@ export default function BrainMap() {
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your current profile</h1>
       <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-start">
         <div className="lg:sticky lg:top-10">
-          <RadialMap domains={domains} size={440} onSelect={(d) => { setSelected(d); setShowWhy(false); }} selectedKey={sel.key} />
-          <p className="mt-3 text-xs text-muted-foreground text-center">Select a domain to inspect it.</p>
+          <BrainFigure domains={domains} onSelect={(d) => { setSelected(d); setShowWhy(false); }} selectedKey={sel.key} />
+          <p className="mt-3 text-xs text-muted-foreground text-center">Each region fills to its score — select one to inspect it.</p>
         </div>
 
         <AnimatePresence mode="wait">
