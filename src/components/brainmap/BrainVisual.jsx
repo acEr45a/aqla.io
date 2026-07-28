@@ -24,47 +24,53 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
           if (!d) return null;
           const rank = rankFor(d.score);
           const active = activeKey === r.key;
-          const intensity = 0.5 + (d.score / 100) * 0.45;
-          const size = r.size;
+          const intensity = 0.55 + (d.score / 100) * 0.4;
+          const period = active ? 2.2 : 4.6 + i * 0.35;
           return (
-            <motion.button key={r.key} type="button" aria-label={`${d.label} — ${rank.name}`}
-              onClick={() => onSelect && onSelect(d)}
-              onMouseEnter={() => setHover(r.key)}
-              onMouseLeave={() => setHover(null)}
-              initial={{ opacity: 0, scale: 0.55 }}
-              animate={{
-                opacity: active ? [intensity, 1, intensity] : [intensity * 0.85, intensity, intensity * 0.85],
-                scale: active ? 1.12 : 1,
-              }}
-              transition={{
-                opacity: { duration: active ? 1.8 : 3.6 + i * 0.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.12 },
-                scale: { type: "spring", stiffness: 260, damping: 22 },
-              }}
-              className="absolute rounded-full"
+            <div key={r.key} className="absolute"
               style={{
-                left: `${r.x}%`, top: `${r.y}%`, width: `${size}%`,
-                aspectRatio: "1 / 0.85",
+                left: `${r.x}%`, top: `${r.y}%`, width: `${r.size}%`,
+                aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
-                background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}e6 46%, ${rank.color}8c 70%, ${rank.color}26 86%, transparent 94%)`,
-                filter: `blur(${active ? 8 : 12}px)`,
-                cursor: onSelect ? "pointer" : "default",
-              }}
-            />
+              }}>
+              <motion.button type="button" aria-label={`${d.label} — ${rank.name}`}
+                onClick={() => onSelect && onSelect(d)}
+                onMouseEnter={() => setHover(r.key)}
+                onMouseLeave={() => setHover(null)}
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{
+                  opacity: active ? [intensity, 1, intensity] : [intensity * 0.8, intensity, intensity * 0.8],
+                  scale: active ? [1.06, 1.16, 1.06] : [0.97, 1.04, 0.97],
+                }}
+                transition={{
+                  opacity: { duration: period, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
+                  scale: { duration: period, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
+                }}
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `radial-gradient(circle at 50% 45%, ${rank.color} 0%, ${rank.color}f2 44%, ${rank.color}99 68%, ${rank.color}33 85%, transparent 96%)`,
+                  filter: `blur(${active ? 9 : 13}px)`,
+                  cursor: onSelect ? "pointer" : "default",
+                }}
+              />
+            </div>
           );
         })}
 
         {/* ignition ripple on the active region */}
         <AnimatePresence>
           {activeRegion && activeDomain && (
-            <motion.span key={activeRegion.key} initial={{ opacity: 0.7, scale: 0.4 }} animate={{ opacity: 0, scale: 1.6 }}
-              exit={{ opacity: 0 }} transition={{ duration: 1.1, ease: "easeOut" }}
-              className="absolute rounded-full pointer-events-none"
+            <div key={activeRegion.key} className="absolute pointer-events-none"
               style={{
                 left: `${activeRegion.x}%`, top: `${activeRegion.y}%`,
-                width: `${activeRegion.size * 1.4}%`, aspectRatio: "1 / 0.85",
+                width: `${activeRegion.size * 1.35}%`, aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
-                border: `1px solid ${rankFor(activeDomain.score).color}`,
-              }} />
+              }}>
+              <motion.span initial={{ opacity: 0.55, scale: 0.5 }} animate={{ opacity: 0, scale: 1.35 }}
+                exit={{ opacity: 0 }} transition={{ duration: 1.3, ease: "easeOut" }}
+                className="absolute inset-0 rounded-full"
+                style={{ border: `1px solid ${rankFor(activeDomain.score).color}80` }} />
+            </div>
           )}
         </AnimatePresence>
 
@@ -91,9 +97,9 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 textShadow: "0 1px 6px rgba(0,0,0,0.9)",
                 cursor: onSelect ? "pointer" : "default",
               }}>
-              <span className="text-[10px] md:text-[11px] text-white/85 whitespace-nowrap">{d.label}</span>
-              <span className="font-display text-lg md:text-xl font-bold text-white tabular-nums leading-none">{d.score}</span>
-              <span className="mt-0.5 text-[9px] md:text-[10px] tracking-wider uppercase whitespace-nowrap" style={{ color: rank.color }}>{rank.name}</span>
+              <span className="text-[10px] md:text-[11px] text-white/80 whitespace-nowrap">{d.label}</span>
+              <span className="font-display text-lg md:text-xl font-semibold text-white tabular-nums leading-none">{d.score}</span>
+              <span className="mt-1 w-6 h-[2px] rounded-full" style={{ background: rank.color, boxShadow: `0 0 6px ${rank.color}` }} />
             </motion.div>
           );
         })}
