@@ -16,7 +16,7 @@ export const MOODS = [
   { id: "warm", label: "Warm", rate: 0.95, pitch: 1.15 },
 ];
 
-export const defaultPrefs = { accent: "en-GB", mood: "calm" };
+export const defaultPrefs = { accent: "en-GB", mood: "calm", speakReplies: true };
 
 export function loadVoicePrefs() {
   try {

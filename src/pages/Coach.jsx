@@ -6,6 +6,7 @@ import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import VoiceSettings from "@/components/coach/VoiceSettings";
 import AqlaReply from "@/components/coach/AqlaReply";
 import replyToSpeech from "@/lib/aqlaSpeech";
+import { loadVoicePrefs } from "@/lib/voicePrefs";
 import { Send, Sparkles } from "lucide-react";
 
 const SUGGESTED = [
@@ -79,7 +80,7 @@ USER QUESTION: ${question}`,
 
     setMessages((m) => [...m, { role: "aqla", ...res }]);
     setLoading(false);
-    if (voiceModeRef.current) {
+    if (voiceModeRef.current || loadVoicePrefs().speakReplies) {
       voice.speak(replyToSpeech(res));
     }
   };
@@ -131,7 +132,7 @@ USER QUESTION: ${question}`,
               <p className="max-w-md bg-secondary rounded-2xl rounded-br-sm px-5 py-3 text-sm text-foreground">{m.text}</p>
             </div>
           ) : (
-            <AqlaReply key={i} message={m} onConfirmPlanChange={() => confirmPlanChange(i)} onCancelPlanChange={() => cancelPlanChange(i)} />
+            <AqlaReply key={i} message={m} onSpeak={() => voice.speak(replyToSpeech(m))} onConfirmPlanChange={() => confirmPlanChange(i)} onCancelPlanChange={() => cancelPlanChange(i)} />
           )
         )}
 

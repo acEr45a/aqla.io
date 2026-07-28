@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Volume2 } from "lucide-react";
 
 const FIELDS = [
   ["What AQLA observed", "observed"],
@@ -7,7 +8,7 @@ const FIELDS = [
   ["Recommended next action", "next_action"],
 ];
 
-export default function AqlaReply({ message, compact = false, onConfirmPlanChange, onCancelPlanChange }) {
+export default function AqlaReply({ message, compact = false, onSpeak, onConfirmPlanChange, onCancelPlanChange }) {
   const chat = message.mode === "chat";
 
   return (
@@ -27,6 +28,12 @@ export default function AqlaReply({ message, compact = false, onConfirmPlanChang
             Confidence: {message.confidence}
           </span>
         </>
+      )}
+      {onSpeak && (
+        <button type="button" onClick={onSpeak}
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+          <Volume2 className="w-3.5 h-3.5" /> Listen
+        </button>
       )}
       {message.safety_note && (
         <p className="text-xs text-[#F2C04E] border-t border-border/40 pt-3">{message.safety_note}</p>

@@ -7,6 +7,7 @@ import AqlaReply from "@/components/coach/AqlaReply";
 import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import replyToSpeech from "@/lib/aqlaSpeech";
+import { loadVoicePrefs } from "@/lib/voicePrefs";
 
 const QUICK = [
   "Why has my focus been worse this week?",
@@ -25,12 +26,13 @@ export default function AqlaAssistant() {
 
   useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading, open]);
 
-  // Read AQLA's reply aloud when the question came in by voice.
+  // Read AQLA's reply aloud (voice questions always, typed ones when "speak replies" is on).
   useEffect(() => {
     if (messages.length <= spokenRef.current) return;
     spokenRef.current = messages.length;
     const last = messages[messages.length - 1];
-    if (!voiceModeRef.current || last?.role !== "aqla") return;
+    if (last?.role !== "aqla") return;
+    if (!voiceModeRef.current && !loadVoicePrefs().speakReplies) return;
     voice.speak(replyToSpeech(last));
   }, [messages, voice]);
 
@@ -83,7 +85,7 @@ export default function AqlaAssistant() {
                   <p className="max-w-[85%] bg-secondary rounded-2xl rounded-br-sm px-4 py-2.5 text-[13px] text-foreground">{m.text}</p>
                 </div>
               ) : (
-                <AqlaReply key={i} message={m} compact onConfirmPlanChange={() => confirmPlanChange(i)} onCancelPlanChange={() => cancelPlanChange(i)} />
+                <AqlaReply key={i} message={m} compact onSpeak={() => voice.speak(replyToSpeech(m))} onConfirmPlanChange={() => confirmPlanChange(i)} onCancelPlanChange={() => cancelPlanChange(i)} />
               ))}
 
               {loading && (
