@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import BrainVisual from "@/components/brainmap/BrainVisual";
+import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import { DOMAINS } from "@/lib/scoring";
 
 const DEMO_SCORES = { focus: 28, memory: 43, mental_energy: 57, stress_regulation: 71, sleep_recovery: 85, cognitive_resilience: 96, lifestyle_protection: 67, learning_capacity: 82 };
@@ -71,7 +71,7 @@ export default function Landing() {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
-          <BrainVisual key="landing-brain-map-current" domains={DEMO_DOMAINS} showRankNames />
+          <NeuralBrainVisual key="landing-neural-brain" domains={DEMO_DOMAINS} />
           <p className="mt-1 text-center text-[11px] text-muted-foreground">Example Brain Map — your questionnaire and seven measured tasks build your real profile.</p>
         </motion.div>
       </section>

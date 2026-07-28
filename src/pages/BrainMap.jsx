@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { DOMAINS } from "@/lib/scoring";
-import BrainVisual from "@/components/brainmap/BrainVisual";
+import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
 
 const TrendIcon = ({ trend }) =>
@@ -49,7 +49,7 @@ export default function BrainMap() {
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your current profile</h1>
       <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-start">
         <div className="lg:sticky lg:top-10">
-          <BrainVisual domains={domains} onSelect={(d) => { setSelected(d); setShowWhy(false); }} showRankNames />
+          <NeuralBrainVisual domains={domains} selectedKey={sel.key} onSelect={(d) => { setSelected(d); setShowWhy(false); }} />
         </div>
 
         <AnimatePresence mode="wait">

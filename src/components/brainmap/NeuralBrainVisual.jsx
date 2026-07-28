@@ -4,7 +4,7 @@ import NeuralBrainCanvas from "./NeuralBrainCanvas";
 import HologramLabels from "./HologramLabels";
 import RankLegend from "./RankLegend";
 
-export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
+export default function NeuralBrainVisual({ domains = [], onSelect, selectedKey }) {
   const [hover, setHover] = useState(null);
   const activeKey = hover || selectedKey;
   const activeRegion = REGIONS.find((region) => region.key === activeKey);
