@@ -128,6 +128,11 @@ export default function Settings() {
             <Button variant="outline" size="sm" className="gap-2"><ShieldCheck className="w-4 h-4" /> Open</Button>
           </Link>
         </SettingRow>
+        <SettingRow title="Account management" description="Profile, email preferences and privacy level.">
+          <Link to="/account-management">
+            <Button variant="outline" size="sm">Open</Button>
+          </Link>
+        </SettingRow>
         <SettingRow title="Trust & data" description="How your data is stored, used and governed.">
           <Link to="/trust">
             <Button variant="outline" size="sm" className="gap-2"><Lock className="w-4 h-4" /> Open</Button>

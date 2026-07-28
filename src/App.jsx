@@ -33,6 +33,8 @@ import Trust from '@/pages/Trust';
 import SettingsPage from '@/pages/Settings';
 import EvidenceLibrary from '@/pages/EvidenceLibrary';
 import HelpCenter from '@/pages/HelpCenter';
+import ExperimentalLogs from '@/pages/ExperimentalLogs';
+import AccountManagement from '@/pages/AccountManagement';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -86,6 +88,8 @@ const AuthenticatedApp = () => {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/evidence-library" element={<EvidenceLibrary />} />
           <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/experimental-logs" element={<ExperimentalLogs />} />
+          <Route path="/account-management" element={<AccountManagement />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

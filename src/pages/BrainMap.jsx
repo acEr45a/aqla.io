@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { DOMAINS } from "@/lib/scoring";
 import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
+import BrainHealthSummary from "@/components/brainmap/BrainHealthSummary";
 import { TrendingUp, TrendingDown, Minus, ArrowRight } from "lucide-react";
 
 const TrendIcon = ({ trend }) =>
@@ -47,6 +48,11 @@ export default function BrainMap() {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Brain Health Map</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Your current profile</h1>
+
+      <div className="mt-6">
+        <BrainHealthSummary domains={domains} />
+      </div>
+
       <div className="mt-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-start">
         <div className="lg:sticky lg:top-10">
           <NeuralBrainVisual domains={domains} selectedKey={sel.key} onSelect={(d) => { setSelected(d); setShowWhy(false); }} />
