@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import BrainVisual from "@/components/brainmap/BrainVisual";
 import { DOMAINS } from "@/lib/scoring";
 
-const DEMO_SCORES = { focus: 62, memory: 74, mental_energy: 58, stress_regulation: 47, sleep_recovery: 66, cognitive_resilience: 71, lifestyle_protection: 79, learning_capacity: 68 };
+const DEMO_SCORES = { focus: 28, memory: 43, mental_energy: 57, stress_regulation: 71, sleep_recovery: 85, cognitive_resilience: 96, lifestyle_protection: 67, learning_capacity: 82 };
 const DEMO_DOMAINS = DOMAINS.map((d) => ({ ...d, score: DEMO_SCORES[d.key] }));
 import NeuralField from "@/components/landing/NeuralField";
 import LandingSections from "@/components/landing/LandingSections";
