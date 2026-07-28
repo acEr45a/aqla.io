@@ -116,7 +116,7 @@ export default function LandingSections() {
       </section>
 
       <footer className="border-t border-border/50 py-10 text-center text-xs text-muted-foreground">
-        AQLA is a general wellness and performance platform. It does not diagnose, treat, prevent, or cure any condition.
+        AQLA is a neural wellness and performance platform. It does not diagnose, treat, prevent, or cure any condition.
       </footer>
     </>
   );
