@@ -18,6 +18,9 @@
     "sleep_quality": {
       "type": "number"
     },
+    "caffeine_drinks": {
+      "type": "string"
+    },
     "caffeine_servings": {
       "type": "number"
     },

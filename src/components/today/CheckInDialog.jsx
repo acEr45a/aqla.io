@@ -14,17 +14,10 @@ const FIELDS = [
 
 const DEMANDS = ["Deep focused work", "Meetings & people", "Learning", "Creative work", "Recovery day"];
 
-const CAFFEINE = [
-  { value: 0, label: "None" },
-  { value: 1, label: "1 drink" },
-  { value: 2, label: "2 drinks" },
-  { value: 3, label: "3 drinks" },
-  { value: 4, label: "4+ drinks" },
-];
 
 export default function CheckInDialog({ open, onOpenChange, onSaved }) {
   const [values, setValues] = useState({ clarity: 5, energy: 5, stress: 5, sleep_quality: 5 });
-  const [caffeine, setCaffeine] = useState(0);
+  const [caffeineDrinks, setCaffeineDrinks] = useState("");
   const [caffeineTime, setCaffeineTime] = useState("");
   const [demand, setDemand] = useState("");
   const [note, setNote] = useState("");
@@ -34,7 +27,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
     setSaving(true);
     await base44.entities.DailyCheckIn.create({
       date: localDateKey(),
-      ...values, caffeine_servings: caffeine, caffeine_last_time: caffeineTime, demand, note,
+      ...values, caffeine_drinks: caffeineDrinks, caffeine_last_time: caffeineTime, demand, note,
     });
     setSaving(false);
     onOpenChange(false);
@@ -59,17 +52,12 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
             </div>
           ))}
           <div>
-            <p className="text-sm text-foreground mb-3">How much caffeine did you have today?</p>
-            <div className="flex flex-wrap gap-2">
-              {CAFFEINE.map((c) => (
-                <button key={c.value} type="button" onClick={() => setCaffeine(c.value)}
-                  className={`px-3.5 py-2 rounded-full border text-xs transition-all ${
-                    caffeine === c.value ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground"}`}>
-                  {c.label}
-                </button>
-              ))}
-            </div>
-            {caffeine > 0 && (
+            <p className="text-sm text-foreground mb-3">What caffeinated drinks did you have today?</p>
+            <Textarea value={caffeineDrinks} onChange={(e) => setCaffeineDrinks(e.target.value)}
+              placeholder="e.g. two double espressos, one green tea, a Red Bull in the afternoon"
+              className="bg-secondary/50 border-border text-sm" rows={2} />
+            <p className="mt-2 text-xs text-muted-foreground">Describe it in your own words — AQLA Intelligence will interpret the type, amount, and timing.</p>
+            {caffeineDrinks.trim() && (
               <div className="mt-3 flex items-center justify-between gap-4">
                 <span className="text-sm text-muted-foreground">Time of last caffeine</span>
                 <input type="time" value={caffeineTime} onChange={(e) => setCaffeineTime(e.target.value)}
