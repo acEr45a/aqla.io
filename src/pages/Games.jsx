@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { CATEGORIES, GAMES, gamesIn } from "@/lib/gamesCatalog";
 import GameRow from "@/components/games/GameRow";
 import GamePlayer from "@/components/games/GamePlayer";
+import ComingSoonRow from "@/components/games/ComingSoonRow";
 
 export default function Games() {
   const [rows, setRows] = useState([]);
@@ -56,6 +57,8 @@ export default function Games() {
       {CATEGORIES.map((c) => (
         <GameRow key={c.key} category={c} games={gamesIn(c.key)} stats={stats} onPlay={setActive} />
       ))}
+
+      <ComingSoonRow />
     </motion.div>
   );
 }

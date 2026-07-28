@@ -4,7 +4,7 @@ import MemoryTest from "@/components/tests/MemoryTest";
 import EchoChamberGame from "@/components/games/EchoChamberGame";
 import TaskSwitchTest from "@/components/tests/TaskSwitchTest";
 import SpatialTest from "@/components/tests/SpatialTest";
-import { Zap, Eye, Layers, AudioLines, Shuffle, Box, CircleDot, Grid3X3, GitFork } from "lucide-react";
+import { Zap, Eye, Layers, AudioLines, Shuffle, Box, CircleDot, Grid3X3, GitFork, Waves, Hand, Type, Map, Binary, Timer } from "lucide-react";
 import StreamTapGame from "@/components/games/StreamTapGame";
 import PatternForgeGame from "@/components/games/PatternForgeGame";
 import RuleRushGame from "@/components/games/RuleRushGame";
@@ -74,6 +74,40 @@ export const GAMES = [
     desc: "Apply a changing rule quickly while keeping every decision accurate.",
     art: "from-chart-4/25 via-chart-5/10 to-background", iconTone: "text-chart-4",
     domains: ["focus", "cognitive_resilience"], categories: ["control", "speed"],
+  },
+];
+
+// Training modules in development — displayed as locked previews only.
+export const UPCOMING_GAMES = [
+  {
+    id: "dual_stream", name: "Dual Stream", icon: Waves, trains: "Divided attention",
+    desc: "Hold two competing input streams at once without losing either thread.",
+    art: "from-chart-3/25 via-chart-2/10 to-background", iconTone: "text-chart-3",
+  },
+  {
+    id: "inhibit", name: "Inhibit", icon: Hand, trains: "Impulse control",
+    desc: "Stop a prepared response the instant the signal reverses.",
+    art: "from-chart-5/25 via-secondary to-background", iconTone: "text-chart-5",
+  },
+  {
+    id: "word_forge", name: "Word Forge", icon: Type, trains: "Verbal fluency",
+    desc: "Generate valid words under tightening category and time constraints.",
+    art: "from-chart-4/25 via-secondary to-background", iconTone: "text-chart-4",
+  },
+  {
+    id: "maze_mind", name: "Maze Mind", icon: Map, trains: "Spatial navigation",
+    desc: "Build and hold a mental map, then navigate it from memory.",
+    art: "from-primary/20 via-chart-3/10 to-background", iconTone: "text-primary",
+  },
+  {
+    id: "logic_gate", name: "Logic Gate", icon: Binary, trains: "Abstract reasoning",
+    desc: "Infer the hidden rule behind each sequence before time runs out.",
+    art: "from-chart-2/25 via-chart-5/10 to-background", iconTone: "text-chart-2",
+  },
+  {
+    id: "tempo_lock", name: "Tempo Lock", icon: Timer, trains: "Timing precision",
+    desc: "Lock onto an interval and reproduce it without the cue.",
+    art: "from-chart-1/25 via-secondary to-background", iconTone: "text-chart-1",
   },
 ];
 
