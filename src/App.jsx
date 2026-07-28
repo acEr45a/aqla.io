@@ -31,6 +31,8 @@ import Science from '@/pages/Science';
 import Clinician from '@/pages/Clinician';
 import Trust from '@/pages/Trust';
 import SettingsPage from '@/pages/Settings';
+import EvidenceLibrary from '@/pages/EvidenceLibrary';
+import HelpCenter from '@/pages/HelpCenter';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -82,6 +84,8 @@ const AuthenticatedApp = () => {
           <Route path="/clinician" element={<Clinician />} />
           <Route path="/trust" element={<Trust />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/evidence-library" element={<EvidenceLibrary />} />
+          <Route path="/help-center" element={<HelpCenter />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
