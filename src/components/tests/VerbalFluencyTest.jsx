@@ -1,0 +1,10 @@
+import React, { useEffect, useState } from "react";
+
+export default function VerbalFluencyTest({ onComplete }) {
+  const [started, setStarted] = useState(false); const [words, setWords] = useState([]); const [text, setText] = useState(""); const [seconds, setSeconds] = useState(60);
+  useEffect(() => { if (!started || seconds <= 0) return; const timer = setTimeout(() => setSeconds((v) => v - 1), 1000); return () => clearTimeout(timer); }, [started, seconds]);
+  useEffect(() => { if (started && seconds === 0) onComplete({ raw: { words, count: words.length }, score: Math.min(100, words.length * 5) }); }, [started, seconds]);
+  const add = (e) => { e.preventDefault(); const word = text.trim().toLowerCase(); if (word && !words.includes(word)) setWords((v) => [...v, word]); setText(""); };
+  if (!started) return <div className="text-center max-w-sm"><p className="text-sm text-muted-foreground leading-relaxed">Name as many animals as you can in one minute. Enter one distinct animal at a time.</p><button onClick={() => setStarted(true)} className="mt-6 px-6 py-3 rounded-full bg-primary text-primary-foreground text-sm font-medium">Start timer</button></div>;
+  return <div className="w-full max-w-md text-center"><p className="font-display text-5xl text-primary tabular-nums">{seconds}s</p><p className="mt-2 text-xs text-muted-foreground">Animals named: {words.length}</p><form onSubmit={add} className="mt-7 flex gap-2"><input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. dolphin" className="flex-1 h-11 rounded-xl bg-secondary border border-border px-4 text-sm" /><button className="px-4 rounded-xl bg-primary text-primary-foreground text-sm">Add</button></form><p className="mt-5 text-xs text-muted-foreground text-left">{words.join(" · ")}</p></div>;
+}

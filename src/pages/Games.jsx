@@ -18,19 +18,20 @@ export default function Games() {
   const stats = useMemo(() => {
     const s = {};
     rows.forEach((r) => {
-      const e = s[r.test_type] || { best: null, plays: 0 };
+      const key = r.raw_results?.game_id || r.test_type;
+      const e = s[key] || { best: null, plays: 0 };
       e.plays += 1;
       const v = Math.round(r.normalized_score);
       e.best = e.best == null ? v : Math.max(e.best, v);
-      s[r.test_type] = e;
+      s[key] = e;
     });
     return s;
   }, [rows]);
 
-  const untrained = GAMES.filter((g) => !stats[g.testType]);
+  const untrained = GAMES.filter((g) => !stats[g.id]);
 
   if (active) {
-    return <GamePlayer game={active} best={stats[active.testType]?.best}
+    return <GamePlayer game={active} best={stats[active.id]?.best}
       onClose={() => setActive(null)} onRecorded={load} />;
   }
 

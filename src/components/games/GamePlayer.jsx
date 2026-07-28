@@ -13,7 +13,7 @@ export default function GamePlayer({ game, best, onClose, onRecorded }) {
     setSaving(true);
     await base44.entities.CognitiveTest.create({
       test_type: game.testType,
-      raw_results: raw,
+      raw_results: { ...raw, game_id: game.id },
       normalized_score: score,
       completed_date: new Date().toISOString(),
       valid: true,

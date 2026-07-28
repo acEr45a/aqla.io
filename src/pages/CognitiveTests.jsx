@@ -7,7 +7,8 @@ import MemoryTest from "@/components/tests/MemoryTest";
 import NBackTest from "@/components/tests/NBackTest";
 import TaskSwitchTest from "@/components/tests/TaskSwitchTest";
 import SpatialTest from "@/components/tests/SpatialTest";
-import { Zap, Eye, Layers, Brain, Shuffle, Box, Check, X } from "lucide-react";
+import VerbalFluencyTest from "@/components/tests/VerbalFluencyTest";
+import { Zap, Eye, Layers, Brain, Shuffle, Box, MessageSquareText, Check, X } from "lucide-react";
 
 const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Processing speed — respond the instant the signal appears.", icon: Zap, minutes: "~1 min", Component: ReactionTest },
@@ -16,6 +17,7 @@ const TESTS = [
   { type: "working_memory", name: "Working memory", desc: "Tap when a letter repeats the one right before it.", icon: Brain, minutes: "~1 min", Component: NBackTest },
   { type: "task_switching", name: "Cognitive flexibility", desc: "Answer a simple question about a number — the question keeps changing.", icon: Shuffle, minutes: "~1 min", Component: TaskSwitchTest },
   { type: "visual_spatial", name: "Visual–spatial", desc: "Is the shape the same one turned around, or flipped?", icon: Box, minutes: "~1 min", Component: SpatialTest },
+  { type: "verbal_fluency", name: "Verbal fluency", desc: "Name distinct animals within one minute.", icon: MessageSquareText, minutes: "~1 min", Component: VerbalFluencyTest },
 ];
 
 // Blend measured test scores into Brain Map domains: [domain_key, test_type, weight of test]
@@ -28,6 +30,7 @@ const BLEND = [
   ["learning_capacity", "memory_recall", 0.25],
   ["learning_capacity", "task_switching", 0.2],
   ["learning_capacity", "visual_spatial", 0.15],
+  ["learning_capacity", "verbal_fluency", 0.2],
   ["cognitive_resilience", "reaction_time", 0.2],
   ["cognitive_resilience", "task_switching", 0.2],
 ];
@@ -109,9 +112,9 @@ export default function CognitiveTests() {
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Cognitive baseline</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Measure, don't guess.</h1>
       <p className="mt-3 text-sm text-muted-foreground max-w-lg leading-relaxed">
-        Six short tasks measure your actual performance across speed, attention, memory, flexibility, and spatial
-        reasoning. Complete them in a quiet environment. Results are revealed once all six are done, then blended into
-        your Brain Map.
+        Seven short tasks measure performance across speed, attention, memory, flexibility, spatial reasoning, and
+        verbal fluency. Other wellbeing signals are captured through your questionnaire. Complete these in a quiet
+        environment; results are revealed once all seven are done, then blended into your Brain Map.
       </p>
 
       <div className="mt-10 space-y-3">
@@ -140,7 +143,7 @@ export default function CognitiveTests() {
 
       {results && !allDone && Object.keys(results).length > 0 && (
         <p className="mt-6 text-xs text-muted-foreground">
-          Results stay hidden until all six tests are complete — this keeps your baseline unbiased.
+          Results stay hidden until all seven tests are complete — this keeps your baseline unbiased.
         </p>
       )}
 

@@ -4,7 +4,10 @@ import MemoryTest from "@/components/tests/MemoryTest";
 import NBackTest from "@/components/tests/NBackTest";
 import TaskSwitchTest from "@/components/tests/TaskSwitchTest";
 import SpatialTest from "@/components/tests/SpatialTest";
-import { Zap, Eye, Layers, Brain, Shuffle, Box } from "lucide-react";
+import { Zap, Eye, Layers, Brain, Shuffle, Box, CircleDot, Grid3X3, GitFork } from "lucide-react";
+import StreamTapGame from "@/components/games/StreamTapGame";
+import PatternForgeGame from "@/components/games/PatternForgeGame";
+import RuleRushGame from "@/components/games/RuleRushGame";
 
 // Every game trains one mental function and is recorded as a cognitive test,
 // so repeated play feeds Progress and the Brain Map.
@@ -44,6 +47,24 @@ export const GAMES = [
     icon: Box, minutes: "1 min", trains: "Visual–spatial reasoning",
     desc: "Same shape turned around, or mirrored? Trains mental rotation and imagery.",
     domains: ["learning_capacity"], categories: ["spatial"],
+  },
+  {
+    id: "stream_tap", name: "Stream Tap", testType: "reaction_time", Component: StreamTapGame,
+    icon: CircleDot, minutes: "1 min", trains: "Target tracking",
+    desc: "Track a fast-changing target across a live number field.",
+    domains: ["focus", "cognitive_resilience"], categories: ["speed", "focus"],
+  },
+  {
+    id: "pattern_forge", name: "Pattern Forge", testType: "working_memory", Component: PatternForgeGame,
+    icon: Grid3X3, minutes: "2 min", trains: "Sequence memory",
+    desc: "Build back colour sequences under pressure, one pattern at a time.",
+    domains: ["memory", "learning_capacity"], categories: ["memory", "spatial"],
+  },
+  {
+    id: "rule_rush", name: "Rule Rush", testType: "task_switching", Component: RuleRushGame,
+    icon: GitFork, minutes: "1 min", trains: "Rule control",
+    desc: "Apply a changing rule quickly while keeping every decision accurate.",
+    domains: ["focus", "cognitive_resilience"], categories: ["control", "speed"],
   },
 ];
 

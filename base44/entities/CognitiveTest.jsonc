@@ -10,7 +10,8 @@
         "memory_recall",
         "working_memory",
         "task_switching",
-        "visual_spatial"
+        "visual_spatial",
+        "verbal_fluency"
       ]
     },
     "raw_results": {

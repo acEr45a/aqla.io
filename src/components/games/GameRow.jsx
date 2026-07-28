@@ -28,7 +28,7 @@ export default function GameRow({ category, games, stats, onPlay }) {
       <div ref={rail} className="mt-4 flex gap-4 overflow-x-auto px-5 md:px-10 pb-3 scrollbar-none">
         {games.map((g) => (
           <GameCard key={g.id} game={g} onPlay={onPlay}
-            best={stats[g.testType]?.best} plays={stats[g.testType]?.plays || 0} />
+            best={stats[g.id]?.best} plays={stats[g.id]?.plays || 0} />
         ))}
       </div>
     </section>
