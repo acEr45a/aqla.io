@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { SCREENING_QUESTIONS, STATUS_META, evaluateEligibility } from "@/lib/safety";
-import { Shield, ArrowRight } from "lucide-react";
+import { Shield, ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function SafetyScreening() {
   const navigate = useNavigate();
@@ -65,6 +65,10 @@ export default function SafetyScreening() {
   if (step === -1) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16">
+        <Link to="/settings"
+          className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft className="w-4 h-4" /> Back to settings
+        </Link>
         <p className="text-xs text-muted-foreground tracking-widest uppercase">Safety screening</p>
         <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Before any formula, safety comes first.</h1>
         <p className="mt-4 text-muted-foreground text-sm leading-relaxed max-w-lg">
