@@ -27,21 +27,9 @@ const speak = (text, options = {}) => new Promise((resolve) => {
 });
 
 async function speakWithProgressiveEcho(phrase, level) {
-  const words = phrase.split(" ");
-  const splitAt = Math.max(1, Math.ceil(words.length / 2));
-  const clearPart = words.slice(0, splitAt).join(" ");
-  const echoPart = words.length === 1 ? words : words.slice(splitAt);
-  await speak(clearPart, { volume: 1, rate: 0.9 });
-
-  for (let wordIndex = 0; wordIndex < echoPart.length; wordIndex++) {
-    const severity = (wordIndex + 1) / echoPart.length;
-    await speak(echoPart[wordIndex], { volume: 0.94, rate: 0.9 });
-    const levelPressure = Math.min(0.18, level * 0.025);
-    await speak(echoPart[wordIndex], {
-      volume: Math.max(0.18, 0.52 * Math.pow(0.72, severity + levelPressure)),
-      rate: 1 + severity * 0.2 + levelPressure,
-      pitch: Math.max(0.62, 0.94 - severity * 0.15 - levelPressure),
-    });
+  await speak(phrase, { volume: 1, rate: 0.9 });
+  if (level === 0) {
+    await speak(phrase, { volume: 0.42, rate: 1.08, pitch: 0.82 });
   }
 }
 
@@ -91,7 +79,7 @@ export default function EchoChamberGame({ onComplete }) {
     <div className="max-w-sm mx-auto text-center">
       <AudioLines className="w-10 h-10 mx-auto text-primary" />
       <h2 className="mt-4 font-display text-2xl text-foreground">Echo Chamber</h2>
-      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Type exactly what you hear. Each phrase begins clearly, then each word in its second half gets one distinct echo that worsens toward the end. Your run ends when the message is lost.</p>
+      <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Type exactly what you hear. The first prompt is played twice. Every prompt after that is spoken once with no repeated words. Your run ends when the message is lost.</p>
       <p className="mt-3 text-xs text-muted-foreground">Headphones recommended.</p>
       <button onClick={() => playLevel(0)} className="mt-8 rounded-full bg-primary px-7 py-3.5 text-sm font-medium text-primary-foreground">Enter the chamber</button>
     </div>
