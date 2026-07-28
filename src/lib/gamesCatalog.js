@@ -35,8 +35,8 @@ export const GAMES = [
   },
   {
     id: "echo_chamber", name: "Echo Chamber", testType: "sustained_attention", Component: EchoChamberGame,
-    icon: AudioLines, minutes: "1 min", trains: "Auditory focus",
-    desc: "Listen for repeated tones and hold your focus inside the sound field.",
+    icon: AudioLines, minutes: "2 min", trains: "Auditory focus",
+    desc: "Type the message as layered echoes grow deeper, longer, and harder to separate.",
     art: "from-chart-3/30 via-secondary to-background", iconTone: "text-chart-3",
     domains: ["focus", "cognitive_resilience"], categories: ["focus", "control"],
   },
