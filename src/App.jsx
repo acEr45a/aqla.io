@@ -34,6 +34,8 @@ import SettingsPage from '@/pages/Settings';
 import EvidenceLibrary from '@/pages/EvidenceLibrary';
 import HelpCenter from '@/pages/HelpCenter';
 import AccountManagement from '@/pages/AccountManagement';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfUse from '@/pages/TermsOfUse';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +69,8 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfUse />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/analysis" element={<Analysis />} />

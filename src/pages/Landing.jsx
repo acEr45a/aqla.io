@@ -102,8 +102,8 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>© 2026 AQLA. All rights reserved.</p>
           <div className="flex items-center gap-5">
-            <Link to="/trust" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-            <Link to="/trust" className="hover:text-foreground transition-colors">Terms of Use</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Use</Link>
             <span>Neural wellness, not medical advice.</span>
           </div>
         </div>
