@@ -52,19 +52,22 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
       </g>
 
       <g mask="url(#brain-model-mask)">
+        <rect x="80" y="70" width="500" height="460" fill="hsl(var(--muted))" />
         {REGIONS.map((region) => {
           const domain = byKey[region.key];
           if (!domain) return null;
           const rank = rankFor(domain.score);
-          const active = activeKey === region.key;
           return (
-            <path key={region.key} d={region.path} fill={`url(#glass-${region.key})`} fillOpacity={active ? 1 : 0.8}
-              stroke={rank.color} strokeWidth={active ? 2.5 : 1} strokeOpacity={active ? 1 : 0.6}
-              className="cursor-pointer transition-all duration-200"
-              onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
-              onMouseMove={(event) => moveTooltip(event, region.key)}
-              onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
-              onClick={() => onSelect?.(domain)} />
+            <g key={region.key}>
+              <path d={region.path} fill={rank.color} stroke={rank.color} strokeWidth="14" strokeLinejoin="round" pointerEvents="none" />
+              <path d={region.path} fill={`url(#glass-${region.key})`} fillOpacity="1"
+                className="cursor-pointer transition-opacity duration-200"
+                opacity={activeKey && activeKey !== region.key ? 0.78 : 1}
+                onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
+                onMouseMove={(event) => moveTooltip(event, region.key)}
+                onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
+                onClick={() => onSelect?.(domain)} />
+            </g>
           );
         })}
 
@@ -81,29 +84,9 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         preserveAspectRatio="xMidYMid slice" opacity="0.2"
         style={{ mixBlendMode: "screen" }} pointerEvents="none" />
 
-      {REGIONS.map((region) => {
-        const domain = byKey[region.key];
-        if (!domain) return null;
-        const rank = rankFor(domain.score);
-        const [lx, ly] = region.label;
-        return (
-          <g key={`label-${region.key}`} pointerEvents="none">
-            {region.anchor && (
-              <line x1={lx} y1={ly} x2={region.anchor[0]} y2={region.anchor[1]}
-                stroke={rank.color} strokeOpacity="0.45" strokeWidth="1" />
-            )}
-            <text x={lx} y={ly} textAnchor="middle" className="font-display" fontSize="18" fontWeight="600" fill={rank.color}>
-              {domain.score}
-            </text>
-            <text x={lx} y={ly + 16} textAnchor="middle" fontSize="12" fill="hsl(35 9% 72%)">
-              {domain.label}
-            </text>
-          </g>
-        );
-      })}
-
       <BrainRankTooltip
         domain={tooltip ? byKey[tooltip.key] : null}
+        region={tooltip ? REGIONS.find((item) => item.key === tooltip.key) : null}
         x={tooltip?.x || 0}
         y={tooltip?.y || 0}
       />
