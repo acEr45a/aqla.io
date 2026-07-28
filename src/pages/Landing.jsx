@@ -71,7 +71,7 @@ export default function Landing() {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
-          <BrainVisual domains={DEMO_DOMAINS} showRankNames />
+          <BrainVisual key="landing-brain-map-current" domains={DEMO_DOMAINS} showRankNames />
           <p className="mt-1 text-center text-[11px] text-muted-foreground">Example Brain Map — your questionnaire and seven measured tasks build your real profile.</p>
         </motion.div>
       </section>
