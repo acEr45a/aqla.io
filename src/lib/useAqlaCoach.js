@@ -26,7 +26,11 @@ export function useAqlaCoach() {
 
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
-Rules: ground answers ONLY in the user data below; mention uncertainty; separate observation from inference; never diagnose, never advise on medication, never override safety rules; admit when data is insufficient; recommend clinician review for red flags. Be concise and precise. No hype. If the user explicitly asks to change plans, assess the five available families and propose at most one different plan. Never change it yourself: set plan_change_requested true so the app can ask the user to confirm.
+FIRST decide the mode of your reply:
+- mode "chat" — greetings, small talk, thanks, jokes, "how are you", personal chit-chat, or anything not asking about the user's brain data. Reply warmly and briefly (1-3 sentences) in chat_reply, like a friendly human colleague. Use the user's name or their data only if it fits naturally. Do NOT fill the analysis fields with placeholders; leave them as empty strings. Never force an analysis on small talk, and you may gently invite a question about their focus, sleep or protocol.
+- mode "analysis" — any question about their cognition, data, protocol, habits or evidence. Fill observed/explanation/next_action/confidence and leave chat_reply empty.
+
+Analysis rules: ground answers ONLY in the user data below; mention uncertainty; separate observation from inference; never diagnose, never advise on medication, never override safety rules; admit when data is insufficient; recommend clinician review for red flags. Be concise and precise. No hype. If the user explicitly asks to change plans, assess the five available families and propose at most one different plan. Never change it yourself: set plan_change_requested true so the app can ask the user to confirm.
 
 USER DATA:
 Brain domains: ${JSON.stringify((context?.domains || []).map((d) => ({ name: d.domain_name, score: d.score, trend: d.trend, limiting: d.limiting_factors })))}
@@ -39,6 +43,8 @@ USER QUESTION: ${question}`,
       response_json_schema: {
         type: "object",
         properties: {
+          mode: { type: "string", enum: ["chat", "analysis"] },
+          chat_reply: { type: "string", description: "Conversational reply for small talk. Empty when mode is analysis." },
           observed: { type: "string", description: "What AQLA observed in the data" },
           explanation: { type: "string", description: "Most likely explanation" },
           confidence: { type: "string", enum: ["low", "moderate", "high"] },
@@ -48,7 +54,7 @@ USER QUESTION: ${question}`,
           recommended_family: { type: "string", enum: ["NONE", "SPARK", "FLOW", "DRIVE", "LEARN", "RESET"] },
           change_reason: { type: "string" },
         },
-        required: ["observed", "explanation", "confidence", "next_action", "plan_change_requested", "recommended_family"],
+        required: ["mode", "observed", "explanation", "confidence", "next_action", "plan_change_requested", "recommended_family"],
       },
     });
 

@@ -6,6 +6,7 @@ import { useAqlaCoach } from "@/lib/useAqlaCoach";
 import AqlaReply from "@/components/coach/AqlaReply";
 import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
+import replyToSpeech from "@/lib/aqlaSpeech";
 
 const QUICK = [
   "Why has my focus been worse this week?",
@@ -30,7 +31,7 @@ export default function AqlaAssistant() {
     spokenRef.current = messages.length;
     const last = messages[messages.length - 1];
     if (!voiceModeRef.current || last?.role !== "aqla") return;
-    voice.speak(`${last.observed} ${last.explanation} Recommended next action: ${last.next_action}. Confidence: ${last.confidence}.${last.safety_note ? ` Safety note: ${last.safety_note}` : ""}`);
+    voice.speak(replyToSpeech(last));
   }, [messages, voice]);
 
   useEffect(() => { if (!open) voice.stopSpeaking(); }, [open, voice]);
