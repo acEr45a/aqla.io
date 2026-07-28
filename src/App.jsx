@@ -38,6 +38,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import AdminDashboard from '@/pages/AdminDashboard';
 import CommunityInsights from '@/pages/CommunityInsights';
+import AdminSecurityGate from '@/components/admin/AdminSecurityGate';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -96,7 +97,7 @@ const AuthenticatedApp = () => {
           <Route path="/evidence-library" element={<EvidenceLibrary />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/account-management" element={<AccountManagement />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminSecurityGate><AdminDashboard /></AdminSecurityGate>} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

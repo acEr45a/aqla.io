@@ -1,6 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { waitUntil } from "base44:runtime";
-import { emailShell } from "../../shared/summaryEmails.js";
+import { registrationEmailHtml } from "../../shared/summaryEmails.js";
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -10,8 +10,8 @@ export default async function(req: Request): Promise<Response> {
 
     waitUntil(base44.asServiceRole.integrations.Core.SendEmail({
       to: user.email,
-      subject: "Welcome to AQLA",
-      body: emailShell("Welcome to AQLA", `<p>Welcome to AQLA${user.full_name ? `, ${user.full_name}` : ""}. Your account is verified and ready. You can now begin your assessment and build your personalised Brain Map.</p>`),
+      subject: "Welcome to AQLA — your brain OS is ready",
+      body: registrationEmailHtml(user.full_name || "", req.headers.get("origin") || ""),
       from_name: "AQLA",
     }));
 
