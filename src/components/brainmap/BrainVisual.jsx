@@ -19,14 +19,6 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
   return (
     <div>
       <div className="relative w-full max-w-[540px] mx-auto aspect-square select-none">
-        <div className="absolute inset-0" style={{
-          zIndex: 3,
-          WebkitMaskImage: `url(${BRAIN_IMAGE})`, maskImage: `url(${BRAIN_IMAGE})`,
-          WebkitMaskSize: "94% 94%", maskSize: "94% 94%",
-          WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
-          WebkitMaskPosition: "center", maskPosition: "center",
-          maskMode: "luminance", WebkitMaskSourceType: "luminance",
-        }}>
         {REGIONS.map((r, i) => {
           const d = byKey[r.key];
           if (!d) return null;
@@ -40,6 +32,7 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
                 left: `${r.x}%`, top: `${r.y}%`, width: `${r.size}%`,
                 aspectRatio: "1 / 0.88",
                 transform: "translate(-50%, -50%)",
+                zIndex: 3,
               }}>
               <motion.button type="button" aria-label={`${d.label} — ${rank.name}`}
                 onClick={() => onSelect && onSelect(d)}
@@ -64,7 +57,6 @@ export default function BrainVisual({ domains = [], onSelect, selectedKey }) {
             </div>
           );
         })}
-        </div>
 
         {/* ignition ripple on the active region */}
         <AnimatePresence>
