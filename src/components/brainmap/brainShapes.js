@@ -7,45 +7,26 @@
 export const SILHOUETTE =
   "M 215 112 C 260 88, 305 84, 352 92 C 392 88, 435 92, 468 108 C 520 128, 558 190, 562 255 C 564 295, 552 320, 535 332 C 546 342, 552 350, 548 360 C 558 388, 542 415, 505 424 C 478 431, 452 428, 434 414 C 428 406, 422 400, 418 398 C 421 422, 420 448, 415 470 C 403 475, 391 473, 383 465 C 378 435, 379 400, 386 366 C 350 380, 310 380, 280 372 C 225 362, 185 340, 172 315 C 162 310, 154 308, 148 305 C 100 300, 80 268, 88 220 C 100 165, 150 125, 215 112 Z";
 
-// Gyri lines per region — each set is clipped to its own region path so the
-// lines always sit inside the correct functional area.
-export const GYRI = {
-  focus: [
-    "M 120 130 C 150 160, 158 215, 146 290",
-    "M 96 160 C 126 190, 132 240, 122 300",
-    "M 78 200 C 104 226, 110 262, 104 300",
-  ],
-  mental_energy: [
-    "M 232 96 C 226 150, 218 210, 208 275",
-    "M 272 90 C 268 145, 258 205, 246 268",
-    "M 314 88 C 310 142, 300 200, 288 256",
-  ],
-  cognitive_resilience: [
-    "M 372 90 C 364 142, 352 198, 336 252",
-    "M 412 88 C 408 140, 400 196, 390 252",
-    "M 452 96 C 452 148, 448 202, 442 258",
-  ],
-  learning_capacity: [
-    "M 478 110 C 500 150, 510 200, 506 270",
-    "M 506 122 C 528 160, 540 208, 536 280",
-    "M 532 148 C 552 184, 560 226, 556 282",
-  ],
-  memory: [
-    "M 188 296 C 250 276, 330 280, 440 296",
-    "M 196 322 C 258 304, 340 308, 444 322",
-    "M 210 348 C 268 332, 342 336, 430 344",
-  ],
-  lifestyle_protection: [
-    "M 436 350 C 476 336, 522 344, 548 366",
-    "M 430 376 C 472 362, 520 368, 552 388",
-    "M 432 400 C 472 388, 516 392, 544 408",
-  ],
-  sleep_recovery: [
-    "M 388 380 C 400 384, 410 386, 418 388",
-    "M 386 414 C 398 418, 408 420, 419 422",
-    "M 385 446 C 396 450, 406 452, 417 454",
-  ],
-};
+// Continuous sulci that run across the whole cortex, following its curvature —
+// concentric arcs over the cerebrum, long arcs through the temporal lobe, and
+// folia across the cerebellum. Clipped to the silhouette when drawn.
+export const SULCI = [
+  // cerebral gyri — frontal pole, over the vertex, down to the occipital pole
+  "M 94 268 C 102 176, 160 118, 265 104 C 380 92, 470 122, 520 176 C 552 216, 553 276, 538 320",
+  "M 116 286 C 122 196, 178 140, 275 128 C 380 116, 452 146, 496 196 C 526 232, 529 286, 516 316",
+  "M 140 297 C 146 218, 196 166, 288 152 C 378 142, 436 172, 474 216 C 500 248, 503 289, 494 313",
+  "M 168 301 C 176 240, 218 192, 300 178 C 372 170, 420 198, 452 238 C 472 264, 475 293, 470 309",
+  // temporal lobe arcs, continuous from the temporal pole to the occipital edge
+  "M 178 314 C 220 350, 292 374, 374 369 C 412 363, 438 341, 450 306",
+  "M 194 302 C 232 334, 296 354, 366 349 C 400 343, 425 323, 439 297",
+  // cerebellar folia
+  "M 430 348 C 470 334, 520 342, 549 366",
+  "M 426 375 C 470 360, 520 366, 553 388",
+  "M 428 400 C 470 388, 516 392, 545 409",
+  // brainstem striations
+  "M 385 386 C 396 390, 407 392, 418 393",
+  "M 383 420 C 394 424, 406 426, 418 427",
+];
 
 export const REGIONS = [
   {
