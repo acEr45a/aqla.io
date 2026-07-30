@@ -7,8 +7,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Send, ArrowDownWideNarrow, ArrowUpWideNarrow, Search, ClipboardPaste } from "lucide-react";
 
 const REGISTRATION_TEMPLATE = {
-  subject: "Welcome to AQLA",
-  message: "Welcome to AQLA. Your account is verified and ready. You can now begin your assessment and build your personalised Brain Map.\n\nAQLA is a neural-wellness platform and does not provide medical advice.",
+  subject: "Welcome to AQLA — your brain OS is ready",
+  message: [
+    "Your personal brain operating system is ready.",
+    "Your account is verified. From here, AQLA measures how your attention, memory, energy and recovery actually behave — then builds a 14-day protocol around your own patterns rather than generic advice. The more you check in, the sharper it gets.",
+    "Your first steps:",
+    "1. Complete your assessment — about 8 minutes. This builds your first Brain Map across every cognitive domain.",
+    "2. Run the safety screening — a short, deterministic check that keeps every recommendation appropriate for you.",
+    "3. Start your first protocol — specific daily actions, chosen for your weakest link and reviewed after 14 days.",
+    "4. Check in daily — under 60 seconds. This is what keeps your map, insights and protocol accurate.",
+    "Meet AQLA Intelligence, your built-in brain analyst. Ask why your focus dropped, what to adjust first, or what the evidence says — it answers from your own data, and tells you when the data is too thin to be sure.",
+    "Need a hand? The Help Center covers everything, and the Evidence Library shows the research behind every protocol.",
+  ].join("\n\n"),
 };
 
 export default function ManualEmailComposer({ users = [], onSent }) {
