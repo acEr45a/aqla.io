@@ -1,5 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
-import { emailShell } from "../../shared/summaryEmails.js";
+import { emailShell, registrationEmailHtml } from "../../shared/summaryEmails.js";
 
 export default async function(req: Request): Promise<Response> {
   try {
@@ -8,8 +8,9 @@ export default async function(req: Request): Promise<Response> {
     if (!admin) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (admin.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
 
-    const { subject, message, recipientIds, sendToAll } = await req.json();
-    if (!subject?.trim() || !message?.trim()) {
+    const { subject, message, recipientIds, sendToAll, template } = await req.json();
+    const isRegistration = template === "registration";
+    if (!subject?.trim() || (!isRegistration && !message?.trim())) {
       return Response.json({ error: "Subject and message are required" }, { status: 400 });
     }
 
@@ -21,7 +22,8 @@ export default async function(req: Request): Promise<Response> {
 
     if (targets.length === 0) return Response.json({ error: "No recipients selected" }, { status: 400 });
 
-    const bodyHtml = message.trim().split(/\n{2,}/).map((block) =>
+    const appUrl = req.headers.get("origin") || "";
+    const bodyHtml = isRegistration ? "" : message.trim().split(/\n{2,}/).map((block) =>
       `<p>${block.replace(/\n/g, "<br/>")}</p>`).join("");
     const now = new Date().toISOString();
     const sent = [];
@@ -33,7 +35,9 @@ export default async function(req: Request): Promise<Response> {
           to: target.email,
           from_name: "AQLA",
           subject: subject.trim(),
-          body: emailShell(subject.trim(), bodyHtml),
+          body: isRegistration
+            ? registrationEmailHtml(target.full_name || "", appUrl)
+            : emailShell(subject.trim(), bodyHtml),
         });
         await svc.entities.EmailDigest.create({
           kind: "manual",

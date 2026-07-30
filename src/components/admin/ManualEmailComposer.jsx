@@ -30,6 +30,7 @@ export default function ManualEmailComposer({ users = [], onSent }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
+  const [useTemplate, setUseTemplate] = useState(false);
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -47,11 +48,12 @@ export default function ManualEmailComposer({ users = [], onSent }) {
     setStatus(null);
     const response = await base44.functions.invoke("sendManualEmail", {
       subject, message, sendToAll, recipientIds: selected,
+      template: useTemplate ? "registration" : undefined,
     });
     setSending(false);
     if (response.data?.error) return setStatus({ error: response.data.error });
     setStatus({ ok: `Sent to ${response.data.sent_count} member${response.data.sent_count === 1 ? "" : "s"}.` });
-    setSubject(""); setMessage(""); setSelected([]); setSendToAll(false);
+    setSubject(""); setMessage(""); setSelected([]); setSendToAll(false); setUseTemplate(false);
     onSent?.();
   };
 
@@ -65,15 +67,21 @@ export default function ManualEmailComposer({ users = [], onSent }) {
           <p className="mt-0.5 text-xs text-muted-foreground">Compose a message and send it to selected members or everyone.</p>
         </div>
         <Button type="button" variant="outline" size="sm"
-          onClick={() => { setSubject(REGISTRATION_TEMPLATE.subject); setMessage(REGISTRATION_TEMPLATE.message); }}>
+          onClick={() => { setSubject(REGISTRATION_TEMPLATE.subject); setMessage(REGISTRATION_TEMPLATE.message); setUseTemplate(true); }}>
           <ClipboardPaste className="mr-1.5 h-3.5 w-3.5" />Paste registration email
         </Button>
       </div>
 
       <div className="mt-5 space-y-3">
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" />
-        <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6}
+        <Textarea value={message} onChange={(e) => { setMessage(e.target.value); setUseTemplate(false); }} rows={6}
           placeholder="Write your message… blank lines become paragraphs." />
+        {useTemplate && (
+          <p className="text-xs text-primary">
+            Sends the full branded welcome email — logo, styled steps and the “Open your dashboard” button, personalised per member.
+            Editing the text above switches back to a plain message.
+          </p>
+        )}
       </div>
 
       <label className="mt-4 flex items-center gap-2 text-sm text-foreground">
