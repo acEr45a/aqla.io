@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
 import GuestTestSync from "@/components/GuestTestSync";
-import WelcomeEmailTrigger from "@/components/WelcomeEmailTrigger";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import ReassessmentPrompt from "@/components/ReassessmentPrompt";
 import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
@@ -43,7 +42,6 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
-      <WelcomeEmailTrigger />
       {!onAdmin && <AqlaAssistant />}
       <ReassessmentPrompt />
       <DailyCheckInPrompt />
