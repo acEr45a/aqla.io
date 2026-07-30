@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { CHAPTERS } from "@/lib/assessmentData";
 import { DOMAINS } from "@/lib/scoring";
 import RadialMap from "@/components/brainmap/RadialMap";
+import useHomePath from "@/lib/useHomePath";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 
 function Scale({ value, onChange, low, high }) {
@@ -45,6 +46,7 @@ function Choice({ value, onChange, options }) {
 
 export default function Assessment() {
   const navigate = useNavigate();
+  const homePath = useHomePath();
   const [chapter, setChapter] = useState(0);
   const [responses, setResponses] = useState({});
   const [saving, setSaving] = useState(false);
@@ -88,7 +90,7 @@ export default function Assessment() {
             </motion.div>
           </AnimatePresence>
           <div className="mt-12 flex items-center justify-between">
-            <button onClick={() => (chapter > 0 ? setChapter(chapter - 1) : navigate("/"))}
+            <button onClick={() => (chapter > 0 ? setChapter(chapter - 1) : navigate(homePath))}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back
             </button>

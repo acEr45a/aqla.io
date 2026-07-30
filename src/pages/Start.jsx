@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactionTest from "@/components/tests/ReactionTest";
 import AttentionTest from "@/components/tests/AttentionTest";
 import MemoryTest from "@/components/tests/MemoryTest";
+import useHomePath from "@/lib/useHomePath";
 import { Zap, Eye, Layers, ArrowRight, Check, X } from "lucide-react";
 
 const TESTS = [
@@ -14,6 +15,7 @@ const TESTS = [
 
 export default function Start() {
   const navigate = useNavigate();
+  const homePath = useHomePath();
   const [phase, setPhase] = useState("intro"); // intro | testing | done
   const [idx, setIdx] = useState(0);
   const [scores, setScores] = useState({});
@@ -50,7 +52,7 @@ export default function Start() {
               ))}
             </div>
           </div>
-          <Link to="/" aria-label="Exit" className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></Link>
+          <Link to={homePath} aria-label="Exit" className="text-muted-foreground hover:text-foreground"><X className="w-5 h-5" /></Link>
         </div>
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="w-full h-full max-h-[70vh] flex items-center justify-center">
