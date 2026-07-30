@@ -16,21 +16,29 @@ export default function MemoryTest({ onComplete }) {
   const best = useRef(START - 1);
   const inputRef = useRef(null);
 
+  const [gap, setGap] = useState(false);
+
   const startRound = (length) => {
     setDigits(makeDigits(length));
     setShownIdx(0);
     setAnswer("");
+    setGap(true);
     setPhase("showing");
   };
 
   useEffect(() => {
     if (phase !== "showing") return;
+    // Blank gap between digits so repeated digits are clearly separate.
+    if (gap) {
+      const t = setTimeout(() => setGap(false), shownIdx === 0 ? 800 : 260);
+      return () => clearTimeout(t);
+    }
     const t = setTimeout(() => {
-      if (shownIdx + 1 < digits.length) setShownIdx(shownIdx + 1);
+      if (shownIdx + 1 < digits.length) { setShownIdx(shownIdx + 1); setGap(true); }
       else setPhase("input");
-    }, 750);
+    }, 700);
     return () => clearTimeout(t);
-  }, [phase, shownIdx, digits]);
+  }, [phase, shownIdx, digits, gap]);
 
   useEffect(() => { if (phase === "input") inputRef.current?.focus(); }, [phase]);
 
@@ -72,8 +80,12 @@ export default function MemoryTest({ onComplete }) {
   if (phase === "showing") {
     return (
       <div className="text-center">
-        <p className="font-display text-7xl text-foreground tabular-nums">{digits[shownIdx]}</p>
-        <p className="mt-10 text-xs text-muted-foreground">Length {len}{retried ? " · second attempt" : ""}</p>
+        <p className="font-display text-7xl tabular-nums h-20 flex items-center justify-center">
+          {gap ? <span className="text-muted-foreground/30">·</span> : <span className="text-foreground">{digits[shownIdx]}</span>}
+        </p>
+        <p className="mt-8 text-xs text-muted-foreground tabular-nums">
+          Digit {Math.min(shownIdx + 1, len)} of {len}{retried ? " · second attempt" : ""}
+        </p>
       </div>
     );
   }
