@@ -22,16 +22,24 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
   const [demand, setDemand] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const save = async () => {
     setSaving(true);
-    await base44.entities.DailyCheckIn.create({
-      date: localDateKey(),
-      ...values, caffeine_drinks: caffeineDrinks, caffeine_last_time: caffeineTime, demand, note,
-    });
-    setSaving(false);
-    onOpenChange(false);
-    onSaved?.();
+    setError("");
+    try {
+      await base44.entities.DailyCheckIn.create({
+        date: localDateKey(),
+        ...values, caffeine_drinks: caffeineDrinks, caffeine_last_time: caffeineTime, demand, note,
+      });
+      onOpenChange(false);
+      onSaved?.();
+      window.dispatchEvent(new Event("aqla:check-in-saved"));
+    } catch (err) {
+      setError(err?.message || "Could not save your check-in. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -83,6 +91,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
             className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-medium disabled:opacity-50 hover:opacity-90 transition-opacity">
             {saving ? "Saving…" : "Complete check-in"}
           </button>
+          {error && <p className="text-xs text-destructive text-center">{error}</p>}
         </div>
       </DialogContent>
     </Dialog>
