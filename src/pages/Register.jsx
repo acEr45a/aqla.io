@@ -46,7 +46,6 @@ export default function Register() {
       const result = await base44.auth.verifyOtp({ email, otpCode });
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
-        await base44.functions.invoke("sendRegistrationEmail", {}).catch(() => {});
       }
       const raw = safeReturnTo();
       window.location.href = raw === "/" ? "/assessment" : raw;

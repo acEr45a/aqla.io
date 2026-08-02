@@ -7,6 +7,11 @@
         "admin",
         "user"
       ]
+    },
+    "welcome_email_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the branded welcome email has been sent to this user."
     }
   },
   "required": [
