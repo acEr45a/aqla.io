@@ -1,20 +1,22 @@
 import React, { useRef, useEffect } from "react";
 import BrainProfileMap from "./BrainProfileMap";
 
-const GLASS_BRAIN =
-  "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
+// AI-generated 3D volumetric brain render — full 3D mesh appearance,
+// three-quarter view showing both hemispheres for true 360° depth.
+const BRAIN_3D =
+  "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/ebe149cae_generated_image.png";
 
-// Volumetric depth slices — each layer is the brain image at a different Z depth.
+// Volumetric depth slices — the 3D brain render duplicated at different Z depths.
 // When rotated, layers parallax apart to create real perceived volume.
 const DEPTH_LAYERS = [
-  { z: -70, opacity: 0.12, blur: 7 },
-  { z: -50, opacity: 0.18, blur: 5 },
-  { z: -32, opacity: 0.28, blur: 3 },
-  { z: -16, opacity: 0.4, blur: 1.5 },
-  { z: 16, opacity: 0.35, blur: 1.5 },
-  { z: 32, opacity: 0.22, blur: 3 },
-  { z: 50, opacity: 0.14, blur: 5 },
-  { z: 70, opacity: 0.08, blur: 7 },
+  { z: -80, opacity: 0.1, blur: 8 },
+  { z: -56, opacity: 0.16, blur: 6 },
+  { z: -36, opacity: 0.26, blur: 4 },
+  { z: -18, opacity: 0.4, blur: 2 },
+  { z: 18, opacity: 0.4, blur: 2 },
+  { z: 36, opacity: 0.26, blur: 4 },
+  { z: 56, opacity: 0.16, blur: 6 },
+  { z: 80, opacity: 0.1, blur: 8 },
 ];
 
 export default function Brain3DView({ domains, activeKey, onHover, onSelect }) {
@@ -72,29 +74,38 @@ export default function Brain3DView({ domains, activeKey, onHover, onSelect }) {
       onPointerMove={move}
       onPointerUp={up}
     >
+      {/* Volumetric 3D brain — full-frame render with parallax depth layers */}
       <div
         ref={sceneRef}
-        className="w-full h-full"
+        className="absolute inset-0"
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* Back depth slices */}
-        {DEPTH_LAYERS.filter((l) => l.z < 0).map((layer) => (
+        {DEPTH_LAYERS.map((layer, i) => (
           <div
-            key={`back-${layer.z}`}
-            className="absolute pointer-events-none"
+            key={layer.z}
+            className="absolute inset-0 pointer-events-none"
             style={{
-              left: "12.1%", top: "12.5%", width: "75.8%", height: "82.1%",
               transform: `translateZ(${layer.z}px)`,
               opacity: layer.opacity,
-              filter: `blur(${layer.blur}px) brightness(0.65)`,
+              filter: `blur(${layer.blur}px)`,
+              mixBlendMode: i < 4 ? "normal" : "screen",
             }}
           >
-            <img src={GLASS_BRAIN} alt="" className="w-full h-full object-cover" draggable="false" />
+            <img
+              src={BRAIN_3D}
+              alt=""
+              className="w-full h-full object-contain"
+              draggable="false"
+            />
           </div>
         ))}
 
-        {/* Center interaction layer with fills + brain */}
-        <div ref={interactRef} className="w-full h-full" style={{ transform: "translateZ(0px)" }}>
+        {/* Center interaction layer — SVG region fills + hit detection */}
+        <div
+          ref={interactRef}
+          className="absolute inset-0"
+          style={{ transform: "translateZ(0px)" }}
+        >
           <BrainProfileMap
             domains={domains}
             activeKey={activeKey}
@@ -102,23 +113,6 @@ export default function Brain3DView({ domains, activeKey, onHover, onSelect }) {
             onSelect={onSelect}
           />
         </div>
-
-        {/* Front depth slices */}
-        {DEPTH_LAYERS.filter((l) => l.z > 0).map((layer) => (
-          <div
-            key={`front-${layer.z}`}
-            className="absolute pointer-events-none"
-            style={{
-              left: "12.1%", top: "12.5%", width: "75.8%", height: "82.1%",
-              transform: `translateZ(${layer.z}px)`,
-              opacity: layer.opacity,
-              filter: `blur(${layer.blur}px)`,
-              mixBlendMode: "screen",
-            }}
-          >
-            <img src={GLASS_BRAIN} alt="" className="w-full h-full object-cover" draggable="false" />
-          </div>
-        ))}
       </div>
     </div>
   );
