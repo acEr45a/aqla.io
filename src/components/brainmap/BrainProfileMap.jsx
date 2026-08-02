@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
+import { REGIONS, OUTLINES } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
@@ -33,18 +33,6 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         {/* body outline */}
         <g fill="none" stroke="hsl(35 9% 58% / 0.55)" strokeWidth="1.6" strokeLinejoin="round" pointerEvents="none">
           {OUTLINES.map((d, i) => <path key={`o-${i}`} d={d} />)}
-        </g>
-
-        {/* interior gyri / sulci line work */}
-        <g
-          fill="none"
-          stroke="hsl(35 9% 58% / 0.26)"
-          strokeWidth="1.1"
-          strokeLinecap="round"
-          clipPath="url(#brain-body)"
-          pointerEvents="none"
-        >
-          {SULCI.map((d, i) => <path key={`s-${i}`} d={d} />)}
         </g>
 
         {/* region boundaries in rank colors */}
