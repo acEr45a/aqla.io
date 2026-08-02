@@ -39,8 +39,8 @@ export default function Brain3DView({ domains, activeKey, onHover, onSelect }) {
     const dx = e.clientX - last.current.x;
     const dy = e.clientY - last.current.y;
     last.current = { x: e.clientX, y: e.clientY };
-    target.current.x = Math.max(-18, Math.min(18, target.current.x + dy * 0.3));
-    target.current.y = Math.max(-22, Math.min(22, target.current.y - dx * 0.3));
+    target.current.x = Math.max(-45, Math.min(45, target.current.x + dy * 0.3));
+    target.current.y += dx * 0.3; // unlimited 360° horizontal orbit
   };
 
   const up = () => {
