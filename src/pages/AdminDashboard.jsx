@@ -7,6 +7,7 @@ import ActivityChart from "@/components/admin/ActivityChart";
 import ProtocolChart from "@/components/admin/ProtocolChart";
 import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
+import UserPlanPanel from "@/components/admin/UserPlanPanel";
 import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
 
 import EmailLogPanel from "@/components/admin/EmailLogPanel";
@@ -92,6 +93,7 @@ export default function AdminDashboard() {
         {tab === "users" &&
         <>
             <AdminRolePanel />
+            <UserPlanPanel users={data.usersByPlan} />
             <AdminUserTable users={data.recentUsers} />
           </>
         }

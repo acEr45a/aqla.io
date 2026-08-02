@@ -18,7 +18,8 @@
         "FLOW",
         "DRIVE",
         "LEARN",
-        "RESET"
+        "RESET",
+        "DIGITAL"
       ]
     },
     "safety_flags": {

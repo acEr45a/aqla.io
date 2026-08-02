@@ -12,7 +12,8 @@
         "FLOW",
         "DRIVE",
         "LEARN",
-        "RESET"
+        "RESET",
+        "DIGITAL"
       ]
     },
     "role": {

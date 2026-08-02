@@ -153,6 +153,12 @@ export default async function(req: Request): Promise<Response> {
         checkIns: checkInCounts[item.id] || 0,
         protocol: protocols.find((protocol) => protocol.created_by_id === item.id && protocol.status === "active")?.family || "—",
       })),
+      usersByPlan: users.filter((item) => item.email).map((item) => ({
+        id: item.id,
+        name: item.full_name || "Unnamed user",
+        email: item.email,
+        plan: protocols.find((protocol) => protocol.created_by_id === item.id && protocol.status === "active")?.family || null,
+      })),
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

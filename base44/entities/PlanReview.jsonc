@@ -12,7 +12,8 @@
         "FLOW",
         "DRIVE",
         "LEARN",
-        "RESET"
+        "RESET",
+        "DIGITAL"
       ]
     },
     "cycle_started_date": {
@@ -39,7 +40,8 @@
         "FLOW",
         "DRIVE",
         "LEARN",
-        "RESET"
+        "RESET",
+        "DIGITAL"
       ]
     },
     "confidence": {

@@ -40,9 +40,18 @@ export const PROTOCOL_FAMILIES = [
     name: "RESET",
     purpose: "Sleep recovery, circadian consistency, and mental restoration.",
     tone: "Restorative, slow, minimal.",
-    direction: "Behavior-first digital protocol.",
+    direction: "Behavior-first recovery protocol.",
     color: "#8FE8C2",
     evidence: "A — Strong",
+  },
+  {
+    key: "DIGITAL",
+    name: "DIGITAL",
+    purpose: "Digital environment design, screen hygiene, and attention-protective habits.",
+    tone: "Architectural, environmental, structural.",
+    direction: "Behavior-only protocol — no formula, structured digital habits.",
+    color: "#B89CF6",
+    evidence: "B — Moderate",
   },
 ];
 
@@ -53,6 +62,7 @@ export function protocolFit(bottleneckKey) {
     DRIVE: { status: "Potentially suitable", reason: "Cognitive endurance support could be relevant once sleep timing is consistent." },
     LEARN: { status: "Not currently recommended", reason: "Your current data is insufficient to evaluate memory-support needs." },
     SPARK: { status: "Not currently recommended", reason: "Your current caffeine exposure and sleep pattern increase the likelihood of worsening evening recovery." },
+    DIGITAL: { status: "Not currently recommended", reason: "Digital environment restructuring may help if attention failures stem from workplace interruptions and screen fragmentation." },
   };
   if (bottleneckKey === "stress_regulation") {
     fits.FLOW = { status: "Recommended", reason: "Your concentration difficulty appears more closely related to stress and overstimulation than low alertness." };
