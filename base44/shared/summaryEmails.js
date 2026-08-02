@@ -56,7 +56,7 @@ Brain Map domains: ${JSON.stringify(domains.map((d) => ({ name: d.domain_name, s
 Protocol just completed: ${JSON.stringify({ name: protocol.name, family: protocol.family, objective: protocol.objective, start_date: protocol.start_date, duration_days: protocol.duration_days })}`;
 }
 
-export const AQLA_LOGO_URL = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/1349371e6_generated_image.png";
+export const AQLA_LOGO_URL = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/9aa251b4b_generated_image.png";
 
 // Rich, fully-branded welcome email with a call-to-action button.
 export function registrationEmailHtml(name, appUrl) {
