@@ -28,11 +28,42 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+          {/* per-region masks: region path (white) minus all later regions (black) → true partition, no overlaps */}
+          {REGIONS.map((region, i) => (
+            <mask id={`m-${region.key}`} key={`m-${region.key}`} maskUnits="userSpaceOnUse" x="0" y="0" width="660" height="560">
+              <rect x="0" y="0" width="660" height="560" fill="black" />
+              <path d={region.path} fill="white" />
+              {REGIONS.slice(i + 1).map((r2, j) => (
+                <path key={j} d={r2.path} fill="black" />
+              ))}
+            </mask>
+          ))}
         </defs>
 
         {/* body outline */}
         <g fill="none" stroke="hsl(35 9% 58% / 0.55)" strokeWidth="1.6" strokeLinejoin="round" pointerEvents="none">
           {OUTLINES.map((d, i) => <path key={`o-${i}`} d={d} />)}
+        </g>
+
+        {/* solid region fills — partitioned, no overlap */}
+        <g clipPath="url(#brain-body)" pointerEvents="none">
+          {REGIONS.map((region) => {
+            const domain = byKey[region.key];
+            if (!domain) return null;
+            const rank = rankFor(domain.score);
+            const active = activeKey === region.key;
+            const dim = activeKey && !active;
+            return (
+              <rect
+                key={`f-${region.key}`}
+                x="0" y="0" width="660" height="560"
+                fill={rank.color}
+                mask={`url(#m-${region.key})`}
+                className="transition-opacity duration-300"
+                opacity={dim ? 0.2 : active ? 0.95 : 0.55}
+              />
+            );
+          })}
         </g>
 
         {/* region boundaries in rank colors */}
@@ -48,22 +79,13 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
                 key={`r-${region.key}`}
                 d={region.path}
                 stroke={rank.color}
-                strokeWidth={active ? 2.6 : 1.5}
+                strokeWidth={active ? 2.6 : 1.4}
                 strokeLinejoin="round"
                 filter={active ? "url(#line-glow)" : undefined}
                 className="transition-opacity duration-300"
-                opacity={dim ? 0.22 : active ? 1 : 0.7}
+                opacity={dim ? 0.3 : 1}
               />
             );
-          })}
-        </g>
-
-        {/* faint tint on the active region only */}
-        <g clipPath="url(#brain-body)" pointerEvents="none">
-          {REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain || activeKey !== region.key) return null;
-            return <path key={`t-${region.key}`} d={region.path} fill={rankFor(domain.score).color} opacity="0.14" />;
           })}
         </g>
 
