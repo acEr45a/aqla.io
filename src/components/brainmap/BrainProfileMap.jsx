@@ -46,6 +46,14 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
             <stop offset="65%" stopColor="#000000" stopOpacity="0" />
             <stop offset="100%" stopColor="#000000" stopOpacity="0.45" />
           </radialGradient>
+          <filter id="sulci-warp" x="-10%" y="-20%" width="120%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.028" numOctaves="2" seed="7" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+          <pattern id="sulci-texture" width="92" height="42" patternUnits="userSpaceOnUse">
+            <path d="M-12 10 C10 -2 34 22 58 9 S92 0 110 12" fill="none" stroke="hsl(var(--background))" strokeWidth="2" />
+            <path d="M-8 29 C14 17 38 40 62 27 S94 18 108 31" fill="none" stroke="hsl(var(--background))" strokeWidth="1.6" />
+          </pattern>
         </defs>
 
         {/* soft halo bloom around the brain silhouette */}
@@ -80,21 +88,27 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
             );
           })}
 
-          {/* sulci detail lines over the fills */}
-          <g stroke="hsl(var(--background))" strokeWidth="2.5" fill="none" opacity="0.35" pointerEvents="none">
-            {SULCI.map((d, i) => <path key={i} d={d} />)}
-          </g>
         </g>
 
-        {/* crisp outer outline */}
-        <g stroke="hsl(var(--foreground) / 0.5)" strokeWidth="2.5" fill="none" pointerEvents="none">
-          {OUTLINES.map((d, i) => <path key={i} d={d} />)}
-        </g>
-
-        {/* cohesive glass sheen + volumetric depth, clipped to the brain */}
+        {/* cohesive glass sheen + volumetric depth below anatomical linework */}
         <g clipPath="url(#brain-clip)" pointerEvents="none">
           <rect x="80" y="70" width="500" height="460" fill="url(#glass-sheen)" />
           <rect x="80" y="70" width="500" height="460" fill="url(#brain-depth)" />
+        </g>
+
+        {/* dense organic sulci, contained inside each anatomical region */}
+        <g filter="url(#sulci-warp)" opacity="0.48" pointerEvents="none">
+          {REGIONS.map((region) => (
+            <path key={`sulci-${region.key}`} d={region.path} fill="url(#sulci-texture)" />
+          ))}
+        </g>
+        <g stroke="hsl(var(--background))" strokeWidth="2" fill="none" opacity="0.42" pointerEvents="none">
+          {SULCI.map((d, i) => <path key={i} d={d} />)}
+        </g>
+
+        {/* crisp silhouette above glass and sulci */}
+        <g stroke="hsl(var(--foreground) / 0.55)" strokeWidth="2.5" fill="none" pointerEvents="none">
+          {OUTLINES.map((d, i) => <path key={i} d={d} />)}
         </g>
       </svg>
 
