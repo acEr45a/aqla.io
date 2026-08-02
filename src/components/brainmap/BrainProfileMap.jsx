@@ -1,7 +1,9 @@
 import React, { useState, useRef } from "react";
-import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
+import { REGIONS, OUTLINES } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
+
+const BRAIN_IMAGE = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/28db4ba02_generated_image.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const containerRef = useRef(null);
@@ -21,94 +23,98 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           <clipPath id="brain-clip" clipUnits="userSpaceOnUse">
             {OUTLINES.map((d, i) => <path key={i} d={d} />)}
           </clipPath>
-          <filter id="brain-halo" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="14" />
+          <filter id="region-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="18" />
           </filter>
+          {/* luminance mask from the brain image itself — glows can only appear on the brain */}
+          <mask id="brain-lum" maskUnits="userSpaceOnUse" x="0" y="0" width="660" height="560">
+            <image href={BRAIN_IMAGE} x="30" y="10" width="600" height="540" preserveAspectRatio="xMidYMid meet" />
+          </mask>
+        </defs>
+
+        {/* photoreal glass brain — the actual brain visual */}
+        <image
+          href={BRAIN_IMAGE}
+          x="30" y="10" width="600" height="540"
+          preserveAspectRatio="xMidYMid meet"
+          pointerEvents="none"
+        />
+
+        {/* strong hue tint per region, following the glass surface */}
+        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "color" }}>
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain) return null;
             const rank = rankFor(domain.score);
+            const dim = activeKey && activeKey !== region.key;
             return (
-              <linearGradient key={`g-${region.key}`} id={`glass-${region.key}`} x1="0" y1="0" x2="0.35" y2="1">
-                <stop offset="0%" stopColor={rank.color} stopOpacity="0.92" />
-                <stop offset="60%" stopColor={rank.color} stopOpacity="0.62" />
-                <stop offset="100%" stopColor={rank.color} stopOpacity="0.85" />
-              </linearGradient>
+              <path
+                key={`tint-${region.key}`}
+                d={region.path}
+                fill={rank.color}
+                filter="url(#region-glow)"
+                className="transition-opacity duration-300"
+                opacity={dim ? 0.5 : 1}
+              />
             );
-          })}
-          <radialGradient id="glass-sheen" cx="0.35" cy="0.2" r="0.75">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
-            <stop offset="35%" stopColor="#ffffff" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="brain-depth" cx="0.5" cy="0.45" r="0.62">
-            <stop offset="0%" stopColor="#000000" stopOpacity="0" />
-            <stop offset="65%" stopColor="#000000" stopOpacity="0" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="0.45" />
-          </radialGradient>
-          <filter id="sulci-warp" x="-10%" y="-20%" width="120%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.028" numOctaves="2" seed="7" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
-          </filter>
-          <pattern id="sulci-texture" width="92" height="42" patternUnits="userSpaceOnUse">
-            <path d="M-12 10 C10 -2 34 22 58 9 S92 0 110 12" fill="none" stroke="hsl(var(--background))" strokeWidth="2" />
-            <path d="M-8 29 C14 17 38 40 62 27 S94 18 108 31" fill="none" stroke="hsl(var(--background))" strokeWidth="1.6" />
-          </pattern>
-        </defs>
-
-        {/* soft halo bloom around the brain silhouette */}
-        <g clipPath="url(#brain-clip)" filter="url(#brain-halo)" opacity="0.4" pointerEvents="none">
-          {REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            return <path key={`halo-${region.key}`} d={region.path} fill={rankFor(domain.score).color} fillOpacity="0.6" />;
           })}
         </g>
 
-        {/* filled regions, clipped to the brain outline */}
-        <g clipPath="url(#brain-clip)">
-          <rect x="80" y="70" width="500" height="460" fill="hsl(var(--muted))" />
+        {/* soft volumetric color glow, blended into the glass */}
+        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "screen" }}>
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain) return null;
             const rank = rankFor(domain.score);
+            const dim = activeKey && activeKey !== region.key;
             return (
-              <g key={region.key} className="cursor-pointer"
+              <path
+                key={`glow-${region.key}`}
+                d={region.path}
+                fill={rank.color}
+                filter="url(#region-glow)"
+                className="transition-opacity duration-300"
+                opacity={dim ? 0.25 : 0.5}
+              />
+            );
+          })}
+        </g>
+
+        {/* active region accent — a slightly tighter, brighter core */}
+        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "screen" }}>
+          {REGIONS.map((region) => {
+            const domain = byKey[region.key];
+            if (!domain || activeKey !== region.key) return null;
+            return (
+              <path
+                key={`core-${region.key}`}
+                d={region.path}
+                fill={rankFor(domain.score).color}
+                filter="url(#region-glow)"
+                opacity="0.45"
+              />
+            );
+          })}
+        </g>
+
+        {/* invisible interactive hit areas */}
+        <g fill="transparent">
+          {REGIONS.map((region) => {
+            const domain = byKey[region.key];
+            if (!domain) return null;
+            return (
+              <path
+                key={`hit-${region.key}`}
+                d={region.path}
+                className="cursor-pointer"
                 onPointerEnter={(e) => { onHover?.(region.key); handlePointer(e, region.key); }}
                 onPointerMove={(e) => handlePointer(e, region.key)}
                 onPointerDown={(e) => { onHover?.(region.key); handlePointer(e, region.key); }}
                 onPointerLeave={() => { onHover?.(null); setTooltip(null); }}
-                onClick={() => onSelect?.(domain)}>
-                <path d={region.path} fill={rank.color} fillOpacity="0.55"
-                  stroke={rank.color} strokeWidth="6" strokeLinejoin="round" />
-                <path d={region.path} fill={`url(#glass-${region.key})`}
-                  className="transition-opacity duration-200"
-                  opacity={activeKey && activeKey !== region.key ? 0.7 : 1} />
-              </g>
+                onClick={() => onSelect?.(domain)}
+              />
             );
           })}
-
-        </g>
-
-        {/* cohesive glass sheen + volumetric depth below anatomical linework */}
-        <g clipPath="url(#brain-clip)" pointerEvents="none">
-          <rect x="80" y="70" width="500" height="460" fill="url(#glass-sheen)" />
-          <rect x="80" y="70" width="500" height="460" fill="url(#brain-depth)" />
-        </g>
-
-        {/* dense organic sulci, contained inside each anatomical region */}
-        <g filter="url(#sulci-warp)" opacity="0.48" pointerEvents="none">
-          {REGIONS.map((region) => (
-            <path key={`sulci-${region.key}`} d={region.path} fill="url(#sulci-texture)" />
-          ))}
-        </g>
-        <g stroke="hsl(var(--background))" strokeWidth="2" fill="none" opacity="0.42" pointerEvents="none">
-          {SULCI.map((d, i) => <path key={i} d={d} />)}
-        </g>
-
-        {/* crisp silhouette above glass and sulci */}
-        <g stroke="hsl(var(--foreground) / 0.55)" strokeWidth="2.5" fill="none" pointerEvents="none">
-          {OUTLINES.map((d, i) => <path key={i} d={d} />)}
         </g>
       </svg>
 
