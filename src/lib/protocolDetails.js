@@ -24,4 +24,9 @@ export const PROTOCOL_DETAILS = {
     benefits: ["Sleep consistency", "Mental recovery", "Circadian alignment"],
     ingredients: ["No required supplement ingredients"],
   },
+  DIGITAL: {
+    formulation: "Behavior-only protocol for digital environment and screen hygiene.",
+    benefits: ["Attention protection", "Screen hygiene", "Focused workspaces"],
+    ingredients: ["No required supplement ingredients"],
+  },
 };
