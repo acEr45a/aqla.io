@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { REGIONS, OUTLINES } from "./brainShapes";
+import { REGIONS } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
@@ -20,20 +20,20 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
     <div ref={containerRef} className="relative w-full h-full">
       <svg viewBox="0 0 660 560" className="w-full h-full">
         <defs>
-          <clipPath id="brain-clip" clipUnits="userSpaceOnUse">
-            {OUTLINES.map((d, i) => <path key={i} d={d} />)}
-          </clipPath>
-          <filter id="region-glow" x="-40%" y="-40%" width="180%" height="180%">
-            <feMorphology operator="dilate" radius="6" />
-            <feGaussianBlur stdDeviation="8" />
+          <filter id="outline-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
-          {/* luminance mask from the brain image itself — glows can only appear on the brain */}
+          {/* luminance mask from the brain image — strokes stay on the brain */}
           <mask id="brain-lum" maskUnits="userSpaceOnUse" x="0" y="0" width="660" height="560">
             <image href={BRAIN_IMAGE} x="30" y="10" width="600" height="540" preserveAspectRatio="xMidYMid meet" />
           </mask>
         </defs>
 
-        {/* photoreal glass brain — the actual brain visual */}
+        {/* solid photoreal glass brain */}
         <image
           href={BRAIN_IMAGE}
           x="30" y="10" width="600" height="540"
@@ -41,78 +41,45 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           pointerEvents="none"
         />
 
-        {/* strong hue tint per region, following the glass surface */}
-        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "color" }}>
+        {/* region outlines in their rank color */}
+        <g fill="none" mask="url(#brain-lum)" pointerEvents="none">
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain) return null;
             const rank = rankFor(domain.score);
-            const dim = activeKey && activeKey !== region.key;
+            const active = activeKey === region.key;
+            const dim = activeKey && !active;
             return (
-              <path
-                key={`tint-${region.key}`}
-                d={region.path}
-                fill={rank.color}
-                filter="url(#region-glow)"
-                className="transition-opacity duration-300"
-                opacity={dim ? 0.6 : 1}
-              />
+              <g key={`outline-${region.key}`} className="transition-opacity duration-300" opacity={dim ? 0.35 : 1}>
+                <path
+                  d={region.path}
+                  stroke="rgba(10,12,10,0.65)"
+                  strokeWidth={active ? 9 : 7}
+                  strokeLinejoin="round"
+                />
+                <path
+                  d={region.path}
+                  stroke={rank.color}
+                  strokeWidth={active ? 4.5 : 3}
+                  strokeLinejoin="round"
+                  filter="url(#outline-glow)"
+                />
+              </g>
             );
           })}
         </g>
 
-        {/* soft volumetric color glow, blended into the glass */}
-        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "screen" }}>
-          {REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            const rank = rankFor(domain.score);
-            const dim = activeKey && activeKey !== region.key;
-            return (
-              <path
-                key={`glow-${region.key}`}
-                d={region.path}
-                fill={rank.color}
-                filter="url(#region-glow)"
-                className="transition-opacity duration-300"
-                opacity={dim ? 0.4 : 0.85}
-              />
-            );
-          })}
-        </g>
-
-        {/* saturated fill so each region reads as a solid, bright zone */}
-        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "hard-light" }}>
-          {REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            const rank = rankFor(domain.score);
-            const dim = activeKey && activeKey !== region.key;
-            return (
-              <path
-                key={`fill-${region.key}`}
-                d={region.path}
-                fill={rank.color}
-                filter="url(#region-glow)"
-                className="transition-opacity duration-300"
-                opacity={dim ? 0.3 : 0.6}
-              />
-            );
-          })}
-        </g>
-
-        {/* active region accent — a slightly tighter, brighter core */}
+        {/* soft interior wash only on the active region */}
         <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "screen" }}>
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain || activeKey !== region.key) return null;
             return (
               <path
-                key={`core-${region.key}`}
+                key={`wash-${region.key}`}
                 d={region.path}
                 fill={rankFor(domain.score).color}
-                filter="url(#region-glow)"
-                opacity="0.45"
+                opacity="0.22"
               />
             );
           })}
