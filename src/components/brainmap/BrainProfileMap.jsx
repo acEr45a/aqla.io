@@ -3,7 +3,7 @@ import { REGIONS } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
-const BRAIN_IMAGE = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/28db4ba02_generated_image.png";
+const BRAIN_IMAGE = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/20b5fd2f1_generated_image.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const containerRef = useRef(null);
@@ -39,7 +39,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           x="30" y="10" width="600" height="540"
           preserveAspectRatio="xMidYMid meet"
           pointerEvents="none"
-          style={{ filter: "grayscale(1) brightness(0.42) contrast(1.25) sepia(0.35) hue-rotate(15deg) saturate(0.5)" }}
+          style={{ filter: "contrast(1.1) brightness(1.05)" }}
         />
 
         {/* region outlines in their rank color */}
