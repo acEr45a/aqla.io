@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
+
+const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
@@ -75,6 +77,14 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         <g stroke="hsl(var(--background))" strokeWidth="2.5" fill="none" opacity="0.35" pointerEvents="none">
           {SULCI.map((d, i) => <path key={i} d={d} />)}
         </g>
+
+        {/* photoreal glass texture layered over the fills */}
+        <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+          preserveAspectRatio="xMidYMid slice" opacity="0.65"
+          style={{ mixBlendMode: "screen" }} pointerEvents="none" />
+        <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+          preserveAspectRatio="xMidYMid slice" opacity="0.4"
+          style={{ mixBlendMode: "overlay" }} pointerEvents="none" />
 
         {/* crisp outer outline */}
         <g stroke="hsl(var(--foreground) / 0.5)" strokeWidth="2.5" fill="none" pointerEvents="none">
