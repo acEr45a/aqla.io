@@ -1,20 +1,19 @@
 import React from "react";
 import { rankProgress } from "@/lib/ranks";
 
-export default function BrainRankTooltip({ domain, region, x, y, container }) {
+export default function BrainRankTooltip({ domain, region, x, y }) {
   if (!domain || !region) return null;
   const { rank, next, pct } = rankProgress(domain.score);
   const remaining = next ? Math.max(0, next.min - domain.score) : 0;
 
-  const width = 220;
-  const height = 150;
-  const cw = container?.clientWidth || 300;
-  const ch = container?.clientHeight || 300;
-  const left = Math.max(8, Math.min(x + 14, cw - width - 8));
-  const top = Math.max(8, Math.min(y - height - 10, ch - height - 8));
-
   return (
-    <div className="pointer-events-none absolute z-30" style={{ left, top, width }}>
+    <foreignObject
+      x={Math.max(8, Math.min(x + 14, 660 - 246))}
+      y={Math.max(8, Math.min(y - 170, 560 - 170))}
+      width="238"
+      height="162"
+      pointerEvents="none"
+    >
       <div className="rounded-xl border border-border/80 bg-background/95 p-3 shadow-2xl backdrop-blur-md">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -34,6 +33,6 @@ export default function BrainRankTooltip({ domain, region, x, y, container }) {
           {next ? <><span className="text-foreground">{remaining} points</span> to {next.name}</> : "Highest rank achieved"}
         </p>
       </div>
-    </div>
+    </foreignObject>
   );
 }

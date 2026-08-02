@@ -10,7 +10,7 @@ export default function NeuralBrainVisual({ domains = [], onSelect, selectedKey 
 
   return (
     <div className="mx-auto w-full max-w-[900px] select-none">
-      <div className="relative aspect-[660/560] w-full overflow-hidden rounded-lg border border-border/50 bg-background p-2">
+      <div className="relative aspect-[660/560] w-full overflow-hidden rounded-3xl border border-border/50 bg-background shadow-2xl p-2">
         <BrainProfileMap domains={domains} activeKey={activeKey} onHover={setHover} onSelect={onSelect} />
       </div>
       <p className="mt-4 text-center text-xs text-muted-foreground">

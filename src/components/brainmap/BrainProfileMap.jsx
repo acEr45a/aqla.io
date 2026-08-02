@@ -1,161 +1,95 @@
-import React, { useState, useRef } from "react";
-import { REGIONS, OUTLINES } from "./brainShapes";
+import React, { useState } from "react";
+import { REGIONS } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
-const SHORT = {
-  focus: "Prefrontal",
-  mental_energy: "Frontal",
-  cognitive_resilience: "Parietal",
-  learning_capacity: "Occipital",
-  sleep_recovery: "Brainstem",
-  lifestyle_protection: "Cerebellum",
-  memory: "Temporal",
-  stress_regulation: "Insula",
-};
-
-const DIVIDER = "hsl(26 14% 6%)";
-const LABEL = "hsl(40 24% 96%)";
-
-// Insula is rendered as a small ring marker, not an overlapping fill.
-const FILL_REGIONS = REGIONS.filter((r) => r.key !== "stress_regulation");
-const INSULA = REGIONS.find((r) => r.key === "stress_regulation");
+const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
-  const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState(null);
   const byKey = {};
   domains.forEach((d) => { byKey[d.key] = d; });
 
-  const handlePointer = (event, key) => {
-    const rect = containerRef.current.getBoundingClientRect();
-    setTooltip({ key, x: event.clientX - rect.left, y: event.clientY - rect.top });
+  const moveTooltip = (event, key) => {
+    const svg = event.currentTarget.ownerSVGElement;
+    const point = svg.createSVGPoint();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    const position = point.matrixTransform(svg.getScreenCTM().inverse());
+    setTooltip({ key, x: position.x, y: position.y });
   };
 
-  const insulaDomain = byKey[INSULA.key];
-  const [ix, iy] = INSULA.label;
-
   return (
-    <div ref={containerRef} className="relative w-full h-full">
-      <svg viewBox="0 0 660 560" className="w-full h-full">
-        {/* solid tiled fills — shared edges, no gaps, no transparency */}
-        <g pointerEvents="none" strokeLinejoin="round">
-          {FILL_REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            const rank = rankFor(domain.score);
-            const active = activeKey === region.key;
-            const dim = activeKey && !active;
-            return (
-              <path
-                key={`f-${region.key}`}
-                d={region.path}
-                fill={rank.color}
-                fillOpacity={dim ? 0.3 : 1}
-                stroke={DIVIDER}
-                strokeWidth={1.8}
-                className="transition-opacity duration-300"
-              />
-            );
-          })}
-          {/* active region highlight outline */}
-          {FILL_REGIONS.map((region) => {
-            if (activeKey !== region.key) return null;
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            return (
-              <path
-                key={`a-${region.key}`}
-                d={region.path}
-                fill="none"
-                stroke={rankFor(domain.score).color}
-                strokeWidth={2.8}
-              />
-            );
-          })}
-        </g>
+    <svg viewBox="0 0 660 560" className="w-full h-full">
+      <defs>
+        <mask id="brain-model-mask" maskUnits="userSpaceOnUse" x="80" y="70" width="500" height="460" style={{ maskType: "luminance" }}>
+          <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460" preserveAspectRatio="xMidYMid slice" />
+        </mask>
+        <filter id="brain-halo" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="16" />
+        </filter>
+        {REGIONS.map((region) => {
+          const domain = byKey[region.key];
+          if (!domain) return null;
+          const rank = rankFor(domain.score);
+          return (
+            <linearGradient key={`g-${region.key}`} id={`glass-${region.key}`} x1="0" y1="0" x2="0.35" y2="1">
+              <stop offset="0%" stopColor={rank.color} stopOpacity="0.9" />
+              <stop offset="60%" stopColor={rank.color} stopOpacity="0.55" />
+              <stop offset="100%" stopColor={rank.color} stopOpacity="0.8" />
+            </linearGradient>
+          );
+        })}
+      </defs>
 
-        {/* outer silhouette for cohesion */}
-        <g fill="none" stroke={DIVIDER} strokeWidth={1.8} strokeLinejoin="round" pointerEvents="none">
-          {OUTLINES.map((d, i) => <path key={`o-${i}`} d={d} />)}
-        </g>
+      {/* hologram bloom around the volume */}
+      <g mask="url(#brain-model-mask)" filter="url(#brain-halo)" opacity="0.45" pointerEvents="none">
+        {REGIONS.map((region) => {
+          const domain = byKey[region.key];
+          if (!domain) return null;
+          return <path key={`halo-${region.key}`} d={region.path} fill={rankFor(domain.score).color} fillOpacity="0.55" />;
+        })}
+      </g>
 
-        {/* insula ring marker */}
-        {insulaDomain && (
-          <g pointerEvents="none" className="transition-opacity duration-300" opacity={activeKey && activeKey !== INSULA.key ? 0.4 : 1}>
-            <circle cx={ix} cy={iy} r={10} fill={rankFor(insulaDomain.score).color} stroke={DIVIDER} strokeWidth={2.6} />
-          </g>
-        )}
+      <g mask="url(#brain-model-mask)">
+        <rect x="80" y="70" width="500" height="460" fill="hsl(var(--muted))" />
+        {REGIONS.map((region) => {
+          const domain = byKey[region.key];
+          if (!domain) return null;
+          const rank = rankFor(domain.score);
+          return (
+            <g key={region.key} className="cursor-pointer"
+              onMouseEnter={(event) => { onHover?.(region.key); moveTooltip(event, region.key); }}
+              onMouseMove={(event) => moveTooltip(event, region.key)}
+              onMouseLeave={() => { onHover?.(null); setTooltip(null); }}
+              onClick={() => onSelect?.(domain)}>
+              <path d={region.path} fill={rank.color} stroke={rank.color} strokeWidth="18" strokeLinejoin="round" />
+              <path d={region.path} fill={`url(#glass-${region.key})`} fillOpacity="1"
+                className="transition-opacity duration-200"
+                opacity={activeKey && activeKey !== region.key ? 0.78 : 1} />
+            </g>
+          );
+        })}
 
-        {/* labels — dark outline for legibility on any fill color */}
-        <g
-          pointerEvents="none"
-          className="font-body"
-          fontSize={15}
-          fontWeight={500}
-          fill={LABEL}
-          stroke={DIVIDER}
-          strokeWidth={3.5}
-          strokeLinejoin="round"
-          paintOrder="stroke"
-          textAnchor="middle"
-          dominantBaseline="central"
-        >
-          {FILL_REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            return (
-              <text key={`l-${region.key}`} x={region.label[0]} y={region.label[1]}>
-                {SHORT[region.key]}
-              </text>
-            );
-          })}
-          {insulaDomain && <text x={ix} y={iy + 26}>Insula</text>}
-        </g>
+        {/* photoreal 3D glass folds layered over the coloured volumes */}
+        <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+          preserveAspectRatio="xMidYMid slice" opacity="0.75"
+          style={{ mixBlendMode: "screen" }} pointerEvents="none" />
+        <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+          preserveAspectRatio="xMidYMid slice" opacity="0.45"
+          style={{ mixBlendMode: "overlay" }} pointerEvents="none" />
+      </g>
 
-        {/* hit areas */}
-        <g fill="transparent">
-          {FILL_REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain) return null;
-            return (
-              <path
-                key={`h-${region.key}`}
-                d={region.path}
-                className="cursor-pointer"
-                onPointerEnter={(e) => { onHover?.(region.key); handlePointer(e, region.key); }}
-                onPointerMove={(e) => handlePointer(e, region.key)}
-                onPointerDown={(e) => { onHover?.(region.key); handlePointer(e, region.key); }}
-                onPointerLeave={() => { onHover?.(null); setTooltip(null); }}
-                onClick={() => onSelect?.(domain)}
-              />
-            );
-          })}
-          {insulaDomain && (
-            <circle
-              cx={ix}
-              cy={iy}
-              r={16}
-              className="cursor-pointer"
-              onPointerEnter={(e) => { onHover?.(INSULA.key); handlePointer(e, INSULA.key); }}
-              onPointerMove={(e) => handlePointer(e, INSULA.key)}
-              onPointerDown={(e) => { onHover?.(INSULA.key); handlePointer(e, INSULA.key); }}
-              onPointerLeave={() => { onHover?.(null); setTooltip(null); }}
-              onClick={() => onSelect?.(insulaDomain)}
-            />
-          )}
-        </g>
-      </svg>
+      <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
+        preserveAspectRatio="xMidYMid slice" opacity="0.2"
+        style={{ mixBlendMode: "screen" }} pointerEvents="none" />
 
-      {tooltip && (
-        <BrainRankTooltip
-          domain={byKey[tooltip.key]}
-          region={REGIONS.find((item) => item.key === tooltip.key)}
-          x={tooltip.x}
-          y={tooltip.y}
-          container={containerRef.current}
-        />
-      )}
-    </div>
+      <BrainRankTooltip
+        domain={tooltip ? byKey[tooltip.key] : null}
+        region={tooltip ? REGIONS.find((item) => item.key === tooltip.key) : null}
+        x={tooltip?.x || 0}
+        y={tooltip?.y || 0}
+      />
+    </svg>
   );
 }
