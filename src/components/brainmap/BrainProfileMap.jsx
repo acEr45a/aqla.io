@@ -24,7 +24,8 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
             {OUTLINES.map((d, i) => <path key={i} d={d} />)}
           </clipPath>
           <filter id="region-glow" x="-40%" y="-40%" width="180%" height="180%">
-            <feGaussianBlur stdDeviation="18" />
+            <feMorphology operator="dilate" radius="6" />
+            <feGaussianBlur stdDeviation="8" />
           </filter>
           {/* luminance mask from the brain image itself — glows can only appear on the brain */}
           <mask id="brain-lum" maskUnits="userSpaceOnUse" x="0" y="0" width="660" height="560">
@@ -54,7 +55,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
                 fill={rank.color}
                 filter="url(#region-glow)"
                 className="transition-opacity duration-300"
-                opacity={dim ? 0.5 : 1}
+                opacity={dim ? 0.6 : 1}
               />
             );
           })}
@@ -74,7 +75,27 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
                 fill={rank.color}
                 filter="url(#region-glow)"
                 className="transition-opacity duration-300"
-                opacity={dim ? 0.25 : 0.5}
+                opacity={dim ? 0.4 : 0.85}
+              />
+            );
+          })}
+        </g>
+
+        {/* saturated fill so each region reads as a solid, bright zone */}
+        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "hard-light" }}>
+          {REGIONS.map((region) => {
+            const domain = byKey[region.key];
+            if (!domain) return null;
+            const rank = rankFor(domain.score);
+            const dim = activeKey && activeKey !== region.key;
+            return (
+              <path
+                key={`fill-${region.key}`}
+                d={region.path}
+                fill={rank.color}
+                filter="url(#region-glow)"
+                className="transition-opacity duration-300"
+                opacity={dim ? 0.3 : 0.6}
               />
             );
           })}
