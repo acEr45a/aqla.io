@@ -1,9 +1,7 @@
 import React, { useState, useRef } from "react";
-import { REGIONS } from "./brainShapes";
+import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
-
-const BRAIN_IMAGE = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/20b5fd2f1_generated_image.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const containerRef = useRef(null);
@@ -20,30 +18,37 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
     <div ref={containerRef} className="relative w-full h-full">
       <svg viewBox="0 0 660 560" className="w-full h-full">
         <defs>
-          <filter id="outline-glow" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
+          <clipPath id="brain-body">
+            {OUTLINES.map((d, i) => <path key={i} d={d} />)}
+          </clipPath>
+          <filter id="line-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
             <feMerge>
-              <feMergeNode in="blur" />
+              <feMergeNode in="b" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
-          {/* luminance mask from the brain image — strokes stay on the brain */}
-          <mask id="brain-lum" maskUnits="userSpaceOnUse" x="0" y="0" width="660" height="560">
-            <image href={BRAIN_IMAGE} x="30" y="10" width="600" height="540" preserveAspectRatio="xMidYMid meet" />
-          </mask>
         </defs>
 
-        {/* solid photoreal glass brain */}
-        <image
-          href={BRAIN_IMAGE}
-          x="30" y="10" width="600" height="540"
-          preserveAspectRatio="xMidYMid meet"
-          pointerEvents="none"
-          style={{ filter: "contrast(1.1) brightness(1.05)" }}
-        />
+        {/* body outline */}
+        <g fill="none" stroke="hsl(35 9% 58% / 0.55)" strokeWidth="1.6" strokeLinejoin="round" pointerEvents="none">
+          {OUTLINES.map((d, i) => <path key={`o-${i}`} d={d} />)}
+        </g>
 
-        {/* region outlines in their rank color */}
-        <g fill="none" mask="url(#brain-lum)" pointerEvents="none">
+        {/* interior gyri / sulci line work */}
+        <g
+          fill="none"
+          stroke="hsl(35 9% 58% / 0.26)"
+          strokeWidth="1.1"
+          strokeLinecap="round"
+          clipPath="url(#brain-body)"
+          pointerEvents="none"
+        >
+          {SULCI.map((d, i) => <path key={`s-${i}`} d={d} />)}
+        </g>
+
+        {/* region boundaries in rank colors */}
+        <g fill="none" clipPath="url(#brain-body)" pointerEvents="none">
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain) return null;
@@ -51,49 +56,37 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
             const active = activeKey === region.key;
             const dim = activeKey && !active;
             return (
-              <g key={`outline-${region.key}`} className="transition-opacity duration-300" opacity={dim ? 0.35 : 1}>
-                <path
-                  d={region.path}
-                  stroke="rgba(12,11,10,0.8)"
-                  strokeWidth={active ? 9 : 7}
-                  strokeLinejoin="round"
-                />
-                <path
-                  d={region.path}
-                  stroke={rank.color}
-                  strokeWidth={active ? 4.5 : 3}
-                  strokeLinejoin="round"
-                  filter="url(#outline-glow)"
-                />
-              </g>
-            );
-          })}
-        </g>
-
-        {/* soft interior wash only on the active region */}
-        <g mask="url(#brain-lum)" pointerEvents="none" style={{ mixBlendMode: "screen" }}>
-          {REGIONS.map((region) => {
-            const domain = byKey[region.key];
-            if (!domain || activeKey !== region.key) return null;
-            return (
               <path
-                key={`wash-${region.key}`}
+                key={`r-${region.key}`}
                 d={region.path}
-                fill={rankFor(domain.score).color}
-                opacity="0.22"
+                stroke={rank.color}
+                strokeWidth={active ? 2.6 : 1.5}
+                strokeLinejoin="round"
+                filter={active ? "url(#line-glow)" : undefined}
+                className="transition-opacity duration-300"
+                opacity={dim ? 0.22 : active ? 1 : 0.7}
               />
             );
           })}
         </g>
 
-        {/* invisible interactive hit areas */}
+        {/* faint tint on the active region only */}
+        <g clipPath="url(#brain-body)" pointerEvents="none">
+          {REGIONS.map((region) => {
+            const domain = byKey[region.key];
+            if (!domain || activeKey !== region.key) return null;
+            return <path key={`t-${region.key}`} d={region.path} fill={rankFor(domain.score).color} opacity="0.14" />;
+          })}
+        </g>
+
+        {/* hit areas */}
         <g fill="transparent">
           {REGIONS.map((region) => {
             const domain = byKey[region.key];
             if (!domain) return null;
             return (
               <path
-                key={`hit-${region.key}`}
+                key={`h-${region.key}`}
                 d={region.path}
                 className="cursor-pointer"
                 onPointerEnter={(e) => { onHover?.(region.key); handlePointer(e, region.key); }}
