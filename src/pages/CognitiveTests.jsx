@@ -13,8 +13,8 @@ import { Zap, Eye, Layers, Brain, Shuffle, Box, MessageSquareText, Check, X } fr
 
 const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Processing speed — respond the instant the signal appears.", icon: Zap, minutes: "~1 min", Component: ReactionTest },
-  { type: "sustained_attention", name: "Sustained attention", desc: "Go/no-go — respond to every letter except X.", icon: Eye, minutes: "~1 min", Component: AttentionTest },
-  { type: "memory_recall", name: "Short-term recall", desc: "Digit span — recall increasingly long sequences.", icon: Layers, minutes: "~2 min", Component: MemoryTest },
+  { type: "sustained_attention", name: "Sustained attention", desc: "SART — respond to every digit except the target.", icon: Eye, minutes: "~1 min", Component: AttentionTest },
+  { type: "memory_recall", name: "Digit Span", desc: "Wechsler Digit Span — forward and backward recall.", icon: Layers, minutes: "~2 min", Component: MemoryTest },
   { type: "working_memory", name: "Working memory", desc: "Tap when a letter repeats the one right before it.", icon: Brain, minutes: "~1 min", Component: NBackTest },
   { type: "task_switching", name: "Cognitive flexibility", desc: "Answer a simple question about a number — the question keeps changing.", icon: Shuffle, minutes: "~1 min", Component: TaskSwitchTest },
   { type: "visual_spatial", name: "Visual–spatial", desc: "Is the shape the same one turned around, or flipped?", icon: Box, minutes: "~1 min", Component: SpatialTest },

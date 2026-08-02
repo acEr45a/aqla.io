@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { playFeedback, playTone, unlockAudio } from "@/lib/gameAudio";
 
-const TRIALS = 5;
+// Brief Psychomotor Vigilance Task (PVT-B) adaptation (Dinges & Powell, 1985).
+// Gold-standard measure of vigilant attention; sensitive to sleep loss.
+const TRIALS = 8;
+const LAPSE_MS = 500; // RT ≥ 500 ms counts as a lapse (attentional failure)
 
 export default function ReactionTest({ onComplete }) {
   const [phase, setPhase] = useState("intro"); // intro | waiting | go | tooSoon | between | done
@@ -13,11 +16,12 @@ export default function ReactionTest({ onComplete }) {
   const startTrial = () => {
     unlockAudio();
     setPhase("waiting");
+    // PVT uses a pseudo-random 2–10 s foreperiod; shortened here for a brief screen.
     timer.current = setTimeout(() => {
       goAt.current = performance.now();
       playTone(740, 0.13, 0.06);
       setPhase("go");
-    }, 1200 + Math.random() * 2500);
+    }, 1500 + Math.random() * 3500);
   };
 
   const react = () => {
@@ -33,10 +37,24 @@ export default function ReactionTest({ onComplete }) {
     const next = [...times, ms];
     setTimes(next);
     if (next.length >= TRIALS) {
-      const avg = Math.round(next.reduce((a, b) => a + b, 0) / next.length);
-      const score = Math.max(20, Math.min(97, Math.round(100 - (avg - 200) / 5)));
+      const mean = next.reduce((a, b) => a + b, 0) / next.length;
+      const lapses = next.filter((t) => t >= LAPSE_MS).length;
+      const fastest = [...next].sort((a, b) => a - b).slice(0, Math.max(1, Math.ceil(next.length / 10)));
+      const fastest10 = Math.round(fastest.reduce((a, b) => a + b, 0) / fastest.length);
+      // Well-rested adults average ~250 ms; lapses and slower mean reduce the score.
+      const score = Math.max(15, Math.min(98, Math.round(100 - (mean - 240) / 3 - lapses * 8)));
       setPhase("done");
-      onComplete({ raw: { trials: next, average_ms: avg }, score });
+      onComplete({
+        raw: {
+          task: "Brief Psychomotor Vigilance Task (PVT-B) adaptation",
+          trials: next,
+          mean_rt_ms: Math.round(mean),
+          lapses,
+          lapse_threshold_ms: LAPSE_MS,
+          fastest_10pct_ms: fastest10,
+        },
+        score,
+      });
     } else {
       setTrial(next.length);
       setPhase("between");
@@ -60,11 +78,13 @@ export default function ReactionTest({ onComplete }) {
     return (
       <div className="text-center max-w-sm mx-auto">
         <h2 className="font-display text-2xl text-foreground">Reaction time</h2>
+        <p className="mt-1 text-xs text-primary tracking-wide">Psychomotor Vigilance Task · adapted</p>
         <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-          Wait for the screen to turn <span className="text-primary">green</span>, then tap anywhere or press space as fast
-          as you can. {TRIALS} trials. Don't react early.
+          Wait for the counter to appear, then tap or press space as fast as you can. {TRIALS} trials.
+          Responses slower than {LAPSE_MS} ms count as attentional lapses. Don't react early.
         </p>
-        <button onClick={startTrial} className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
+        <button onClick={startTrial}
+          className="mt-8 px-7 py-3.5 rounded-full bg-primary text-primary-foreground text-sm font-medium">Begin</button>
       </div>
     );
   }

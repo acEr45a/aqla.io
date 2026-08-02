@@ -10,7 +10,7 @@ import { Zap, Eye, Layers, ArrowRight, Check, X } from "lucide-react";
 const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Respond the instant the signal appears.", icon: Zap, Component: ReactionTest },
   { type: "sustained_attention", name: "Sustained attention", desc: "Respond to every letter except X.", icon: Eye, Component: AttentionTest },
-  { type: "memory_recall", name: "Short-term recall", desc: "Recall increasingly long digit sequences.", icon: Layers, Component: MemoryTest },
+  { type: "memory_recall", name: "Digit Span", desc: "Wechsler Digit Span — forward and backward recall.", icon: Layers, Component: MemoryTest },
 ];
 
 export default function Start() {

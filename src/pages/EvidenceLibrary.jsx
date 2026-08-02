@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
 import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
+import { COGNITIVE_TEST_EVIDENCE } from "@/lib/cognitiveTestEvidence";
 import EvidenceEntry from "@/components/evidence/EvidenceEntry";
 
 export default function EvidenceLibrary() {
@@ -16,9 +17,14 @@ export default function EvidenceLibrary() {
         key: family.key, title: family.name, subtitle: family.purpose,
         items: (ingredients || []).filter((item) => item.family === family.key),
       }))
-    : [...new Set(LIFESTYLE_EVIDENCE.map((item) => item.category))].map((category) => ({
+    : view === "lifestyle"
+    ? [...new Set(LIFESTYLE_EVIDENCE.map((item) => item.category))].map((category) => ({
         key: category, title: category, subtitle: "Lifestyle factor",
         items: LIFESTYLE_EVIDENCE.filter((item) => item.category === category),
+      }))
+    : [...new Set(COGNITIVE_TEST_EVIDENCE.map((item) => item.category))].map((category) => ({
+        key: category, title: category, subtitle: "Cognitive baseline",
+        items: COGNITIVE_TEST_EVIDENCE.filter((item) => item.category === category),
       }));
 
   return (
@@ -30,10 +36,10 @@ export default function EvidenceLibrary() {
       </p>
 
       <div className="mt-7 inline-flex rounded-full border border-border p-1">
-        {["ingredients", "lifestyle"].map((option) => (
+        {["ingredients", "lifestyle", "tests"].map((option) => (
           <button key={option} onClick={() => { setView(option); setOpen(null); }}
             className={`rounded-full px-5 py-2 text-xs capitalize transition-colors ${view === option ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
-            {option === "lifestyle" ? "Lifestyle factors" : "Ingredients"}
+            {option === "lifestyle" ? "Lifestyle factors" : option === "tests" ? "Cognitive tests" : "Ingredients"}
           </button>
         ))}
       </div>
