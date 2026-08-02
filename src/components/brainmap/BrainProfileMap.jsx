@@ -39,6 +39,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           x="30" y="10" width="600" height="540"
           preserveAspectRatio="xMidYMid meet"
           pointerEvents="none"
+          style={{ filter: "grayscale(1) brightness(0.42) contrast(1.25) sepia(0.35) hue-rotate(15deg) saturate(0.5)" }}
         />
 
         {/* region outlines in their rank color */}
@@ -53,7 +54,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
               <g key={`outline-${region.key}`} className="transition-opacity duration-300" opacity={dim ? 0.35 : 1}>
                 <path
                   d={region.path}
-                  stroke="rgba(10,12,10,0.65)"
+                  stroke="rgba(12,11,10,0.8)"
                   strokeWidth={active ? 9 : 7}
                   strokeLinejoin="round"
                 />
