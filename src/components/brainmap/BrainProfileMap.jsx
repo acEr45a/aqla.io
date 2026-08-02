@@ -3,8 +3,6 @@ import { REGIONS, OUTLINES, SULCI } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
-const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
-
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState(null);
@@ -38,6 +36,16 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
               </linearGradient>
             );
           })}
+          <radialGradient id="glass-sheen" cx="0.35" cy="0.2" r="0.75">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.28" />
+            <stop offset="35%" stopColor="#ffffff" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="brain-depth" cx="0.5" cy="0.45" r="0.62">
+            <stop offset="0%" stopColor="#000000" stopOpacity="0" />
+            <stop offset="65%" stopColor="#000000" stopOpacity="0" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.45" />
+          </radialGradient>
         </defs>
 
         {/* soft halo bloom around the brain silhouette */}
@@ -83,14 +91,10 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
           {OUTLINES.map((d, i) => <path key={i} d={d} />)}
         </g>
 
-        {/* photoreal glass texture on top of everything, clipped to the brain */}
+        {/* cohesive glass sheen + volumetric depth, clipped to the brain */}
         <g clipPath="url(#brain-clip)" pointerEvents="none">
-          <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
-            preserveAspectRatio="xMidYMid slice" opacity="0.65"
-            style={{ mixBlendMode: "screen" }} />
-          <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460"
-            preserveAspectRatio="xMidYMid slice" opacity="0.4"
-            style={{ mixBlendMode: "overlay" }} />
+          <rect x="80" y="70" width="500" height="460" fill="url(#glass-sheen)" />
+          <rect x="80" y="70" width="500" height="460" fill="url(#brain-depth)" />
         </g>
       </svg>
 
