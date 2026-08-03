@@ -24,7 +24,7 @@ export default function ProtocolPlaquards() {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
                 <span className="font-display text-sm text-foreground tracking-wide">{p.name}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground tabular-nums hidden">{p.evidence}</span>
+                
               </div>
               <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{p.purpose}</p>
             </div>
