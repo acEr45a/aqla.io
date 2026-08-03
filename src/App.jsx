@@ -21,7 +21,7 @@ import Today from '@/pages/Today';
 import BrainMap from '@/pages/BrainMap';
 import ProtocolPage from '@/pages/ProtocolPage';
 import Protocols from '@/pages/Protocols';
-import Experiments from '@/pages/Experiments';
+import Toolkit from '@/pages/Toolkit';
 import Progress from '@/pages/Progress';
 import Coach from '@/pages/Coach';
 import CognitiveTests from '@/pages/CognitiveTests';
@@ -83,7 +83,8 @@ const AuthenticatedApp = () => {
           <Route path="/map" element={<BrainMap />} />
           <Route path="/protocol" element={<ProtocolPage />} />
           <Route path="/protocols" element={<Protocols />} />
-          <Route path="/experiments" element={<Experiments />} />
+          <Route path="/toolkit" element={<Toolkit />} />
+          <Route path="/experiments" element={<Navigate to="/toolkit" replace />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/community-insights" element={<CommunityInsights />} />
           <Route path="/coach" element={<Coach />} />

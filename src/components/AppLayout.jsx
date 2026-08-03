@@ -17,7 +17,7 @@ const NAV = [
   { to: "/tests", label: "Tests", icon: Timer },
   { to: "/games", label: "Train", icon: Gamepad2 },
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
-  { to: "/experiments", label: "Experiments", icon: FlaskConical },
+  { to: "/toolkit", label: "Toolkit", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
   { to: "/evidence-library", label: "Science", icon: BookOpen },
@@ -25,7 +25,7 @@ const NAV = [
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
-const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
+const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Toolkit: "Tools", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
 const PRIMARY_ROUTES = ["/dashboard", "/map", "/protocol", "/coach"];
 const mobileItem = (item) => ({ ...item, label: SHORT_LABELS[item.label] || item.label });
 const PRIMARY_NAV = NAV.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);

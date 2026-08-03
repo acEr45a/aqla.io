@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radar, CalendarCheck, ShieldCheck, ArrowRight } from "lucide-react";
+import { Radar, CalendarCheck, ShieldCheck, ArrowRight, Bot } from "lucide-react";
+import HelpAgentChat from "@/components/help/HelpAgentChat";
 
 const GUIDES = [
   {
@@ -35,6 +36,14 @@ export default function HelpCenter() {
       <p className="text-xs uppercase tracking-widest text-muted-foreground">Documentation</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Help Center</h1>
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">Practical guidance for reading your results, building a useful daily record, and understanding AQLA's safety boundaries.</p>
+
+      <section className="mt-8">
+        <div className="flex items-center gap-2.5 mb-4">
+          <Bot className="w-4 h-4 text-primary" strokeWidth={1.5} />
+          <h2 className="font-display text-xl text-foreground">Ask the AQLA Assistant</h2>
+        </div>
+        <HelpAgentChat />
+      </section>
 
       <nav className="mt-8 flex flex-wrap gap-2" aria-label="Help topics">
         {GUIDES.map((guide) => <a key={guide.id} href={`#${guide.id}`} className="rounded-full border border-border px-4 py-2 text-xs text-muted-foreground hover:text-foreground">{guide.title}</a>)}
