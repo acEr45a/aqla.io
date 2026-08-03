@@ -106,9 +106,9 @@ export default function Landing() {
         </div>
       </section>
 
-      <NarrativeScroll onSectionEnter={setActiveSection} />
-
       <LandingSections />
+
+      <NarrativeScroll onSectionEnter={setActiveSection} />
 
       <footer className="relative border-t border-border/70">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">

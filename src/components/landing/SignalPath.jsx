@@ -104,7 +104,7 @@ export default function SignalPath({ triggerRef }) {
 
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const somaX = w * 0.03;
+      const somaX = w * 0.5;
       const somaY = h * 0.5;
       const branches = generateBranches(somaX, somaY, w); // geometry computed ONCE
 

@@ -1,8 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { PROTOCOL_FAMILIES } from "@/lib/protocols";
-import ProtocolHoverCard from "@/components/landing/ProtocolHoverCard";
-import { Shield, FlaskConical, ArrowRight } from "lucide-react";
 
 const LOOP = [
   "Measure your baseline",
@@ -15,16 +11,7 @@ const LOOP = [
 export default function LandingSections() {
   return (
     <>
-      {/* Problem */}
-      <section className="max-w-4xl mx-auto px-4 md:px-6 py-16 md:py-28">
-        <p className="text-sm text-muted-foreground tracking-widest uppercase mb-5">The problem</p>
-        <h2 className="text-2xl sm:text-3xl md:text-5xl font-light leading-tight text-foreground">
-          Most people try random supplements, productivity hacks, and wellness habits —{" "}
-          <span className="text-muted-foreground">without ever knowing their real bottleneck.</span>
-        </h2>
-      </section>
-
-      {/* How it works */}
+      {/* How AQLA works — the methodology loop */}
       <section id="science" className="border-y border-border/50 bg-card/30">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-14 md:py-24">
           <p className="text-sm text-muted-foreground tracking-widest uppercase mb-8 md:mb-12">How AQLA works</p>
@@ -39,7 +26,7 @@ export default function LandingSections() {
         </div>
       </section>
 
-      {/* Experiments */}
+      {/* Personal experiments — concrete example */}
       <section className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-28 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
         <div>
           <p className="text-sm text-muted-foreground tracking-widest uppercase mb-5">Personal experiments</p>
@@ -65,59 +52,6 @@ export default function LandingSections() {
           </div>
         </div>
       </section>
-
-      {/* Five protocols */}
-      <section className="border-y border-border/50 bg-card/30">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-14 md:py-24">
-          <p className="text-sm text-muted-foreground tracking-widest uppercase mb-3">Five protocols</p>
-          <h2 className="text-2xl sm:text-3xl font-light text-foreground mb-8 md:mb-12">Cognitive-performance protocols — not powders.</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-            {PROTOCOL_FAMILIES.map((protocol) => (
-              <ProtocolHoverCard key={protocol.key} protocol={protocol} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Science & safety */}
-      <section className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-28 grid md:grid-cols-2 gap-10 md:gap-12">
-        <div className="flex gap-4 md:gap-5">
-          <FlaskConical className="w-6 h-6 text-primary shrink-0 mt-1" strokeWidth={1.5} />
-          <div>
-            <h3 className="font-display text-xl text-foreground">The Evidence Passport</h3>
-            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              Every ingredient carries a graded evidence record — the type of studies, the populations studied,
-              realistic effect sizes, limitations, and interactions. No stars. No fake percentages.
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-4 md:gap-5">
-          <Shield className="w-6 h-6 text-primary shrink-0 mt-1" strokeWidth={1.5} />
-          <div>
-            <h3 className="font-display text-xl text-foreground">Safety and clinical governance</h3>
-            <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-              AQLA prioritizes contraindication screening, evidence transparency, and professional review where
-              required. It is a wellness platform — it never diagnoses or replaces medical care.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="border-t border-border/50">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 py-20 md:py-32 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-light text-foreground leading-tight">
-            Stop guessing.<br />Start understanding your brain.
-          </h2>
-          <Link to="/assessment" className="inline-flex items-center gap-2 mt-10 px-8 py-4 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-            Build My Brain Map <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </section>
-
-      <footer className="border-t border-border/50 py-10 text-center text-xs text-muted-foreground">
-        AQLA is a neural wellness and performance platform. It does not diagnose, treat, prevent, or cure any condition.
-      </footer>
     </>
   );
 }
