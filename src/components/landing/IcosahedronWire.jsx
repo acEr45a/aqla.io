@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { getPerfSettings } from "@/utils/deviceBenchmark";
 
 const PHI = (1 + Math.sqrt(5)) / 2;
 
@@ -43,15 +44,13 @@ export default function IcosahedronWire({ color = "hsl(75 82% 60%)" }) {
 
     const ctx = canvas.getContext("2d");
 
-    // Performance tiers
-    const cores = navigator.hardwareConcurrency || 4;
-    const lowPower = cores <= 4;
+    // Performance tier from device benchmark
+    const settings = getPerfSettings();
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const targetFps = lowPower ? 24 : 60;
-    const frameMs = 1000 / targetFps;
+    const frameMs = 1000 / settings.fps;
 
     const setupCanvas = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap DPR for perf
+      const dpr = Math.min(window.devicePixelRatio || 1, settings.dprCap);
       const px = container.offsetWidth;
       canvas.width = px * dpr;
       canvas.height = px * dpr;

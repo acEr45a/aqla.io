@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import AqlaLogo from "@/components/AqlaLogo";
@@ -13,6 +13,7 @@ import LandingSections from "@/components/landing/LandingSections";
 import ScrollIndicator from "@/components/landing/ScrollIndicator";
 import NarrativeScroll from "@/components/landing/NarrativeScroll";
 import { ArrowRight, Zap } from "lucide-react";
+import SignalPath from "@/components/landing/SignalPath";
 
 const SCROLL_SECTIONS = ["The Problem", "The Signal", "The Protocol", "The Evidence", "Begin"];
 
@@ -24,31 +25,11 @@ const STEPS = [
 
 export default function Landing() {
   const [activeSection, setActiveSection] = useState(0);
-  const [flashKey, setFlashKey] = useState(0);
-  const hasFlashed = useRef(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (window.scrollY > 80 && !hasFlashed.current) {
-        hasFlashed.current = true;
-        setFlashKey((k) => k + 1);
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const heroRef = useRef(null);
 
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
-      {flashKey > 0 && (
-        <motion.div
-          key={flashKey}
-          className="fixed inset-0 bg-white z-[60] pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.85, 0] }}
-          transition={{ duration: 0.6, times: [0, 0.12, 1], ease: "easeOut" }}
-        />
-      )}
+      <SignalPath triggerRef={heroRef} />
       <ScrollIndicator sections={SCROLL_SECTIONS} activeIndex={activeSection} />
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
@@ -63,7 +44,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <section className="relative max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-24 pb-10 md:pb-12 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+      <section ref={heroRef} className="relative max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-24 pb-10 md:pb-12 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
