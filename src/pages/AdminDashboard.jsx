@@ -9,6 +9,7 @@ import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import UserPlanPanel from "@/components/admin/UserPlanPanel";
 import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
+import DevelopmentPanel from "@/components/admin/DevelopmentPanel";
 
 import EmailLogPanel from "@/components/admin/EmailLogPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
@@ -21,7 +22,8 @@ const TABS = [
 { id: "emails", label: "Emails" },
 { id: "siteData", label: "Site data" },
 { id: "users", label: "Users & access" },
-{ id: "ops", label: "Backend Ops" }];
+{ id: "ops", label: "Backend Ops" },
+{ id: "development", label: "Development" }];
 
 
 export default function AdminDashboard() {
@@ -98,6 +100,7 @@ export default function AdminDashboard() {
           </>
         }
         {tab === "ops" && <BackendOpsConsole />}
+        {tab === "development" && <DevelopmentPanel />}
       </div>
     </div>);
 

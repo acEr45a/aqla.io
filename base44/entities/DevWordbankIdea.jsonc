@@ -1,0 +1,73 @@
+{
+  "name": "DevWordbankIdea",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Condensed version used when the idea is added to the checklist"
+    },
+    "detail": {
+      "type": "string",
+      "description": "Deep detail shown on hover \u2014 richer than checklist detail"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "big_idea",
+        "feature",
+        "improvement",
+        "small_fix"
+      ],
+      "default": "feature"
+    },
+    "impact": {
+      "type": "string"
+    },
+    "effort": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "area": {
+      "type": "string",
+      "description": "Part of AQLA the idea touches"
+    },
+    "used": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "tier"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
