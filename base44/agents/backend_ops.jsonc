@@ -90,11 +90,11 @@
     },
     {
       "function_name": "getCommunityInsights",
-      "description": "Fetch aggregated community insights across all users."
+      "description": "Fetch aggregated community insights across all users"
     },
     {
       "function_name": "manageUserRoles",
-      "description": "Manage app user roles (promote/demote between admin and user)."
+      "description": "Manage app user roles (promote/demote between admin and user)"
     }
   ],
   "context_files": [],

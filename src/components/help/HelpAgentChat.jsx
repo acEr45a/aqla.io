@@ -15,12 +15,12 @@ export default function HelpAgentChat() {
     let unsub = () => {};
     (async () => {
       try {
-        const existing = base44.agents.listConversations({ agent_name: "help_agent" });
+        const existing = await base44.agents.listConversations({ agent_name: "help_agent" });
         let conv;
         if (existing && existing.length > 0) {
           conv = existing[0];
         } else {
-          conv = base44.agents.createConversation({
+          conv = await base44.agents.createConversation({
             agent_name: "help_agent",
             metadata: { name: "Help Center Chat", description: "In-app help assistant" },
           });
@@ -50,7 +50,8 @@ export default function HelpAgentChat() {
     setInput("");
     setSending(true);
     try {
-      base44.agents.addMessage(conversation, { role: "user", content: text });
+      await base44.agents.addMessage(conversation, { role: "user", content: text });
+      setSending(false);
     } catch {
       setSending(false);
     }
