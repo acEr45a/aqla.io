@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import IcosahedronWire from "@/components/landing/IcosahedronWire";
+import ProtocolPlaquards from "@/components/landing/ProtocolPlaquards";
 
 const SECTIONS = [
   {
@@ -86,6 +87,7 @@ export default function NarrativeScroll({ onSectionEnter }) {
               >
                 {s.body}
               </motion.p>
+              {i === 2 && <ProtocolPlaquards />}
             </div>
           </div>
         </motion.section>
