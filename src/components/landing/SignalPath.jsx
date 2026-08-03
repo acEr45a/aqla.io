@@ -1,84 +1,68 @@
-import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useRef } from "react";
 import { getPerfSettings } from "@/utils/deviceBenchmark";
 
-/* ── Easing functions for cinematic motion ── */
+/* ── Easing ── */
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-const easeInCubic = (t) => t * t * t;
+const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-/* ── Controlled branch generation (no per-frame randomness) ── */
-function generateBranches(somaX, somaY, w, h) {
+/* ── Unified timeline (ms) — every phase runs off ONE clock ── */
+const T = {
+  overlayIn: 400,   // dark screen fades in
+  soma: 250,        // cell body ignites
+  grow: 1100,       // branches sweep across the screen
+  hold: 350,        // full neuron visible
+  fadeOut: 500,     // neuron + overlay fade together
+};
+const TOTAL = T.overlayIn + T.soma + T.grow + T.hold + T.fadeOut;
+
+/* ── Deterministic branch geometry, computed once per fire ── */
+function generateBranches(somaX, somaY, w) {
   const branches = [];
   const numMain = 7;
-
   for (let b = 0; b < numMain; b++) {
     const t = b / (numMain - 1);
     const baseAngle = -Math.PI * 0.38 + t * Math.PI * 0.76;
-    const length = (0.55 + Math.sin(t * Math.PI) * 0.3) * w;
+    const length = (0.7 + Math.sin(t * Math.PI) * 0.35) * w;
     const numPoints = 32;
     const points = [{ x: somaX, y: somaY }];
-
     let x = somaX, y = somaY;
     for (let j = 1; j <= numPoints; j++) {
-      const progress = j / numPoints;
-      const curve = Math.sin(progress * Math.PI * 1.5 + b * 0.6) * 0.1;
-      const angle = baseAngle + curve * progress;
-      const stepLen = length / numPoints;
-      x += Math.cos(angle) * stepLen;
-      y += Math.sin(angle) * stepLen;
+      const p = j / numPoints;
+      const angle = baseAngle + Math.sin(p * Math.PI * 1.5 + b * 0.6) * 0.1 * p;
+      x += (Math.cos(angle) * length) / numPoints;
+      y += (Math.sin(angle) * length) / numPoints;
       points.push({ x, y });
     }
-
     branches.push({ points, width: 2.5, delay: 0 });
 
-    // Two sub-branches per main branch
     for (let s = 0; s < 2; s++) {
       const splitRatio = 0.3 + s * 0.3;
-      const splitIdx = Math.floor(points.length * splitRatio);
-      const split = points[splitIdx];
+      const split = points[Math.floor(points.length * splitRatio)];
       const subAngle = baseAngle + (s === 0 ? 0.55 : -0.55);
       const subLength = length * 0.2;
       const subPoints = [{ x: split.x, y: split.y }];
-
       let sx = split.x, sy = split.y;
       for (let j = 1; j <= 14; j++) {
-        const progress = j / 14;
-        const curve = Math.sin(progress * Math.PI * 1.3 + s) * 0.08;
-        const angle = subAngle + curve * progress;
-        const step = subLength / 14;
-        sx += Math.cos(angle) * step;
-        sy += Math.sin(angle) * step;
+        const p = j / 14;
+        const angle = subAngle + Math.sin(p * Math.PI * 1.3 + s) * 0.08 * p;
+        sx += (Math.cos(angle) * subLength) / 14;
+        sy += (Math.sin(angle) * subLength) / 14;
         subPoints.push({ x: sx, y: sy });
       }
       branches.push({ points: subPoints, width: 1.5, delay: splitRatio });
     }
   }
-
   return branches;
 }
+
+/* Phase progress helper: 0→1 within [start, start+dur] of the clock */
+const phase = (elapsed, start, dur) =>
+  Math.max(0, Math.min((elapsed - start) / dur, 1));
 
 export default function SignalPath({ triggerRef }) {
   const canvasRef = useRef(null);
   const firedRef = useRef(false);
-  const [active, setActive] = useState(false);
 
-  /* ── Scroll lock: prevents wheel, touch, and keyboard scrolling ── */
-  useEffect(() => {
-    if (!active) return;
-    const prevent = (e) => e.preventDefault();
-    window.addEventListener("wheel", prevent, { passive: false });
-    window.addEventListener("touchmove", prevent, { passive: false });
-    window.addEventListener("keydown", prevent, { passive: false });
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("wheel", prevent);
-      window.removeEventListener("touchmove", prevent);
-      window.removeEventListener("keydown", prevent);
-      document.body.style.overflow = "";
-    };
-  }, [active]);
-
-  /* ── Observer + canvas animation ── */
   useEffect(() => {
     const canvas = canvasRef.current;
     const trigger = triggerRef?.current;
@@ -99,151 +83,127 @@ export default function SignalPath({ triggerRef }) {
     resize();
     window.addEventListener("resize", resize);
 
-    let timers = [];
     let raf = null;
+    const preventTouch = (e) => e.preventDefault();
+
+    const unlockScroll = () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      window.removeEventListener("touchmove", preventTouch);
+    };
+    const lockScroll = () => {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      window.addEventListener("touchmove", preventTouch, { passive: false });
+    };
 
     const fireNeuron = () => {
       if (firedRef.current || reducedMotion) return;
       firedRef.current = true;
+      observer.disconnect(); // guaranteed single fire — no ghost re-triggers
 
-      // Activate overlay → triggers scroll lock + dark screen fade-in
-      setActive(true);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const somaX = w * 0.03;
+      const somaY = h * 0.5;
+      const branches = generateBranches(somaX, somaY, w); // geometry computed ONCE
 
-      const overlayFadeIn = 300;
-      const somaDuration = 200;
-      const growDuration = 800;
-      const holdDuration = 200;
-      const fadeDuration = 400;
-      const totalAnim = somaDuration + growDuration + holdDuration + fadeDuration;
+      lockScroll();
+      const startTime = performance.now();
 
-      // Start canvas animation after overlay is fully opaque
-      const animTimer = setTimeout(() => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const somaX = w * 0.03;
-        const somaY = h * 0.5;
-        const branches = generateBranches(somaX, somaY, w, h);
-        const startTime = performance.now();
+      const animate = (now) => {
+        const elapsed = now - startTime;
 
-        const animate = (now) => {
-          const elapsed = now - startTime;
-          if (elapsed > totalAnim) {
-            ctx.clearRect(0, 0, w, h);
-            return;
-          }
-
+        if (elapsed >= TOTAL) {
           ctx.clearRect(0, 0, w, h);
+          unlockScroll();
+          return;
+        }
 
-          // Phase calculations
-          const somaP = Math.min(elapsed / somaDuration, 1);
-          const growP = elapsed > somaDuration
-            ? Math.min((elapsed - somaDuration) / growDuration, 1)
-            : 0;
-          const fadeStart = somaDuration + growDuration + holdDuration;
-          const fadeP = elapsed > fadeStart
-            ? Math.min((elapsed - fadeStart) / fadeDuration, 1)
-            : 0;
+        ctx.clearRect(0, 0, w, h);
 
-          // Eased values for cinematic smoothness
-          const somaEased = easeOutCubic(somaP);
-          const growEased = easeOutCubic(growP);
-          const alpha = 1 - easeInCubic(fadeP);
-          if (alpha <= 0) return;
+        /* All phases derived from the SAME clock — perfectly synced */
+        const overlayP = phase(elapsed, 0, T.overlayIn);
+        const somaP = phase(elapsed, T.overlayIn, T.soma);
+        const growP = phase(elapsed, T.overlayIn + T.soma, T.grow);
+        const fadeP = phase(elapsed, T.overlayIn + T.soma + T.grow + T.hold, T.fadeOut);
 
-          /* ── Soma (cell body ignition) ── */
-          const somaRadius = 2 + somaEased * 7;
-          const somaAlpha = Math.min(somaEased * 2, 1) * alpha;
+        const fade = 1 - easeInOutCubic(fadeP);
 
+        /* ── Dark overlay drawn on the canvas itself (zero sync lag) ── */
+        const overlayAlpha = easeInOutCubic(overlayP) * fade;
+        ctx.fillStyle = `rgba(13, 11, 9, ${overlayAlpha * 0.97})`;
+        ctx.fillRect(0, 0, w, h);
+
+        const somaEased = easeOutCubic(somaP);
+        const growEased = easeOutCubic(growP);
+        const alpha = Math.min(somaEased * 2, 1) * fade;
+
+        if (alpha > 0.01) {
           if (settings.glow) {
             ctx.shadowBlur = settings.shadowBlur;
             ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
           }
 
-          // Expanding ignition ring
-          if (somaP < 1) {
-            const ringR = easeOutCubic(somaP) * 40;
-            const ringA = (1 - somaP) * 0.4 * alpha;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${ringA})`;
+          /* Ignition ring */
+          if (somaP > 0 && somaP < 1) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - somaP) * 0.4 * fade})`;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.arc(somaX, somaY, ringR, 0, Math.PI * 2);
+            ctx.arc(somaX, somaY, easeOutCubic(somaP) * 40, 0, Math.PI * 2);
             ctx.stroke();
           }
 
-          // Soma outer glow
-          ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha * 0.3})`;
+          /* Soma */
+          const somaRadius = 2 + somaEased * 7;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
           ctx.beginPath();
           ctx.arc(somaX, somaY, somaRadius + 5, 0, Math.PI * 2);
           ctx.fill();
-
-          // Soma core
-          ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
           ctx.beginPath();
           ctx.arc(somaX, somaY, somaRadius, 0, Math.PI * 2);
           ctx.fill();
 
-          /* ── Branches (eased growth, no flicker) ── */
+          /* Branches */
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
           branches.forEach((branch) => {
-            const branchGrowth = branch.delay > 0
+            const bg = branch.delay > 0
               ? Math.max(0, Math.min((growEased - branch.delay) / (1 - branch.delay), 1))
               : growEased;
-            const drawCount = Math.max(2, Math.ceil(branch.points.length * branchGrowth));
+            const drawCount = Math.ceil(branch.points.length * bg);
             if (drawCount < 2) return;
 
-            // Outer glow stroke
-            if (settings.glow) {
-              ctx.shadowBlur = settings.shadowBlur;
-              ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
-              ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
-              ctx.lineWidth = branch.width + 3;
-              ctx.lineCap = "round";
-              ctx.lineJoin = "round";
+            const drawPath = () => {
               ctx.beginPath();
               ctx.moveTo(branch.points[0].x, branch.points[0].y);
-              for (let i = 1; i < drawCount; i++) {
-                ctx.lineTo(branch.points[i].x, branch.points[i].y);
-              }
+              for (let i = 1; i < drawCount; i++) ctx.lineTo(branch.points[i].x, branch.points[i].y);
               ctx.stroke();
-            }
+            };
 
-            // Bright white core
-            ctx.shadowBlur = settings.glow ? 4 : 0;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.lineWidth = branch.width;
-            ctx.beginPath();
-            ctx.moveTo(branch.points[0].x, branch.points[0].y);
-            for (let i = 1; i < drawCount; i++) {
-              ctx.lineTo(branch.points[i].x, branch.points[i].y);
+            if (settings.glow) {
+              ctx.strokeStyle = `rgba(255, 255, 255, ${fade * 0.3})`;
+              ctx.lineWidth = branch.width + 3;
+              drawPath();
             }
-            ctx.stroke();
+            ctx.shadowBlur = settings.glow ? 4 : 0;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${fade})`;
+            ctx.lineWidth = branch.width;
+            drawPath();
+            if (settings.glow) ctx.shadowBlur = settings.shadowBlur;
           });
 
           ctx.shadowBlur = 0;
-          raf = requestAnimationFrame(animate);
-        };
+        }
+
         raf = requestAnimationFrame(animate);
-      }, overlayFadeIn);
-      timers.push(animTimer);
-
-      // Deactivate overlay after animation completes (triggers fade-out)
-      const doneTimer = setTimeout(() => {
-        setActive(false);
-      }, overlayFadeIn + totalAnim + 100);
-      timers.push(doneTimer);
-
-      // Cancel raf after everything is done
-      const cleanupTimer = setTimeout(() => {
-        if (raf) cancelAnimationFrame(raf);
-        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      }, overlayFadeIn + totalAnim + 200);
-      timers.push(cleanupTimer);
+      };
+      raf = requestAnimationFrame(animate);
     };
 
-    // Trigger BEFORE "01" enters view (150px提前量)
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) fireNeuron();
-      },
+      ([entry]) => { if (entry.isIntersecting) fireNeuron(); },
       { threshold: 0, rootMargin: "0px 0px 150px 0px" }
     );
     observer.observe(trigger);
@@ -252,30 +212,15 @@ export default function SignalPath({ triggerRef }) {
       observer.disconnect();
       window.removeEventListener("resize", resize);
       if (raf) cancelAnimationFrame(raf);
-      timers.forEach((t) => clearTimeout(t));
+      unlockScroll();
     };
   }, [triggerRef]);
 
   return (
-    <>
-      {/* Cinematic dark overlay — covers all content, smooth fade in/out */}
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            className="fixed inset-0 z-[54] bg-background pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          />
-        )}
-      </AnimatePresence>
-      {/* Canvas — neuron signal on top of overlay */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 z-[55] pointer-events-none"
-        aria-hidden="true"
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 z-[55] pointer-events-none"
+      aria-hidden="true"
+    />
   );
 }
