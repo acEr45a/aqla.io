@@ -21,7 +21,7 @@ function generateBranches(somaX, somaY, w) {
   const numMain = 7;
   for (let b = 0; b < numMain; b++) {
     const t = b / (numMain - 1);
-    const baseAngle = -Math.PI * 0.38 + t * Math.PI * 0.76;
+    const baseAngle = t * Math.PI * 2;
     const length = (0.7 + Math.sin(t * Math.PI) * 0.35) * w;
     const numPoints = 32;
     const points = [{ x: somaX, y: somaY }];
