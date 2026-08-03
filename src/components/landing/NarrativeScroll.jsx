@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import IcosahedronWire from "@/components/landing/IcosahedronWire";
 
 const SECTIONS = [
   {
@@ -34,67 +35,6 @@ const SECTIONS = [
   },
 ];
 
-const BRANCHES = [0, 60, 120, 180, 240, 300];
-
-function NeuronFire({ color }) {
-  return (
-    <div className="relative w-24 h-24 md:w-32 md:h-32 shrink-0">
-      <svg viewBox="0 0 128 128" className="w-full h-full overflow-visible">
-        {/* Dendrites */}
-        {BRANCHES.map((angle, i) => {
-          const rad = (angle * Math.PI) / 180;
-          const x2 = 64 + Math.cos(rad) * 50;
-          const y2 = 64 + Math.sin(rad) * 50;
-          return (
-            <motion.line key={i} x1="64" y1="64" x2={x2} y2={y2}
-              stroke={color} strokeWidth="1.5" strokeLinecap="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              whileInView={{ pathLength: 1, opacity: 0.4 }}
-              viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-              transition={{ duration: 0.6, delay: i * 0.06 }}
-            />
-          );
-        })}
-        {/* Terminal nodes */}
-        {BRANCHES.map((angle, i) => {
-          const rad = (angle * Math.PI) / 180;
-          const x = 64 + Math.cos(rad) * 50;
-          const y = 64 + Math.sin(rad) * 50;
-          return (
-            <motion.circle key={`t-${i}`} cx={x} cy={y} r="3" fill={color}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 0.8 }}
-              viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-              transition={{ duration: 0.3, delay: 0.4 + i * 0.06 }}
-            />
-          );
-        })}
-        {/* Soma glow */}
-        <motion.circle cx="64" cy="64" r="14" fill={color} opacity={0.12}
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-          transition={{ duration: 0.5 }}
-        />
-        {/* Soma core */}
-        <motion.circle cx="64" cy="64" r="8" fill={color}
-          initial={{ scale: 0.3, opacity: 0.2 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-          transition={{ duration: 0.4 }}
-        />
-        {/* Firing pulse ring */}
-        <motion.circle cx="64" cy="64" r="8" fill="none" stroke={color} strokeWidth="2"
-          initial={{ scale: 1, opacity: 0 }}
-          whileInView={{ scale: [1, 3.5], opacity: [0.6, 0] }}
-          viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-          transition={{ duration: 1.3, repeat: Infinity, ease: "easeOut" }}
-        />
-      </svg>
-    </div>
-  );
-}
-
 export default function NarrativeScroll({ onSectionEnter }) {
   return (
     <div className="relative">
@@ -106,7 +46,7 @@ export default function NarrativeScroll({ onSectionEnter }) {
           viewport={{ amount: "some", margin: "-45% 0px -45% 0px" }}
         >
           <div className={`flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-16 text-center md:text-left ${i % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
-            <NeuronFire color={s.color} />
+            <IcosahedronWire color={s.color} />
             <div className="flex-1">
               <motion.p
                 className="text-xs tracking-widest uppercase mb-4"
@@ -164,7 +104,7 @@ export default function NarrativeScroll({ onSectionEnter }) {
           viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
           transition={{ duration: 0.6 }}
         >
-          <NeuronFire color="hsl(75 82% 60%)" />
+          <IcosahedronWire color="hsl(75 82% 60%)" />
         </motion.div>
         <motion.h2
           className="text-3xl sm:text-4xl md:text-6xl font-light text-foreground leading-tight"

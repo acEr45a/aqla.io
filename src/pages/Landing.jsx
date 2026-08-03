@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import AqlaLogo from "@/components/AqlaLogo";
@@ -24,8 +24,31 @@ const STEPS = [
 
 export default function Landing() {
   const [activeSection, setActiveSection] = useState(0);
+  const [flashKey, setFlashKey] = useState(0);
+  const hasFlashed = useRef(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY > 80 && !hasFlashed.current) {
+        hasFlashed.current = true;
+        setFlashKey((k) => k + 1);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
+      {flashKey > 0 && (
+        <motion.div
+          key={flashKey}
+          className="fixed inset-0 bg-white z-[60] pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.85, 0] }}
+          transition={{ duration: 0.6, times: [0, 0.12, 1], ease: "easeOut" }}
+        />
+      )}
       <ScrollIndicator sections={SCROLL_SECTIONS} activeIndex={activeSection} />
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
