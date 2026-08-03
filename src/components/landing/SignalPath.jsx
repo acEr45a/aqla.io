@@ -1,42 +1,61 @@
 import React, { useEffect, useRef } from "react";
 import { getPerfSettings } from "@/utils/deviceBenchmark";
 
-// Generate a randomized jagged lightning path from top to bottom of the screen,
-// with branching offshoots — like a neuron firing an electrical signal.
-function generateLightning(width, height, numBranches) {
+// Generate organic dendritic branches emanating from a neuron soma.
+// Branches curve organically (not jagged like lightning) and spread outward.
+function generateNeuronSignal(somaX, somaY, width, height, numSubBranches) {
   const segments = [];
 
-  // Main bolt — jagged vertical path
-  const startX = width * (0.15 + Math.random() * 0.7);
-  const endX = width * (0.15 + Math.random() * 0.7);
-  const numJoints = 16 + Math.floor(Math.random() * 10);
-  const points = [{ x: startX, y: 0 }];
+  // Main branches — radiate from soma, biased towards right (content area)
+  const numMain = 6 + Math.floor(Math.random() * 3);
 
-  for (let i = 1; i < numJoints; i++) {
-    const t = i / numJoints;
-    const baseX = startX + (endX - startX) * t;
-    const jitter = (Math.random() - 0.5) * width * 0.22;
-    const y = height * t + (Math.random() - 0.5) * height * 0.04;
-    points.push({ x: baseX + jitter, y: Math.max(0, Math.min(height, y)) });
-  }
-  points.push({ x: endX, y: height });
-  segments.push({ points, width: 2.5 });
+  for (let b = 0; b < numMain; b++) {
+    const t = numMain > 1 ? b / (numMain - 1) : 0.5;
+    // Spread from -100° to +100° from right direction
+    const baseAngle = -Math.PI * 0.55 + t * Math.PI * 1.1 + (Math.random() - 0.5) * 0.25;
 
-  // Branches — smaller jagged offshoots from random joints
-  for (let b = 0; b < numBranches; b++) {
-    const idx = Math.floor(Math.random() * (points.length - 3)) + 1;
-    const src = points[idx];
-    const branchLen = 4 + Math.floor(Math.random() * 6);
-    const branchPts = [{ x: src.x, y: src.y }];
-    let bx = src.x;
-    let by = src.y;
-    const angle = (Math.random() - 0.5) * Math.PI * 0.7;
-    for (let j = 0; j < branchLen; j++) {
-      bx += Math.cos(angle) * (15 + Math.random() * 40) + (Math.random() - 0.5) * 25;
-      by += Math.abs(Math.sin(angle)) * (15 + Math.random() * 35) + Math.random() * 25;
-      branchPts.push({ x: bx, y: by });
+    const branchLength = (0.25 + Math.random() * 0.45) * width;
+    const numJoints = 10 + Math.floor(Math.random() * 8);
+    const stepLen = branchLength / numJoints;
+    const points = [{ x: somaX, y: somaY }];
+
+    let cx = somaX, cy = somaY;
+    let currentAngle = baseAngle;
+
+    for (let j = 0; j < numJoints; j++) {
+      currentAngle += (Math.random() - 0.5) * 0.32;
+      cx += Math.cos(currentAngle) * stepLen;
+      cy += Math.sin(currentAngle) * stepLen;
+      cx = Math.max(-30, Math.min(width + 30, cx));
+      cy = Math.max(-30, Math.min(height + 30, cy));
+      points.push({ x: cx, y: cy });
     }
-    segments.push({ points: branchPts, width: 1.2 });
+
+    segments.push({ points, width: 2 });
+
+    // Sub-branches — smaller offshoots
+    if (numSubBranches > 0) {
+      const numSub = 1 + Math.floor(Math.random() * (numSubBranches / 2));
+      for (let s = 0; s < numSub; s++) {
+        const splitIdx = Math.floor(Math.random() * (points.length - 3)) + 2;
+        const split = points[splitIdx];
+        const subAngle = currentAngle + (Math.random() - 0.5) * 1.4;
+        const subLen = branchLength * (0.25 + Math.random() * 0.3);
+        const subJoints = 5 + Math.floor(Math.random() * 4);
+        const subStep = subLen / subJoints;
+        const subPts = [{ x: split.x, y: split.y }];
+
+        let sx = split.x, sy = split.y;
+        let subAng = subAngle;
+        for (let j = 0; j < subJoints; j++) {
+          subAng += (Math.random() - 0.5) * 0.45;
+          sx += Math.cos(subAng) * subStep;
+          sy += Math.sin(subAng) * subStep;
+          subPts.push({ x: sx, y: sy });
+        }
+        segments.push({ points: subPts, width: 1 });
+      }
+    }
   }
 
   return segments;
@@ -68,42 +87,88 @@ export default function SignalPath({ triggerRef }) {
 
     let cleanupTimer = null;
 
-    const fireLightning = () => {
+    const fireNeuron = () => {
       if (firedRef.current || reducedMotion) return;
       firedRef.current = true;
 
       const w = window.innerWidth;
       const h = window.innerHeight;
-      const segments = generateLightning(w, h, settings.branches);
-      const duration = 800;
-      const fadeDuration = 450;
+      const somaX = w * 0.06;
+      const somaY = h * 0.5;
+      const segments = generateNeuronSignal(somaX, somaY, w, h, settings.branches);
+
+      const somaDuration = 200;   // soma ignition phase
+      const growDuration = 700;    // branch propagation phase
+      const fadeDuration = 500;    // fade out phase
+      const totalDuration = somaDuration + growDuration + fadeDuration;
       const startTime = performance.now();
       let raf;
 
       const animate = (now) => {
         const elapsed = now - startTime;
-        const drawProgress = Math.min(elapsed / duration, 1);
-        const fadeProgress =
-          elapsed > duration ? Math.min((elapsed - duration) / fadeDuration, 1) : 0;
+        if (elapsed > totalDuration) return;
 
         ctx.clearRect(0, 0, w, h);
 
-        if (fadeProgress >= 1) return;
+        // Determine phases
+        const somaProgress = Math.min(elapsed / somaDuration, 1);
+        const growProgress =
+          elapsed > somaDuration
+            ? Math.min((elapsed - somaDuration) / growDuration, 1)
+            : 0;
+        const fadeProgress =
+          elapsed > somaDuration + growDuration
+            ? Math.min((elapsed - somaDuration - growDuration) / fadeDuration, 1)
+            : 0;
 
         const alpha = 1 - fadeProgress;
-        // Subtle flicker during draw phase
-        const flicker = drawProgress < 1 ? 0.85 + Math.random() * 0.15 : 1;
+        if (alpha <= 0) return;
+
+        // --- Draw soma (cell body) ---
+        const somaRadius = 3 + somaProgress * 6;
+        const somaAlpha = Math.min(somaProgress * 2, 1) * alpha;
+
+        if (settings.glow) {
+          ctx.shadowBlur = settings.shadowBlur;
+          ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+        }
+
+        // Pulse ring — expanding from soma on ignition
+        if (somaProgress < 1) {
+          const ringR = somaProgress * 35;
+          const ringA = (1 - somaProgress) * 0.4 * alpha;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${ringA})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(somaX, somaY, ringR, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Soma glow
+        ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha * 0.3})`;
+        ctx.beginPath();
+        ctx.arc(somaX, somaY, somaRadius + 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Soma core
+        ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha})`;
+        ctx.beginPath();
+        ctx.arc(somaX, somaY, somaRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // --- Draw branches ---
+        const flicker = growProgress < 1 ? 0.88 + Math.random() * 0.12 : 1;
 
         segments.forEach((seg) => {
-          const drawCount = Math.max(2, Math.ceil(seg.points.length * drawProgress));
+          const drawCount = Math.max(2, Math.ceil(seg.points.length * growProgress));
           if (drawCount < 2) return;
 
-          // Outer glow pass
+          // Outer glow
           if (settings.glow) {
             ctx.shadowBlur = settings.shadowBlur;
-            ctx.shadowColor = "hsl(75 82% 60%)";
-            ctx.strokeStyle = `hsla(75, 82%, 65%, ${alpha * 0.4 * flicker})`;
-            ctx.lineWidth = seg.width + 3;
+            ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.35 * flicker})`;
+            ctx.lineWidth = seg.width + 2.5;
             ctx.lineCap = "round";
             ctx.lineJoin = "round";
             ctx.beginPath();
@@ -114,9 +179,9 @@ export default function SignalPath({ triggerRef }) {
             ctx.stroke();
           }
 
-          // Bright core
-          ctx.shadowBlur = settings.glow ? 4 : 0;
-          ctx.strokeStyle = `hsla(75, 95%, 88%, ${alpha * flicker})`;
+          // Bright white core
+          ctx.shadowBlur = settings.glow ? 3 : 0;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * flicker})`;
           ctx.lineWidth = seg.width;
           ctx.beginPath();
           ctx.moveTo(seg.points[0].x, seg.points[0].y);
@@ -128,29 +193,22 @@ export default function SignalPath({ triggerRef }) {
 
         ctx.shadowBlur = 0;
 
-        if (drawProgress < 1 || fadeProgress < 1) {
-          raf = requestAnimationFrame(animate);
-        }
+        raf = requestAnimationFrame(animate);
       };
       raf = requestAnimationFrame(animate);
-      cleanupTimer = setTimeout(() => cancelAnimationFrame(raf), duration + fadeDuration + 100);
+      cleanupTimer = setTimeout(() => cancelAnimationFrame(raf), totalDuration + 100);
     };
 
-    // Fire when hero section scrolls out of view (user scrolls past landing)
+    // Fire when the trigger element enters view (e.g. the "01" step card)
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-          fireLightning();
+        if (entry.isIntersecting) {
+          fireNeuron();
         }
       },
-      { threshold: 0 }
+      { threshold: 0.6 }
     );
     observer.observe(trigger);
-
-    // Fallback: if already scrolled past on mount
-    if (trigger.getBoundingClientRect().bottom < 0) {
-      fireLightning();
-    }
 
     return () => {
       observer.disconnect();

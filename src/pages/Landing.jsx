@@ -25,11 +25,11 @@ const STEPS = [
 
 export default function Landing() {
   const [activeSection, setActiveSection] = useState(0);
-  const heroRef = useRef(null);
+  const stepRef = useRef(null);
 
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
-      <SignalPath triggerRef={heroRef} />
+      <SignalPath triggerRef={stepRef} />
       <ScrollIndicator sections={SCROLL_SECTIONS} activeIndex={activeSection} />
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
@@ -44,7 +44,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <section ref={heroRef} className="relative max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-24 pb-10 md:pb-12 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+      <section className="relative max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-24 pb-10 md:pb-12 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
@@ -95,7 +95,7 @@ export default function Landing() {
       <section className="relative max-w-6xl mx-auto px-4 md:px-6 pb-14 md:pb-16">
         <div className="grid md:grid-cols-3 gap-3 md:gap-4">
           {STEPS.map(([num, title, desc], i) => (
-            <motion.div key={num} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+            <motion.div key={num} ref={i === 0 ? stepRef : null} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.6, delay: i * 0.15 }}
               className="aqla-panel rounded-2xl p-6">
               <p className="font-display text-primary/70 text-sm tabular-nums">{num}</p>
