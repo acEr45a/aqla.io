@@ -2,16 +2,12 @@ import React, { useEffect, useRef } from "react";
 import { getPerfSettings } from "@/utils/deviceBenchmark";
 
 // Generate organic dendritic branches emanating from a neuron soma.
-// Branches curve organically (not jagged like lightning) and spread outward.
 function generateNeuronSignal(somaX, somaY, width, height, numSubBranches) {
   const segments = [];
-
-  // Main branches — radiate from soma, biased towards right (content area)
   const numMain = 6 + Math.floor(Math.random() * 3);
 
   for (let b = 0; b < numMain; b++) {
     const t = numMain > 1 ? b / (numMain - 1) : 0.5;
-    // Spread from -100° to +100° from right direction
     const baseAngle = -Math.PI * 0.55 + t * Math.PI * 1.1 + (Math.random() - 0.5) * 0.25;
 
     const branchLength = (0.25 + Math.random() * 0.45) * width;
@@ -33,7 +29,6 @@ function generateNeuronSignal(somaX, somaY, width, height, numSubBranches) {
 
     segments.push({ points, width: 2 });
 
-    // Sub-branches — smaller offshoots
     if (numSubBranches > 0) {
       const numSub = 1 + Math.floor(Math.random() * (numSubBranches / 2));
       for (let s = 0; s < numSub; s++) {
@@ -63,10 +58,12 @@ function generateNeuronSignal(somaX, somaY, width, height, numSubBranches) {
 
 export default function SignalPath({ triggerRef }) {
   const canvasRef = useRef(null);
+  const overlayRef = useRef(null);
   const firedRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const overlay = overlayRef.current;
     const trigger = triggerRef?.current;
     if (!canvas || !trigger) return;
 
@@ -85,143 +82,182 @@ export default function SignalPath({ triggerRef }) {
     resize();
     window.addEventListener("resize", resize);
 
-    let cleanupTimer = null;
+    let timers = [];
+    let raf = null;
 
     const fireNeuron = () => {
       if (firedRef.current || reducedMotion) return;
       firedRef.current = true;
 
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const somaX = w * 0.06;
-      const somaY = h * 0.5;
-      const segments = generateNeuronSignal(somaX, somaY, w, h, settings.branches);
+      // --- Step 1: Lock scroll so the user can't scroll past the animation ---
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
 
-      const somaDuration = 200;   // soma ignition phase
-      const growDuration = 700;    // branch propagation phase
-      const fadeDuration = 500;    // fade out phase
-      const totalDuration = somaDuration + growDuration + fadeDuration;
-      const startTime = performance.now();
-      let raf;
+      // --- Step 2: Fade in dark overlay (blank screen, no overlap with content) ---
+      if (overlay) overlay.style.opacity = "1";
 
-      const animate = (now) => {
-        const elapsed = now - startTime;
-        if (elapsed > totalDuration) return;
+      const overlayFadeIn = 200;
+      const somaDuration = 150;
+      const growDuration = 600;
+      const fadeDuration = 400;
+      const overlayFadeOut = 250;
+      const totalNeuron = somaDuration + growDuration + fadeDuration;
 
-        ctx.clearRect(0, 0, w, h);
+      // --- Step 3: Start neuron animation after overlay is fully opaque ---
+      const neuronTimer = setTimeout(() => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const somaX = w * 0.06;
+        const somaY = h * 0.5;
+        const segments = generateNeuronSignal(somaX, somaY, w, h, settings.branches);
+        const startTime = performance.now();
 
-        // Determine phases
-        const somaProgress = Math.min(elapsed / somaDuration, 1);
-        const growProgress =
-          elapsed > somaDuration
-            ? Math.min((elapsed - somaDuration) / growDuration, 1)
-            : 0;
-        const fadeProgress =
-          elapsed > somaDuration + growDuration
-            ? Math.min((elapsed - somaDuration - growDuration) / fadeDuration, 1)
-            : 0;
+        const animate = (now) => {
+          const elapsed = now - startTime;
+          if (elapsed > totalNeuron) return;
 
-        const alpha = 1 - fadeProgress;
-        if (alpha <= 0) return;
+          ctx.clearRect(0, 0, w, h);
 
-        // --- Draw soma (cell body) ---
-        const somaRadius = 3 + somaProgress * 6;
-        const somaAlpha = Math.min(somaProgress * 2, 1) * alpha;
+          const somaProgress = Math.min(elapsed / somaDuration, 1);
+          const growProgress =
+            elapsed > somaDuration
+              ? Math.min((elapsed - somaDuration) / growDuration, 1)
+              : 0;
+          const fadeProgress =
+            elapsed > somaDuration + growDuration
+              ? Math.min((elapsed - somaDuration - growDuration) / fadeDuration, 1)
+              : 0;
 
-        if (settings.glow) {
-          ctx.shadowBlur = settings.shadowBlur;
-          ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
-        }
+          const alpha = 1 - fadeProgress;
+          if (alpha <= 0) return;
 
-        // Pulse ring — expanding from soma on ignition
-        if (somaProgress < 1) {
-          const ringR = somaProgress * 35;
-          const ringA = (1 - somaProgress) * 0.4 * alpha;
-          ctx.strokeStyle = `rgba(255, 255, 255, ${ringA})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(somaX, somaY, ringR, 0, Math.PI * 2);
-          ctx.stroke();
-        }
+          // --- Soma (cell body) ---
+          const somaRadius = 3 + somaProgress * 6;
+          const somaAlpha = Math.min(somaProgress * 2, 1) * alpha;
 
-        // Soma glow
-        ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(somaX, somaY, somaRadius + 4, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Soma core
-        ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha})`;
-        ctx.beginPath();
-        ctx.arc(somaX, somaY, somaRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // --- Draw branches ---
-        const flicker = growProgress < 1 ? 0.88 + Math.random() * 0.12 : 1;
-
-        segments.forEach((seg) => {
-          const drawCount = Math.max(2, Math.ceil(seg.points.length * growProgress));
-          if (drawCount < 2) return;
-
-          // Outer glow
           if (settings.glow) {
             ctx.shadowBlur = settings.shadowBlur;
-            ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
-            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.35 * flicker})`;
-            ctx.lineWidth = seg.width + 2.5;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+            ctx.shadowColor = "rgba(255, 255, 255, 0.9)";
+          }
+
+          // Pulse ring
+          if (somaProgress < 1) {
+            const ringR = somaProgress * 35;
+            const ringA = (1 - somaProgress) * 0.4 * alpha;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${ringA})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(somaX, somaY, ringR, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // Soma glow
+          ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha * 0.3})`;
+          ctx.beginPath();
+          ctx.arc(somaX, somaY, somaRadius + 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Soma core
+          ctx.fillStyle = `rgba(255, 255, 255, ${somaAlpha})`;
+          ctx.beginPath();
+          ctx.arc(somaX, somaY, somaRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // --- Branches ---
+          const flicker = growProgress < 1 ? 0.88 + Math.random() * 0.12 : 1;
+
+          segments.forEach((seg) => {
+            const drawCount = Math.max(2, Math.ceil(seg.points.length * growProgress));
+            if (drawCount < 2) return;
+
+            // Outer glow
+            if (settings.glow) {
+              ctx.shadowBlur = settings.shadowBlur;
+              ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+              ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.35 * flicker})`;
+              ctx.lineWidth = seg.width + 2.5;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.beginPath();
+              ctx.moveTo(seg.points[0].x, seg.points[0].y);
+              for (let i = 1; i < drawCount; i++) {
+                ctx.lineTo(seg.points[i].x, seg.points[i].y);
+              }
+              ctx.stroke();
+            }
+
+            // Bright white core
+            ctx.shadowBlur = settings.glow ? 3 : 0;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * flicker})`;
+            ctx.lineWidth = seg.width;
             ctx.beginPath();
             ctx.moveTo(seg.points[0].x, seg.points[0].y);
             for (let i = 1; i < drawCount; i++) {
               ctx.lineTo(seg.points[i].x, seg.points[i].y);
             }
             ctx.stroke();
-          }
+          });
 
-          // Bright white core
-          ctx.shadowBlur = settings.glow ? 3 : 0;
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * flicker})`;
-          ctx.lineWidth = seg.width;
-          ctx.beginPath();
-          ctx.moveTo(seg.points[0].x, seg.points[0].y);
-          for (let i = 1; i < drawCount; i++) {
-            ctx.lineTo(seg.points[i].x, seg.points[i].y);
-          }
-          ctx.stroke();
-        });
-
-        ctx.shadowBlur = 0;
-
+          ctx.shadowBlur = 0;
+          raf = requestAnimationFrame(animate);
+        };
         raf = requestAnimationFrame(animate);
-      };
-      raf = requestAnimationFrame(animate);
-      cleanupTimer = setTimeout(() => cancelAnimationFrame(raf), totalDuration + 100);
+      }, overlayFadeIn);
+      timers.push(neuronTimer);
+
+      // --- Step 4: After neuron completes, fade out overlay & unlock scroll ---
+      const unlockTimer = setTimeout(() => {
+        if (overlay) overlay.style.opacity = "0";
+        const restoreTimer = setTimeout(() => {
+          document.documentElement.style.overflow = "";
+          document.body.style.overflow = "";
+        }, overlayFadeOut);
+        timers.push(restoreTimer);
+      }, overlayFadeIn + totalNeuron);
+      timers.push(unlockTimer);
+
+      // Cleanup raf
+      const cleanupRaf = setTimeout(() => {
+        if (raf) cancelAnimationFrame(raf);
+      }, overlayFadeIn + totalNeuron + 100);
+      timers.push(cleanupRaf);
     };
 
-    // Fire when the trigger element enters view (e.g. the "01" step card)
+    // Trigger BEFORE the "01" element enters view (150px提前量)
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           fireNeuron();
         }
       },
-      { threshold: 0.6 }
+      { threshold: 0, rootMargin: "0px 0px 150px 0px" }
     );
     observer.observe(trigger);
 
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", resize);
-      if (cleanupTimer) clearTimeout(cleanupTimer);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      if (raf) cancelAnimationFrame(raf);
+      timers.forEach((t) => clearTimeout(t));
     };
   }, [triggerRef]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 z-[55] pointer-events-none"
-      aria-hidden="true"
-    />
+    <>
+      {/* Dark overlay — covers all content during the animation */}
+      <div
+        ref={overlayRef}
+        className="fixed inset-0 z-[54] bg-background pointer-events-none transition-opacity duration-200"
+        style={{ opacity: 0 }}
+      />
+      {/* Canvas — neuron signal drawn on top of the overlay */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 z-[55] pointer-events-none"
+        aria-hidden="true"
+      />
+    </>
   );
 }
