@@ -135,6 +135,15 @@ export function registrationEmailHtml(name, appUrl) {
 </div>`;
 }
 
+// CTA appended to weekly/end-of-plan emails linking to the detailed PDF report.
+export function reportCtaHtml(link = "https://aqla.base44.app") {
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 4px"><tr>
+    <td style="background:#C9F24E;border-radius:999px">
+      <a href="${link}/history" style="display:inline-block;padding:12px 26px;font-size:13px;font-weight:600;color:#14150f;text-decoration:none">Download your detailed PDF report →</a>
+    </td></tr></table>
+  <p style="margin:8px 0 0;font-size:12px;line-height:1.65;color:#8a8578">Your full branded report — every check-in, trend, training session and cognitive test from this period — is ready as a PDF in your History page, alongside all your previous plans and reports.</p>`;
+}
+
 export function emailShell(title, bodyHtml) {
   return `<div style="font-family:Inter,Helvetica,Arial,sans-serif;background:#0f0e0d;color:#efe9e0;padding:28px">
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px"><tr>

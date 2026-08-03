@@ -1,14 +1,38 @@
 import React, { useState } from "react";
-import { FileDown, Loader2 } from "lucide-react";
+import { FileDown, Loader2, AlertTriangle } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { generateDailyPlanPdf } from "@/lib/dailyPlanPdf";
+import { localDateKey } from "@/lib/dateKey";
 
-export default function DailyPlanPdfButton({ user, protocol, checkIns, domains, className }) {
+export default function DailyPlanPdfButton({ user, protocol, checkIns = [], domains, className }) {
   const [loading, setLoading] = useState(false);
+  const today = localDateKey();
+  const checkedInToday = checkIns.some((c) => c.date === today);
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     setLoading(true);
     try {
-      generateDailyPlanPdf({ user, protocol, checkIns, domains });
+      // Pull everything from the user's profile for the richest possible plan
+      const [profiles, tests, fullCheckIns] = await Promise.all([
+        base44.entities.HealthProfile.list("-completed_date", 1),
+        base44.entities.CognitiveTest.list("-completed_date", 10),
+        base44.entities.DailyCheckIn.list("-date", 30),
+      ]);
+      generateDailyPlanPdf({
+        user,
+        protocol,
+        checkIns: fullCheckIns.length ? fullCheckIns : checkIns,
+        domains,
+        healthProfile: profiles[0],
+        cognitiveTests: tests,
+      });
+      await base44.entities.PdfArchive.create({
+        kind: "daily",
+        title: `Daily plan — ${protocol?.name || "AQLA"}`,
+        date: today,
+        protocol_id: protocol?.id,
+        family: protocol?.family,
+      });
     } catch (e) {
       console.error(e);
     } finally {
@@ -17,13 +41,21 @@ export default function DailyPlanPdfButton({ user, protocol, checkIns, domains, 
   };
 
   return (
-    <button
-      onClick={handleDownload}
-      disabled={loading || !protocol}
-      className={`inline-flex items-center gap-2 px-5 py-3 rounded-full border border-border bg-card/60 hover:border-foreground/30 transition-colors text-sm text-foreground disabled:opacity-50 ${className || ""}`}
-    >
-      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
-      {loading ? "Preparing…" : "Download today's plan (PDF)"}
-    </button>
+    <div className={className}>
+      <button
+        onClick={handleDownload}
+        disabled={loading || !protocol}
+        className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-border bg-card/60 hover:border-foreground/30 transition-colors text-sm text-foreground disabled:opacity-50"
+      >
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+        {loading ? "Preparing…" : "Download today's plan (PDF)"}
+      </button>
+      {!checkedInToday && (
+        <p className="mt-2 flex items-start gap-1.5 text-xs text-[#F2C04E] max-w-md">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          You haven't done today's check-in — this plan will use dated data. Complete your daily check-in first for an accurate plan.
+        </p>
+      )}
+    </div>
   );
 }

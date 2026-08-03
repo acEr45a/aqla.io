@@ -23,6 +23,7 @@ import ProtocolPage from '@/pages/ProtocolPage';
 import Protocols from '@/pages/Protocols';
 import Toolkit from '@/pages/Toolkit';
 import Progress from '@/pages/Progress';
+import History from '@/pages/History';
 import Coach from '@/pages/Coach';
 import CognitiveTests from '@/pages/CognitiveTests';
 import Games from '@/pages/Games';
@@ -86,6 +87,7 @@ const AuthenticatedApp = () => {
           <Route path="/toolkit" element={<Toolkit />} />
           <Route path="/experiments" element={<Navigate to="/toolkit" replace />} />
           <Route path="/progress" element={<Progress />} />
+          <Route path="/history" element={<History />} />
           <Route path="/community-insights" element={<CommunityInsights />} />
           <Route path="/coach" element={<Coach />} />
           <Route path="/tests" element={<CognitiveTests />} />

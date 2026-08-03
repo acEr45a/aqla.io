@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import {
-  weekKey, withinLastDays, daysSince, weeklyPrompt, endOfPlanPrompt, emailShell,
+  weekKey, withinLastDays, daysSince, weeklyPrompt, endOfPlanPrompt, emailShell, reportCtaHtml,
 } from '../../shared/summaryEmails.js';
 
 const SUMMARY_SCHEMA = {
@@ -42,7 +42,7 @@ export default async function (req: Request): Promise<Response> {
           to: user.email,
           from_name: "AQLA",
           subject: res.subject,
-          body: emailShell(title, res.body_html),
+          body: emailShell(title, res.body_html + reportCtaHtml()),
         });
         await svc.entities.EmailDigest.create({
           kind, period_key: periodKey, protocol_id: protocol?.id,
