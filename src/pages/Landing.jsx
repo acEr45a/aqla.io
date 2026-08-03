@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import AqlaLogo from "@/components/AqlaLogo";
@@ -10,7 +10,11 @@ const DEMO_SCORES = { focus: 28, memory: 43, mental_energy: 57, stress_regulatio
 const DEMO_DOMAINS = DOMAINS.map((d) => ({ ...d, score: DEMO_SCORES[d.key] }));
 import NeuralField from "@/components/landing/NeuralField";
 import LandingSections from "@/components/landing/LandingSections";
+import ScrollIndicator from "@/components/landing/ScrollIndicator";
+import NarrativeScroll from "@/components/landing/NarrativeScroll";
 import { ArrowRight, Zap } from "lucide-react";
+
+const SCROLL_SECTIONS = ["The Problem", "The Signal", "The Protocol", "The Evidence", "Begin"];
 
 const STEPS = [
   ["01", "Try three preview tasks", "Start the seven-part cognitive baseline with three short tasks—no account needed."],
@@ -19,8 +23,10 @@ const STEPS = [
 ];
 
 export default function Landing() {
+  const [activeSection, setActiveSection] = useState(0);
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
+      <ScrollIndicator sections={SCROLL_SECTIONS} activeIndex={activeSection} />
       <NeuralField className="opacity-60 h-[110vh]" />
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -95,6 +101,8 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      <NarrativeScroll onSectionEnter={setActiveSection} />
 
       <LandingSections />
 
