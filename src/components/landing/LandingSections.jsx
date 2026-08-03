@@ -1,4 +1,5 @@
 import React from "react";
+import { FileDown } from "lucide-react";
 
 const LOOP = [
   "Measure your baseline",
@@ -49,6 +50,25 @@ export default function LandingSections() {
               </div>
             ))}
             <p className="pt-2 text-muted-foreground">Confidence: moderate · Verdict: <span className="text-foreground">likely beneficial</span></p>
+          </div>
+        </div>
+      </section>
+
+      {/* Daily plan PDF highlight */}
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-14 md:py-20">
+        <div className="aqla-panel rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+          <div className="shrink-0 w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <FileDown className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm text-muted-foreground tracking-widest uppercase mb-3">Your day, on paper</p>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-light text-foreground leading-tight">
+              Download a branded daily plan — refreshed every morning.
+            </h2>
+            <p className="mt-4 text-muted-foreground leading-relaxed max-w-xl">
+              A clean, step-by-step PDF of today's protocol actions, readiness signals, and focus areas.
+              Print it, pin it, or keep it on your phone — your plan renews automatically as your data updates each day.
+            </p>
           </div>
         </div>
       </section>

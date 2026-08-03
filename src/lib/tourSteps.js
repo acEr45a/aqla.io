@@ -16,6 +16,11 @@ export const TOUR_STEPS = [
     body: "Your active 14-day protocol shows the specific actions to take today, in order of priority.",
   },
   {
+    selector: null,
+    title: "Download today's plan",
+    body: "Want your protocol on paper? Tap “Download today's plan (PDF)” to get a branded, step-by-step daily plan — it refreshes every morning with your latest data.",
+  },
+  {
     selector: '[data-tour="checkin"]',
     title: "Daily check-in",
     body: "Under 60 seconds each day. This is what keeps your Brain Map and protocol accurate.",
