@@ -7,6 +7,7 @@ import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
 import VoiceChatCard from "@/components/today/VoiceChatCard";
 import DashboardTour from "@/components/today/DashboardTour";
+import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
@@ -97,11 +98,13 @@ export default function Today() {
       <div data-tour="protocol" className="mt-8">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
-          {protocol && (
-            <Link to="/protocol" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
-              <ClipboardList className="w-3.5 h-3.5" /> {protocol.name}
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            {protocol && (
+              <Link to="/protocol" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
+                <ClipboardList className="w-3.5 h-3.5" /> {protocol.name}
+              </Link>
+            )}
+          </div>
         </div>
         {protocol ? (
           <>
@@ -165,6 +168,12 @@ export default function Today() {
           <p className="mt-2 text-sm text-foreground/90 leading-relaxed max-w-xl">
             {weakest.domain_name} is your lowest domain at {Math.round(weakest.score)}. {weakest.next_action || weakest.summary}
           </p>
+        </div>
+      )}
+
+      {protocol && (
+        <div className="mt-8">
+          <DailyPlanPdfButton user={user} protocol={protocol} checkIns={checkIns} domains={domains} />
         </div>
       )}
 

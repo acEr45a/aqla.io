@@ -2,13 +2,20 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ProtocolPlanCard from "@/components/protocols/ProtocolPlanCard";
+import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import { Shield, ArrowRight } from "lucide-react";
 
 export default function ProtocolPage() {
   const [protocols, setProtocols] = useState(undefined);
+  const [user, setUser] = useState(null);
+  const [checkIns, setCheckIns] = useState([]);
+  const [domains, setDomains] = useState([]);
 
   useEffect(() => {
     base44.entities.Protocol.list("-created_date").then(setProtocols);
+    base44.auth.me().then(setUser).catch(() => {});
+    base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
+    base44.entities.BrainDomain.list("-updated_date").then(setDomains);
   }, []);
 
   const protocol = protocols?.find((item) => item.status === "active") || null;
@@ -38,6 +45,10 @@ export default function ProtocolPage() {
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Started</p><p className="mt-1 text-foreground tabular-nums">{protocol.start_date || "—"}</p></div>
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Review date</p><p className="mt-1 text-foreground tabular-nums">{protocol.review_date || "—"}</p></div>
         <div><p className="text-xs uppercase tracking-widest text-muted-foreground">Duration</p><p className="mt-1 text-foreground tabular-nums">{protocol.duration_days ? `${protocol.duration_days} days` : "—"}</p></div>
+      </div>
+
+      <div className="mt-6">
+        <DailyPlanPdfButton user={user} protocol={protocol} checkIns={checkIns} domains={domains} />
       </div>
 
       {protocol.why_selected && (
