@@ -1,11 +1,12 @@
 import React from "react";
-import { Plus, MessageSquare } from "lucide-react";
+import { Plus, MessageSquare, Trash2 } from "lucide-react";
 
 export default function OpsSidebar({
   conversations,
   activeId,
   onSelect,
   onNew,
+  onDelete,
   accent,
   newLabel = "New chat",
 }) {
@@ -27,16 +28,29 @@ export default function OpsSidebar({
           const isActive = conv.id === activeId;
           const title = conv.metadata?.name || "Untitled chat";
           return (
-            <button
+            <div
               key={conv.id}
-              onClick={() => onSelect(conv)}
-              className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[11px] text-left transition-colors ${
+              className={`flex items-center gap-1 rounded-lg px-1 transition-colors ${
                 isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:bg-secondary/60"
               }`}
             >
-              <MessageSquare className="h-3 w-3 shrink-0" style={isActive ? { color: accent } : {}} />
-              <span className="truncate">{title}</span>
-            </button>
+              <button
+                onClick={() => onSelect(conv)}
+                className="flex flex-1 items-center gap-2 px-1.5 py-2 text-[11px] text-left truncate"
+              >
+                <MessageSquare className="h-3 w-3 shrink-0" style={isActive ? { color: accent } : {}} />
+                <span className="truncate">{title}</span>
+              </button>
+              {onDelete && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onDelete(conv); }}
+                  className="mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground/60 hover:text-destructive"
+                  aria-label="Delete conversation"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>

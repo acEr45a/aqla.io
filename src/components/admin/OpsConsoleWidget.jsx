@@ -89,6 +89,24 @@ export default function OpsConsoleWidget() {
     }
   };
 
+  const deleteChat = async (conv, m) => {
+    try {
+      await base44.agents.deleteConversation(conv.id);
+    } catch {
+      /* ignore */
+    }
+    const remaining = conversationsByMode[m].filter((c) => c.id !== conv.id);
+    setConversationsByMode((prev) => ({ ...prev, [m]: remaining }));
+    if (activeIdByMode[m] === conv.id) {
+      if (remaining[0]) {
+        await openConversation(remaining[0], m);
+      } else {
+        setActiveIdByMode((prev) => ({ ...prev, [m]: null }));
+        setMessagesByMode((prev) => ({ ...prev, [m]: [] }));
+      }
+    }
+  };
+
   const newChat = async (m) => {
     try {
       const created = await base44.agents.createConversation({
@@ -229,6 +247,7 @@ export default function OpsConsoleWidget() {
                   accent={cfg.accent}
                   onSelect={(conv) => openConversation(conv, mode)}
                   onNew={() => newChat(mode)}
+                  onDelete={(conv) => deleteChat(conv, mode)}
                 />
               </div>
             )}
