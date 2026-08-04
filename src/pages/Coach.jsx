@@ -85,7 +85,12 @@ USER QUESTION: ${question}`,
     }
   };
 
-  const voice = useVoiceChat({ onTranscript: (text) => { voiceModeRef.current = true; ask(text); } });
+  const voiceRef = useRef(null);
+  const voice = useVoiceChat({
+    onTranscript: (text) => { voiceModeRef.current = true; ask(text); },
+    onSpeechEnd: () => { if (voiceModeRef.current && voiceRef.current) voiceRef.current.startListening(); },
+  });
+  useEffect(() => { voiceRef.current = voice; }, [voice]);
 
   const confirmPlanChange = async (index) => {
     const message = messages[index];

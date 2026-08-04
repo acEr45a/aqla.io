@@ -13,7 +13,7 @@ export const voiceSupported = speechSupported;
 const VOICE_BY_MOOD = { calm: "river", neutral: "river", focused: "spark", warm: "honey" };
 
 // Browser speech recognition with high-quality generated speech for AQLA replies.
-export default function useVoiceChat({ onTranscript } = {}) {
+export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
@@ -21,6 +21,8 @@ export default function useVoiceChat({ onTranscript } = {}) {
   const audioRef = useRef(null);
   const cbRef = useRef(onTranscript);
   cbRef.current = onTranscript;
+  const endCbRef = useRef(onSpeechEnd);
+  endCbRef.current = onSpeechEnd;
 
   useEffect(() => {
     if (!Recognition) return;
@@ -72,7 +74,7 @@ export default function useVoiceChat({ onTranscript } = {}) {
     });
     const audio = new Audio(url);
     audioRef.current = audio;
-    audio.onended = () => setSpeaking(false);
+    audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
     audio.onerror = () => setSpeaking(false);
     await audio.play();
   }, [stopSpeaking]);

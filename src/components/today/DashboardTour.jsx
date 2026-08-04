@@ -29,7 +29,7 @@ export default function DashboardTour({ open, onClose }) {
 
   const finish = async () => {
     onClose();
-    await base44.auth.updateMe({ dashboard_tour_done: true }).catch(() => {});
+    await base44.auth.updateMe({ dashboard_tour_v2: true }).catch(() => {});
   };
   const next = () => (index === TOUR_STEPS.length - 1 ? finish() : setIndex(index + 1));
 

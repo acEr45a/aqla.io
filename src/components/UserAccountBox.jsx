@@ -17,7 +17,7 @@ export default function UserAccountBox() {
   const showClinician = user?.role === "clinician" || user?.role === "admin";
 
   return (
-    <div className="mx-3 mb-4 flex items-center gap-2 rounded-xl border border-sidebar-border bg-sidebar-accent/60 p-3">
+    <div data-tour="settings" className="mx-3 mb-4 flex items-center gap-2 rounded-xl border border-sidebar-border bg-sidebar-accent/60 p-3">
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-sidebar-accent-foreground">
           {user?.full_name || "User"}

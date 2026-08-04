@@ -35,6 +35,7 @@ export default function AppLayout() {
   const [role, setRole] = useState(null);
   const { pathname } = useLocation();
   const onAdmin = pathname.startsWith("/admin");
+  const onCoach = pathname === "/coach";
   useEffect(() => {
     base44.auth.me().then((user) => setRole(user.role || "user")).catch(() => setRole("user"));
   }, []);
@@ -47,7 +48,7 @@ export default function AppLayout() {
   return (
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
-      {!onAdmin && <AqlaAssistant />}
+      {!onAdmin && !onCoach && <AqlaAssistant />}
       <ReassessmentPrompt />
       <DailyCheckInPrompt />
       <PlanReviewGate />

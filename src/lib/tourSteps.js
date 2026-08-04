@@ -41,6 +41,11 @@ export const TOUR_STEPS = [
     body: "Explore your cognitive domains, ranks and trends here. Tests, training and progress live in the same menu.",
   },
   {
+    selector: '[data-tour="settings"]',
+    title: "Settings & resources",
+    body: "Settings now lives in your account box — the gear, bottom-left on desktop, or under “More” on mobile. It now holds your Evidence Library, Help Center, notifications and account management.",
+  },
+  {
     selector: null,
     title: "You're set",
     body: "Start with your assessment or today's check-in, and AQLA will build from there.",

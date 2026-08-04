@@ -32,7 +32,7 @@ export default function Today() {
   const load = () => {
     base44.auth.me().then((u) => {
       setUser(u);
-      if (!u.dashboard_tour_done) setTourOpen(true);
+      if (!u.dashboard_tour_v2) setTourOpen(true);
     }).catch(() => {});
     base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
