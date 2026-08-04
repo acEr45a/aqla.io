@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, Truck, ShieldCheck } from "lucide-react";
+import { Package, Truck } from "lucide-react";
 
 // Test implementation — mock data, no backend/credits.
 const MOCK_SUPPLY = {
@@ -20,15 +20,9 @@ export default function FormulaLogisticsCard() {
 
   return (
     <div data-tour="supply" className="mt-8 aqla-panel rounded-3xl p-5 md:p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <Package className="w-4 h-4 text-primary" strokeWidth={1.75} />
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Formula Logistics</p>
-        </div>
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary/20 bg-primary/5">
-          <ShieldCheck className="w-3 h-3 text-primary" />
-          <span className="text-[10px] uppercase tracking-widest text-primary font-medium">AQLA Verified</span>
-        </span>
+      <div className="flex items-center gap-2.5">
+        <Package className="w-4 h-4 text-primary" strokeWidth={1.75} />
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Formula Logistics</p>
       </div>
 
       <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

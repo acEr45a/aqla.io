@@ -10,7 +10,7 @@ import DashboardTour from "@/components/today/DashboardTour";
 import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import { localDateKey } from "@/lib/dateKey";
-import { ChevronDown, MessageCircle, ClipboardList, Sparkles, ShieldCheck } from "lucide-react";
+import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
 function Signal({ label, value, color }) {
   return (
@@ -98,13 +98,7 @@ export default function Today() {
       {/* Protocol actions */}
       <div data-tour="protocol" className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary/20 bg-primary/5">
-              <ShieldCheck className="w-3 h-3 text-primary" />
-              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">AQLA Verified</span>
-            </span>
-          </div>
+          <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
           <div className="flex items-center gap-3">
             {protocol && (
               <Link to="/protocol" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
