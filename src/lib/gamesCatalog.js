@@ -23,6 +23,42 @@ import ConstellationGame from "@/components/games/ConstellationGame";
 // Every game trains one mental function and is recorded as a cognitive test,
 // so repeated play feeds Progress and the Brain Map.
 export const GAMES = [
+  // — Specialty games: deeper, more interactive training per category —
+  {
+    id: "nexus", name: "Nexus", testType: "sustained_attention", Component: NexusGame, specialty: true,
+    icon: Orbit, minutes: "3 min", trains: "Multi-object tracking",
+    desc: "Track several targets as every dot scatters and drifts together. Sustained, divided attention under motion.",
+    art: "from-chart-3/30 via-chart-1/10 to-background", iconTone: "text-chart-3",
+    domains: ["focus", "cognitive_resilience"], categories: ["focus"],
+  },
+  {
+    id: "mnemora", name: "Mnemora", testType: "working_memory", Component: MnemoraGame, specialty: true,
+    icon: Brain, minutes: "3 min", trains: "Dual working memory",
+    desc: "Judge position and sound matches against the 2-back at the same time. Two memory streams, one load.",
+    art: "from-chart-4/30 via-chart-2/10 to-background", iconTone: "text-chart-4",
+    domains: ["memory", "learning_capacity"], categories: ["memory"],
+  },
+  {
+    id: "velocity", name: "Velocity", testType: "reaction_time", Component: VelocityGame, specialty: true,
+    icon: Gauge, minutes: "1 min", trains: "Adaptive speed",
+    desc: "Sort a relentless symbol stream that speeds up with every streak and slows on every slip.",
+    art: "from-chart-5/30 via-chart-1/10 to-background", iconTone: "text-chart-5",
+    domains: ["focus", "cognitive_resilience"], categories: ["speed"],
+  },
+  {
+    id: "conflict", name: "Conflict", testType: "task_switching", Component: ConflictGame, specialty: true,
+    icon: Crosshair, minutes: "2 min", trains: "Interference control",
+    desc: "Read the cue, then report the word or the ink — never both. Stroop interference under constant reconfiguration.",
+    art: "from-chart-2/30 via-chart-4/10 to-background", iconTone: "text-chart-2",
+    domains: ["cognitive_resilience", "focus"], categories: ["control"],
+  },
+  {
+    id: "constellation", name: "Constellation", testType: "visual_spatial", Component: ConstellationGame, specialty: true,
+    icon: Sparkles, minutes: "3 min", trains: "Rotation + recall",
+    desc: "Memorise a star pattern, then re-place it after the whole grid rotates a quarter turn.",
+    art: "from-primary/25 via-chart-3/10 to-background", iconTone: "text-primary",
+    domains: ["learning_capacity"], categories: ["spatial"],
+  },
   {
     id: "signal_strike", name: "Signal Strike", testType: "reaction_time", Component: ReactionTest,
     icon: Zap, minutes: "1 min", trains: "Processing speed",
@@ -128,42 +164,6 @@ export const GAMES = [
     desc: "Lock onto an interval and reproduce it without the cue.",
     art: "from-chart-1/25 via-secondary to-background", iconTone: "text-chart-1",
     domains: ["focus", "cognitive_resilience"], categories: ["speed"],
-  },
-  // — Specialty games: deeper, more interactive training per category —
-  {
-    id: "nexus", name: "Nexus", testType: "sustained_attention", Component: NexusGame, specialty: true,
-    icon: Orbit, minutes: "3 min", trains: "Multi-object tracking",
-    desc: "Track several targets as every dot scatters and drifts together. Sustained, divided attention under motion.",
-    art: "from-chart-3/30 via-chart-1/10 to-background", iconTone: "text-chart-3",
-    domains: ["focus", "cognitive_resilience"], categories: ["focus"],
-  },
-  {
-    id: "mnemora", name: "Mnemora", testType: "working_memory", Component: MnemoraGame, specialty: true,
-    icon: Brain, minutes: "3 min", trains: "Dual working memory",
-    desc: "Judge position and sound matches against the 2-back at the same time. Two memory streams, one load.",
-    art: "from-chart-4/30 via-chart-2/10 to-background", iconTone: "text-chart-4",
-    domains: ["memory", "learning_capacity"], categories: ["memory"],
-  },
-  {
-    id: "velocity", name: "Velocity", testType: "reaction_time", Component: VelocityGame, specialty: true,
-    icon: Gauge, minutes: "1 min", trains: "Adaptive speed",
-    desc: "Sort a relentless symbol stream that speeds up with every streak and slows on every slip.",
-    art: "from-chart-5/30 via-chart-1/10 to-background", iconTone: "text-chart-5",
-    domains: ["focus", "cognitive_resilience"], categories: ["speed"],
-  },
-  {
-    id: "conflict", name: "Conflict", testType: "task_switching", Component: ConflictGame, specialty: true,
-    icon: Crosshair, minutes: "2 min", trains: "Interference control",
-    desc: "Read the cue, then report the word or the ink — never both. Stroop interference under constant reconfiguration.",
-    art: "from-chart-2/30 via-chart-4/10 to-background", iconTone: "text-chart-2",
-    domains: ["cognitive_resilience", "focus"], categories: ["control"],
-  },
-  {
-    id: "constellation", name: "Constellation", testType: "visual_spatial", Component: ConstellationGame, specialty: true,
-    icon: Sparkles, minutes: "3 min", trains: "Rotation + recall",
-    desc: "Memorise a star pattern, then re-place it after the whole grid rotates a quarter turn.",
-    art: "from-primary/25 via-chart-3/10 to-background", iconTone: "text-primary",
-    domains: ["learning_capacity"], categories: ["spatial"],
   },
 ];
 
