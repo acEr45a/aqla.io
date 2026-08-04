@@ -27,7 +27,7 @@ export default function Toolkit() {
         <Package className="w-4 h-4 text-primary" strokeWidth={1.5} />
         <p className="text-xs text-muted-foreground tracking-widest uppercase">Formulas</p>
       </div>
-      <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Cognitive Toolkit</h1>
+      <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">AQLA Labs</h1>
       <p className="mt-3 text-sm text-muted-foreground max-w-xl">
         AQLA formulas are matched to your cognitive profile. Each one targets a specific bottleneck — find the one that fits your needs.
       </p>
