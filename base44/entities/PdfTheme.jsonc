@@ -1,0 +1,33 @@
+{
+  "name": "PdfTheme",
+  "type": "object",
+  "properties": {
+    "config": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Hex color overrides for the Fable PDF theme (bg, panel, border, text, muted, faint, accent, positive, negative, warning)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Summary of the last AI edit"
+    }
+  },
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

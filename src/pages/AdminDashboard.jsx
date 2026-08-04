@@ -10,6 +10,7 @@ import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import UserPlanPanel from "@/components/admin/UserPlanPanel";
 import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
 import DevelopmentPanel from "@/components/admin/DevelopmentPanel";
+import PdfStudioPanel from "@/components/admin/PdfStudioPanel";
 
 import EmailLogPanel from "@/components/admin/EmailLogPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
@@ -23,7 +24,8 @@ const TABS = [
 { id: "siteData", label: "Site data" },
 { id: "users", label: "Users & access" },
 { id: "ops", label: "Backend Ops" },
-{ id: "development", label: "Development" }];
+{ id: "development", label: "Development" },
+{ id: "pdfStudio", label: "PDF Studio" }];
 
 
 export default function AdminDashboard() {
@@ -101,6 +103,7 @@ export default function AdminDashboard() {
         }
         {tab === "ops" && <BackendOpsConsole />}
         {tab === "development" && <DevelopmentPanel />}
+        {tab === "pdfStudio" && <PdfStudioPanel />}
       </div>
     </div>);
 

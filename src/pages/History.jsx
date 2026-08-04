@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import ReportRow from "@/components/history/ReportRow";
 import PlanHistoryCard from "@/components/history/PlanHistoryCard";
-import { generateDailyPlanPdf } from "@/lib/dailyPlanPdf";
-import { generatePeriodReportPdf } from "@/lib/periodReportPdf";
+import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
+import { generateFableWeeklyPdf } from "@/lib/pdf/fableWeekly";
+import { generateFableEndOfPlanPdf } from "@/lib/pdf/fableEndOfPlan";
+import { loadPdfTheme } from "@/lib/pdf/fableCore";
 import { localDateKey } from "@/lib/dateKey";
 
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
@@ -34,25 +36,26 @@ export default function History() {
 
   const downloadDaily = async (archive) => {
     const protocol = protocols?.find((p) => p.id === archive.protocol_id) || protocols?.find((p) => p.status === "active") || null;
-    const [profiles, tests, checkIns] = await Promise.all([
+    const [profiles, tests, checkIns, theme] = await Promise.all([
       base44.entities.HealthProfile.list("-completed_date", 1),
       base44.entities.CognitiveTest.list("-completed_date", 10),
       base44.entities.DailyCheckIn.list("-date", 60),
+      loadPdfTheme(),
     ]);
-    generateDailyPlanPdf({
+    generateFableDailyPdf({
       user, protocol,
       checkIns: checkIns.filter((c) => c.date <= archive.date),
-      domains, healthProfile: profiles[0], cognitiveTests: tests,
+      domains, healthProfile: profiles[0], cognitiveTests: tests, theme,
     });
   };
 
   const downloadPeriod = async (kind, start, end, protocol) => {
-    const data = await fetchPeriodData();
-    generatePeriodReportPdf({
-      kind,
+    const [data, theme] = await Promise.all([fetchPeriodData(), loadPdfTheme()]);
+    const gen = kind === "weekly" ? generateFableWeeklyPdf : generateFableEndOfPlanPdf;
+    gen({
       periodStart: localDateKey(start),
       periodEnd: localDateKey(end),
-      user, protocol, domains, ...data,
+      user, protocol, domains, theme, ...data,
     });
   };
 

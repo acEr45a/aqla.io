@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { FileDown, Loader2, AlertTriangle } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { generateDailyPlanPdf } from "@/lib/dailyPlanPdf";
+import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
+import { loadPdfTheme } from "@/lib/pdf/fableCore";
 import { localDateKey } from "@/lib/dateKey";
 
 export default function DailyPlanPdfButton({ user, protocol, checkIns = [], domains, className }) {
@@ -12,26 +13,31 @@ export default function DailyPlanPdfButton({ user, protocol, checkIns = [], doma
   const handleDownload = async () => {
     setLoading(true);
     try {
-      // Pull everything from the user's profile for the richest possible plan
-      const [profiles, tests, fullCheckIns] = await Promise.all([
+      // Fresh server fetch of EVERY data source the PDF uses — never stale props
+      const [profiles, tests, fullCheckIns, freshProtocols, freshDomains, theme] = await Promise.all([
         base44.entities.HealthProfile.list("-completed_date", 1),
         base44.entities.CognitiveTest.list("-completed_date", 10),
         base44.entities.DailyCheckIn.list("-date", 30),
+        base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1),
+        base44.entities.BrainDomain.list("-updated_date"),
+        loadPdfTheme(),
       ]);
-      generateDailyPlanPdf({
+      const freshProtocol = freshProtocols[0] || protocol;
+      generateFableDailyPdf({
         user,
-        protocol,
+        protocol: freshProtocol,
         checkIns: fullCheckIns.length ? fullCheckIns : checkIns,
-        domains,
+        domains: freshDomains.length ? freshDomains : domains,
         healthProfile: profiles[0],
         cognitiveTests: tests,
+        theme,
       });
       await base44.entities.PdfArchive.create({
         kind: "daily",
-        title: `Daily plan — ${protocol?.name || "AQLA"}`,
+        title: `Daily plan — ${freshProtocol?.name || "AQLA"}`,
         date: today,
-        protocol_id: protocol?.id,
-        family: protocol?.family,
+        protocol_id: freshProtocol?.id,
+        family: freshProtocol?.family,
       });
     } catch (e) {
       console.error(e);
