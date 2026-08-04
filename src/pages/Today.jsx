@@ -177,10 +177,6 @@ export default function Today() {
           <p className="mt-2 text-sm text-foreground/90 leading-relaxed max-w-xl">
             {weakest.domain_name} is your lowest domain at {Math.round(weakest.score)}. {weakest.next_action || weakest.summary}
           </p>
-          <div className="mt-3 flex items-center gap-1.5">
-            <ShieldCheck className="w-3 h-3 text-primary" />
-            <span className="text-[10px] uppercase tracking-widest text-primary/80">AQLA Verified — evidence-informed</span>
-          </div>
         </div>
       )}
 
