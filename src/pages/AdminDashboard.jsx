@@ -20,6 +20,7 @@ import SiteDataPanel from "@/components/admin/SiteDataPanel";
 import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
+import AppHealthPanel from "@/components/admin/AppHealthPanel";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -82,6 +83,7 @@ export default function AdminDashboard() {
       <div className="mt-5 space-y-5">
         {tab === "overview" &&
         <>
+            <AppHealthPanel />
             <div className="grid gap-5 lg:grid-cols-2">
               <RegistrationChart data={data.days} />
               <ActivityChart data={data.days} />
