@@ -47,12 +47,23 @@ export default function OpsConsoleWidget() {
   const cfg = MODES[mode];
 
   useEffect(() => {
-    if (!open) return;
-    if (!conversation) {
-      base44.agents
-        .createConversation({ agent_name: "backend_ops", metadata: { name: "Backend Ops widget" } })
-        .then(setConversation);
-    }
+    if (!open || conversation) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const existing = await base44.agents.listConversations({ agent_name: "backend_ops" });
+        const latest = Array.isArray(existing) && existing.length ? existing[0] : null;
+        if (cancelled) return;
+        setConversation(
+          latest || (await base44.agents.createConversation({ agent_name: "backend_ops", metadata: { name: "Backend Ops widget" } }))
+        );
+      } catch {
+        if (cancelled) return;
+        const created = await base44.agents.createConversation({ agent_name: "backend_ops", metadata: { name: "Backend Ops widget" } });
+        if (!cancelled) setConversation(created);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [open, conversation]);
 
   useEffect(() => {
