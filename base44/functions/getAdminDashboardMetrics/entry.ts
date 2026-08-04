@@ -26,6 +26,29 @@ export default async function(req: Request): Promise<Response> {
 
     const userById = users.reduce((map, item) => ({ ...map, [item.id]: item }), {});
 
+    const visitByDate = {};
+    try {
+      const visitsStats = await base44.appLogs.getStats();
+      const pickDate = (o) => o?.date || o?.day || o?.dateKey || o?._id || o?.timestamp;
+      const pickCount = (o) => (typeof o === "number" ? o : (o?.count ?? o?.visits ?? o?.value ?? o?.total ?? 1));
+      let arr = null;
+      if (Array.isArray(visitsStats)) arr = visitsStats;
+      else if (visitsStats && typeof visitsStats === "object") {
+        for (const k of ["visits", "days", "data", "results", "items", "rows"]) {
+          if (Array.isArray(visitsStats[k])) { arr = visitsStats[k]; break; }
+        }
+        if (!arr) {
+          for (const [k, v] of Object.entries(visitsStats)) {
+            if (typeof v === "number" && /\d{4}-\d{2}-\d{2}/.test(k)) visitByDate[k] = v;
+          }
+        }
+      }
+      if (arr) for (const item of arr) {
+        const d = pickDate(item);
+        if (d) { const key = String(d).slice(0, 10); visitByDate[key] = (visitByDate[key] || 0) + pickCount(item); }
+      }
+    } catch (e) { /* appLogs unavailable in this context */ }
+
     const days = Array.from({ length: 14 }, (_, index) => {
       const date = new Date();
       date.setDate(date.getDate() - (13 - index));
@@ -38,6 +61,7 @@ export default async function(req: Request): Promise<Response> {
         tests: tests.filter((item) => dateKey(item.completed_date) === key).length,
         games: games.filter((item) => dateKey(item.completed_date) === key).length,
         emails: emails.filter((item) => dateKey(item.sent_date) === key).length,
+        visits: visitByDate[key] || 0,
       };
     });
 

@@ -5,6 +5,7 @@ import AdminMetricStrip from "@/components/admin/AdminMetricStrip";
 import RegistrationChart from "@/components/admin/RegistrationChart";
 import ActivityChart from "@/components/admin/ActivityChart";
 import ProtocolChart from "@/components/admin/ProtocolChart";
+import SiteVisitsChart from "@/components/admin/SiteVisitsChart";
 import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import UserPlanPanel from "@/components/admin/UserPlanPanel";
@@ -82,6 +83,7 @@ export default function AdminDashboard() {
               <RegistrationChart data={data.days} />
               <ActivityChart data={data.days} />
             </div>
+            <SiteVisitsChart data={data.days} />
             <ProtocolChart data={data.protocolFamilies} />
             <PdfStudioPanel />
           </>
@@ -98,7 +100,7 @@ export default function AdminDashboard() {
         <>
             <AdminRolePanel />
             <UserPlanPanel users={data.usersByPlan} />
-            <AdminUserTable users={data.recentUsers} />
+            <AdminUserTable users={data.recentUsers} onDeleted={load} />
           </>
         }
         {tab === "ops" && <BackendOpsConsole />}

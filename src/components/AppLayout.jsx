@@ -39,6 +39,9 @@ export default function AppLayout() {
   useEffect(() => {
     base44.auth.me().then((user) => setRole(user.role || "user")).catch(() => setRole("user"));
   }, []);
+  useEffect(() => {
+    base44.appLogs?.logUserInApp?.(pathname).catch(() => {});
+  }, [pathname]);
   const extraNav = [];
   if (role === "admin") extraNav.push({ to: "/admin", label: "Admin", icon: ShieldCheck });
   if (role === "clinician" || role === "admin") extraNav.push({ to: "/clinician", label: "Clinician", icon: Stethoscope });
