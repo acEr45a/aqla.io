@@ -58,9 +58,17 @@ Protocol just completed: ${JSON.stringify({ name: protocol.name, family: protoco
 
 export const AQLA_LOGO_URL = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/9aa251b4b_generated_image.png";
 
+// Escape untrusted strings before interpolating into HTML — prevents content injection.
+export function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[c]);
+}
+
 // Rich, fully-branded welcome email with a call-to-action button.
 export function registrationEmailHtml(name, appUrl) {
   const link = appUrl || "https://aqla.base44.app";
+  const safeName = escapeHtml(name);
   const step = (n, title, text) => `
     <tr>
       <td width="34" valign="top" style="padding:0 0 16px">
@@ -80,7 +88,7 @@ export function registrationEmailHtml(name, appUrl) {
           <td style="padding-right:10px"><img src="${AQLA_LOGO_URL}" width="40" height="40" alt="AQLA" style="display:block;border:0;border-radius:10px" /></td>
           <td style="letter-spacing:.2em;font-size:13px;text-transform:uppercase;color:#C9F24E">AQLA</td>
         </tr></table>
-        <h1 style="margin:20px 0 8px;font-weight:300;font-size:28px;color:#ffffff">Welcome to AQLA${name ? `, ${name}` : ""}</h1>
+        <h1 style="margin:20px 0 8px;font-weight:300;font-size:28px;color:#ffffff">Welcome to AQLA${safeName ? `, ${safeName}` : ""}</h1>
         <p style="margin:0;font-size:14px;line-height:1.6;color:#cfd6c2">Your personal brain operating system is ready.</p>
       </td>
     </tr>

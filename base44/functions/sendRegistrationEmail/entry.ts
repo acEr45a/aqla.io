@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { secrets } from "base44:runtime";
 import { registrationEmailHtml } from "../../shared/summaryEmails.js";
 
 const APP_URL = "https://aqla.base44.app";
@@ -8,11 +9,15 @@ export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({})) || {};
-    const { user_id, email, full_name } = body;
+    const { user_id, email, full_name, secret } = body;
 
     // Preferred path: invoked by the "Welcome Email" workflow on signup,
     // which passes the new user's id + email from the auth event.
+    // The shared secret proves the call came from the platform workflow, not an outside caller.
     if (user_id) {
+      if (secret !== secrets.get("WORKFLOW_SECRET")) {
+        return Response.json({ error: "Forbidden" }, { status: 403 });
+      }
       const user = await base44.asServiceRole.entities.User.get(user_id).catch(() => null);
       if (user?.welcome_email_sent) return Response.json({ sent: false, reason: "already_sent" });
 

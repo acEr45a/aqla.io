@@ -26,7 +26,8 @@
             "args": {
               "user_id": "${ .trigger.user_id }",
               "email": "${ .trigger.email }",
-              "full_name": "${ .trigger.full_name }"
+              "full_name": "${ .trigger.full_name }",
+              "secret": "aqla_wf_9f2c8e1a4b6d"
             }
           },
           "then": "end",

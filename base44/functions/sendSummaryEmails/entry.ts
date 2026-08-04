@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { secrets } from 'base44:runtime';
 import {
   weekKey, withinLastDays, daysSince, weeklyPrompt, endOfPlanPrompt, emailShell, reportCtaHtml,
 } from '../../shared/summaryEmails.js';
@@ -16,6 +17,17 @@ const SUMMARY_SCHEMA = {
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
+    const body = await req.json().catch(() => ({})) || {};
+
+    // Authenticate: either the platform workflow shared secret, or an admin user.
+    const isWorkflowCall = secrets.get("WORKFLOW_SECRET") && body.secret === secrets.get("WORKFLOW_SECRET");
+    if (!isWorkflowCall) {
+      const me = await base44.auth.me();
+      if (!me || me.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
     const svc = base44.asServiceRole;
     const now = new Date();
     const isSunday = now.getDay() === 0;

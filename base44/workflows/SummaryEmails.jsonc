@@ -29,7 +29,10 @@
         "send_summaries": {
           "call": "invoke_backend_function",
           "with": {
-            "function_name": "sendSummaryEmails"
+            "function_name": "sendSummaryEmails",
+            "args": {
+              "secret": "aqla_wf_9f2c8e1a4b6d"
+            }
           },
           "then": "end",
           "x-base44": {
