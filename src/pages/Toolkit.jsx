@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { FlaskConical, Package } from "lucide-react";
+import { FlaskConical, Package, ShoppingBag, Sparkles, Truck } from "lucide-react";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
 import FormulaCard from "@/components/toolkit/FormulaCard";
+import AqlaLogo from "@/components/AqlaLogo";
 
 const CONF = {
   too_early: "Too early to tell", possible_benefit: "Possible benefit", likely_benefit: "Likely benefit",
@@ -100,6 +101,49 @@ export default function Toolkit() {
           ))}
         </div>
       )}
+
+      {/* ── Dispensary Section ── */}
+      <div className="mt-16 flex items-center gap-2.5">
+        <ShoppingBag className="w-4 h-4 text-primary" strokeWidth={1.5} />
+        <p className="text-xs text-muted-foreground tracking-widest uppercase">AQLA Labs Dispensary</p>
+      </div>
+      <h2 className="mt-2 text-2xl md:text-3xl font-light text-foreground">Your protocol, delivered.</h2>
+      <p className="mt-3 text-sm text-muted-foreground max-w-xl">
+        AQLA Labs boxes arrive with the exact formulas matched to your cognitive profile — branded, batched, and built for the bottleneck you're working on.
+      </p>
+
+      <div className="mt-8 relative overflow-hidden rounded-3xl border border-border/60 aqla-panel p-8 md:p-12">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <AqlaLogo showWordmark={false} className="text-foreground" />
+            <span className="font-display text-lg tracking-tight text-foreground">AQLA Labs Dispensary</span>
+          </div>
+          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-primary">Coming soon</p>
+          <p className="mt-3 text-lg md:text-xl text-foreground font-light leading-relaxed max-w-md">
+            Supplement boxes tailored to your brain — launching soon.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Fulfillment and checkout are still being built. Check back here when the Dispensary goes live.
+          </p>
+        </div>
+        <div className="pointer-events-none absolute -right-10 -bottom-10 opacity-20">
+          <Package className="w-56 h-56 text-primary" strokeWidth={0.6} />
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { icon: Sparkles, title: "Matched to you", body: "Each box reflects your latest protocol and cognitive profile." },
+          { icon: Package, title: "Branded boxes", body: "AQLA Labs packaging, labelled by formula family and cycle." },
+          { icon: Truck, title: "Doorstep delivery", body: "Shipped on your protocol cadence so you never run out." },
+        ].map((f) => (
+          <div key={f.title} className="aqla-panel rounded-2xl p-5">
+            <f.icon className="w-5 h-5 text-primary" strokeWidth={1.5} />
+            <p className="mt-3 font-display text-sm text-foreground">{f.title}</p>
+            <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">{f.body}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History, ShoppingBag } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { getVisitMeta } from "@/lib/visitMeta";
 import { localDateKey } from "@/lib/dateKey";
@@ -20,7 +20,6 @@ const NAV = [
   { to: "/games", label: "Train", icon: Gamepad2 },
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
   { to: "/toolkit", label: "AQLA Labs", icon: FlaskConical },
-  { to: "/shop", label: "Shop", icon: ShoppingBag },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
   { to: "/settings", label: "Settings", icon: Settings },
@@ -28,7 +27,7 @@ const NAV = [
 
 const DESKTOP_HIDDEN = ["/settings"];
 
-const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", "AQLA Labs": "Labs", Shop: "Shop", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
+const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", "AQLA Labs": "Labs", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
 const PRIMARY_ROUTES = ["/dashboard", "/map", "/protocol", "/coach"];
 const mobileItem = (item) => ({ ...item, label: SHORT_LABELS[item.label] || item.label });
 const PRIMARY_NAV = NAV.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
