@@ -62,6 +62,7 @@ export default function OpsConsoleWidget() {
   const [activeIdByMode, setActiveIdByMode] = useState({ ops: null, architect: null });
   const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
   const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
   const endRef = useRef(null);
 
   const cfg = MODES[mode];
@@ -156,20 +157,38 @@ export default function OpsConsoleWidget() {
   }, [messages, mode]);
 
   const send = async (text) => {
-    if (!text.trim() || !activeIdByMode[mode]) return;
-    const conv = conversationsByMode[mode].find((c) => c.id === activeIdByMode[mode]);
-    const framed = `${MODE_TAG[mode]}\n\n${text}`;
+    const trimmed = text.trim();
+    const activeId = activeIdByMode[mode];
+    if (!trimmed || !activeId || sending) return;
+    let conv = conversationsByMode[mode].find((c) => c.id === activeId);
+    // Always pass a full conversation object to addMessage (the SDK requires it).
+    if (!conv) {
+      try {
+        conv = await base44.agents.getConversation(activeId);
+        setConversationsByMode((prev) => (prev[mode].some((c) => c.id === activeId) ? prev : { ...prev, [mode]: [conv, ...prev[mode]] }));
+      } catch {
+        conv = { id: activeId, agent_name: "backend_ops" };
+      }
+    }
+    const framed = `${MODE_TAG[mode]}\n\n${trimmed}`;
     setInput("");
+    setSending(true);
     // Name the chat after the first message if it's still the default.
     if (conv && (conv.metadata?.name === "New chat" || !conv.metadata?.name)) {
-      const title = titleFromMessage(text);
+      const title = titleFromMessage(trimmed);
       base44.agents.updateConversation(conv.id, { metadata: { name: title, mode } }).catch(() => {});
       setConversationsByMode((prev) => ({
         ...prev,
         [mode]: prev[mode].map((c) => (c.id === conv.id ? { ...c, metadata: { name: title, mode } } : c)),
       }));
     }
-    await base44.agents.addMessage(conv || { id: activeIdByMode[mode] }, { role: "user", content: framed });
+    try {
+      await base44.agents.addMessage(conv, { role: "user", content: framed });
+    } catch {
+      /* surfaced via subscription state */
+    } finally {
+      setSending(false);
+    }
   };
 
   const accentStyle = { color: cfg.accent };
