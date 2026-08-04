@@ -36,12 +36,46 @@ const BLEND = [
   ["cognitive_resilience", "task_switching", 0.2],
 ];
 
+const QA_MODE = new URLSearchParams(window.location.search).get("qa") === "1";
+
+// QA pass-through: auto-creates a passing record for every baseline test so the
+// onboarding flow can be verified end-to-end without playing the interactive tasks.
+const QA_DEFAULTS = {
+  reaction_time: { score: 72, raw: { task: "Brief Psychomotor Vigilance Task (PVT-B) adaptation", trials: [252, 248, 255, 249, 251, 247, 253, 250], mean_rt_ms: 251, lapses: 0, lapse_threshold_ms: 500, fastest_10pct_ms: 247, qa: true } },
+  sustained_attention: { score: 76, raw: { task: "Sustained Attention to Response Task (SART; Robertson et al., 1997)", hits: 32, misses: 0, false_alarms: 0, commission_errors: 0, omissions: 0, correct_rejections: 4, rounds: 36, target: 3, qa: true } },
+  memory_recall: { score: 74, raw: { task: "Wechsler Digit Span (auto)", max_span_forward: 8, max_span_backward: 6, qa: true } },
+  working_memory: { score: 70, raw: { task: "N-back (auto)", hits: 14, misses: 0, false_alarms: 0, qa: true } },
+  task_switching: { score: 75, raw: { task: "Cognitive flexibility (auto)", correct: 18, errors: 0, qa: true } },
+  visual_spatial: { score: 71, raw: { task: "Mental rotation (auto)", correct: 16, errors: 2, qa: true } },
+  verbal_fluency: { score: 69, raw: { task: "Verbal fluency (auto)", unique_words: 22, qa: true } },
+};
+
 export default function CognitiveTests() {
   const navigate = useNavigate();
   const [results, setResults] = useState(null); // { test_type: record }
   const [active, setActive] = useState(null);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
+  const [qaRunning, setQaRunning] = useState(false);
+
+  const qaAutoComplete = async () => {
+    setQaRunning(true);
+    setApplying(true);
+    for (const t of TESTS) {
+      const d = QA_DEFAULTS[t.type];
+      await base44.entities.CognitiveTest.create({
+        test_type: t.type,
+        raw_results: d.raw,
+        normalized_score: d.score,
+        completed_date: new Date().toISOString(),
+        valid: true,
+      });
+    }
+    const latest = await load();
+    setApplying(false);
+    if (TESTS.every((tt) => latest[tt.type]) && !applied) await applyToBrainMap(latest);
+    setQaRunning(false);
+  };
 
   const load = async () => {
     const [rows, assessments] = await Promise.all([
@@ -123,6 +157,21 @@ export default function CognitiveTests() {
     <div className="max-w-3xl mx-auto px-6 py-10">
       <p className="text-xs text-muted-foreground tracking-widest uppercase">Cognitive baseline</p>
       <h1 className="mt-2 text-3xl md:text-4xl font-light text-foreground">Measure, don't guess.</h1>
+
+      {QA_MODE && (
+        <div className="mt-6 aqla-panel rounded-2xl px-5 py-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-primary">QA pass-through</p>
+            <p className="mt-1 text-xs text-muted-foreground">Auto-complete all seven tests with passing scores so the onboarding flow can be verified without playing them.</p>
+          </div>
+          <button
+            onClick={qaAutoComplete}
+            disabled={qaRunning || applying}
+            className="shrink-0 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50">
+            {qaRunning || applying ? "Running…" : "Auto-complete"}
+          </button>
+        </div>
+      )}
       <p className="mt-3 text-sm text-muted-foreground max-w-lg leading-relaxed">
         Seven short tasks measure performance across speed, attention, memory, flexibility, spatial reasoning, and
         verbal fluency. If you completed the three-task preview, those results count automatically here. Sleep, stress,
