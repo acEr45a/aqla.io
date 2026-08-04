@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import ReviewCard from "@/components/clinician/ReviewCard";
+import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
 import { Stethoscope } from "lucide-react";
 
 export default function Clinician() {
   const [reviews, setReviews] = useState(null);
+  const [plans, setPlans] = useState(null);
   const [allowed, setAllowed] = useState(null);
 
-  const load = () => base44.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
+  const load = () => {
+    base44.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
+    base44.entities.PlanReview.list("-completed_date", 100).then(setPlans).catch(() => setPlans([]));
+  };
   useEffect(() => {
     base44.auth.me()
       .then((user) => {
@@ -82,6 +87,17 @@ export default function Clinician() {
           )}
         </>
       )}
+      {plans !== null && plans.length > 0 && (
+        <section className="mt-12">
+          <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
+            Member plan decisions · <span className="tabular-nums text-foreground">{plans.length}</span>
+          </p>
+          <div className="space-y-4">
+            {plans.map((p) => <PlanDecisionCard key={p.id} review={p} />)}
+          </div>
+        </section>
+      )}
+
       <p className="mt-12 text-[11px] text-muted-foreground border-t border-border/50 pt-6">
         All decisions are logged with a timestamp. AI-proposed recommendations never bypass this review when safety flags are present.
       </p>
