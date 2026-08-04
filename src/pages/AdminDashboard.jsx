@@ -24,8 +24,7 @@ const TABS = [
 { id: "siteData", label: "Site data" },
 { id: "users", label: "Users & access" },
 { id: "ops", label: "Backend Ops" },
-{ id: "development", label: "Development" },
-{ id: "pdfStudio", label: "PDF Studio" }];
+{ id: "development", label: "Development" }];
 
 
 export default function AdminDashboard() {
@@ -84,6 +83,7 @@ export default function AdminDashboard() {
               <ActivityChart data={data.days} />
             </div>
             <ProtocolChart data={data.protocolFamilies} />
+            <PdfStudioPanel />
           </>
         }
         {tab === "analytics" && <AnalyticsPanel analytics={data.analytics} />}
@@ -103,7 +103,6 @@ export default function AdminDashboard() {
         }
         {tab === "ops" && <BackendOpsConsole />}
         {tab === "development" && <DevelopmentPanel />}
-        {tab === "pdfStudio" && <PdfStudioPanel />}
       </div>
     </div>);
 
