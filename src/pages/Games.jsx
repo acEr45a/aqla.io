@@ -9,10 +9,16 @@ import ComingSoonRow from "@/components/games/ComingSoonRow";
 
 export default function Games() {
   const [rows, setRows] = useState([]);
+  const [ratings, setRatings] = useState([]);
   const [active, setActive] = useState(null);
 
   const load = useCallback(async () => {
-    setRows(await base44.entities.GameSession.list("-created_date", 300));
+    const [sessions, gameRatings] = await Promise.all([
+      base44.entities.GameSession.list("-created_date", 300),
+      base44.entities.GameRating.list("-created_date", 500),
+    ]);
+    setRows(sessions);
+    setRatings(gameRatings);
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -29,6 +35,19 @@ export default function Games() {
     });
     return s;
   }, [rows]);
+
+  // per-game: average star rating + count
+  const ratingByGame = useMemo(() => {
+    const r = {};
+    ratings.forEach((item) => {
+      const e = r[item.game_id] || { avg: 0, count: 0, sum: 0 };
+      e.sum += item.stars || 0;
+      e.count += 1;
+      e.avg = e.sum / e.count;
+      r[item.game_id] = e;
+    });
+    return r;
+  }, [ratings]);
 
   const untrained = GAMES.filter((g) => !stats[g.id]);
 
@@ -55,11 +74,11 @@ export default function Games() {
 
       {untrained.length > 0 && (
         <GameRow category={{ name: "Start here", blurb: "Functions you haven't measured yet." }}
-          games={untrained} stats={stats} onPlay={setActive} />
+          games={untrained} stats={stats} ratings={ratingByGame} onPlay={setActive} />
       )}
 
       {CATEGORIES.map((c) => (
-        <GameRow key={c.key} category={c} games={gamesIn(c.key)} stats={stats} onPlay={setActive} />
+        <GameRow key={c.key} category={c} games={gamesIn(c.key)} stats={stats} ratings={ratingByGame} onPlay={setActive} />
       ))}
 
       <ComingSoonRow />

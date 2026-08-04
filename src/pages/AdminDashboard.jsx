@@ -18,6 +18,7 @@ import EmailLogPanel from "@/components/admin/EmailLogPanel";
 import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
 import SiteDataPanel from "@/components/admin/SiteDataPanel";
 import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
+import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -87,6 +88,7 @@ export default function AdminDashboard() {
             <SiteVisitsChart data={data.days} />
             <VisitBreakdown visits={data.visits} />
             <ProtocolChart data={data.protocolFamilies} />
+            <GameRatingsPanel ratings={data.ratings} />
             <PdfStudioPanel />
           </>
         }

@@ -1,8 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { Play, Star } from "lucide-react";
 
-export default function GameCard({ game, best, plays, onPlay }) {
+export default function GameCard({ game, best, plays, rating, onPlay }) {
   const Icon = game.icon;
   return (
     <motion.button type="button" onClick={() => onPlay(game)} whileHover={{ y: -6, scale: 1.03 }}
@@ -31,6 +31,13 @@ export default function GameCard({ game, best, plays, onPlay }) {
           {plays > 0 && <span className="text-border">·</span>}
           {plays > 0 && <span>{plays} {plays === 1 ? "session" : "sessions"}</span>}
         </div>
+        {rating && rating.count > 0 && (
+          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-muted-foreground tabular-nums">
+            <Star className="w-3 h-3 fill-primary text-primary" strokeWidth={1.5} />
+            <span className="text-foreground">{rating.avg.toFixed(1)}</span>
+            <span>· {rating.count} {rating.count === 1 ? "rating" : "ratings"}</span>
+          </div>
+        )}
       </div>
     </motion.button>
   );

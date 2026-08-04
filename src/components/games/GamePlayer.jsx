@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
+import GameRating from "./GameRating";
 
 // Plays a training game and stores its session separately from scored cognitive tests.
 export default function GamePlayer({ game, best, onClose, onRecorded }) {
@@ -55,6 +56,7 @@ export default function GamePlayer({ game, best, onClose, onRecorded }) {
                 Back to library
               </button>
             </div>
+            <GameRating game={game} />
           </motion.div>
         )}
       </div>

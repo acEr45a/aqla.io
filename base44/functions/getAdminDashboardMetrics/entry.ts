@@ -10,7 +10,7 @@ export default async function(req: Request): Promise<Response> {
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (user.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
 
-    const [users, assessments, checkIns, protocols, tests, emails, games, reviews, experiments, profiles, domains, siteVisits] = await Promise.all([
+    const [users, assessments, checkIns, protocols, tests, emails, games, reviews, experiments, profiles, domains, siteVisits, ratings] = await Promise.all([
       base44.asServiceRole.entities.User.list("-created_date", 500),
       base44.asServiceRole.entities.Assessment.list("-created_date", 500),
       base44.asServiceRole.entities.DailyCheckIn.list("-date", 500),
@@ -23,9 +23,56 @@ export default async function(req: Request): Promise<Response> {
       base44.asServiceRole.entities.HealthProfile.list("-created_date", 500),
       base44.asServiceRole.entities.BrainDomain.list("-updated_date", 500),
       base44.asServiceRole.entities.SiteVisit.list("-created_date", 1000),
+      base44.asServiceRole.entities.GameRating.list("-created_date", 1000),
     ]);
 
     const userById = users.reduce((map, item) => ({ ...map, [item.id]: item }), {});
+
+    // ---- Game ratings: best performer + per-game breakdown + review feed ----
+    const byGame = {};
+    for (const r of ratings) {
+      const key = r.game_id || "unknown";
+      const e = byGame[key] || { game_id: key, game_name: r.game_name || key, sum: 0, count: 0, feedbackCount: 0, reviews: [] };
+      e.sum += r.stars || 0;
+      e.count += 1;
+      if (r.feedback) { e.feedbackCount += 1; e.reviews.push(r); }
+      byGame[key] = e;
+    }
+    const gameRatings = Object.values(byGame).map((e) => ({
+      game_id: e.game_id,
+      game_name: e.game_name,
+      avg: e.count ? Number((e.sum / e.count).toFixed(2)) : 0,
+      count: e.count,
+      feedbackCount: e.feedbackCount,
+    })).sort((a, b) => b.avg - a.avg || b.count - a.count);
+
+    const ratedGames = gameRatings.filter((g) => g.count >= 1);
+    const bestGame = ratedGames.length
+      ? ratedGames.reduce((best, g) => (g.avg > best.avg ? g : best), ratedGames[0])
+      : null;
+
+    const recentReviews = ratings
+      .filter((r) => r.feedback)
+      .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+      .slice(0, 30)
+      .map((r) => ({
+        id: r.id,
+        game_id: r.game_id,
+        game_name: r.game_name,
+        stars: r.stars,
+        feedback: r.feedback,
+        date: r.created_date,
+        reviewer: userById[r.created_by_id]?.full_name || userById[r.created_by_id]?.email || "Anonymous",
+      }));
+
+    const ratingSummary = {
+      total: ratings.length,
+      avg: ratings.length ? Number((ratings.reduce((s, r) => s + (r.stars || 0), 0) / ratings.length).toFixed(2)) : 0,
+      withFeedback: ratings.filter((r) => r.feedback).length,
+      bestGame,
+      gameRatings,
+      recentReviews,
+    };
 
     const visitByDate = {};
     for (const v of siteVisits) {
@@ -124,6 +171,7 @@ export default async function(req: Request): Promise<Response> {
       { name: "Plan reviews", count: reviews.length },
       { name: "Experiments", count: experiments.length },
       { name: "Summary emails", count: emails.length },
+      { name: "Game ratings", count: ratings.length },
     ];
 
     const eligibility = [...new Set(profiles.map((item) => item.eligibility_status))].map((status) => ({
@@ -161,6 +209,7 @@ export default async function(req: Request): Promise<Response> {
       days,
       visits: visitBreakdown,
       protocolFamilies,
+      ratings: ratingSummary,
       analytics,
       siteData: { inventory, eligibility, dataPoints: inventory.reduce((sum, item) => sum + item.count, 0) },
       emails: { stats: emailStats, log: emailLog },
