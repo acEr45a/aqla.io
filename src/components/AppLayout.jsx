@@ -8,7 +8,7 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, ShieldCheck, Stethoscope, History } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
@@ -20,7 +20,10 @@ const NAV = [
   { to: "/toolkit", label: "Toolkit", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
+  { to: "/settings", label: "Settings", icon: Settings },
 ];
+
+const DESKTOP_HIDDEN = ["/settings"];
 
 const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Toolkit: "Tools", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
 const PRIMARY_ROUTES = ["/dashboard", "/map", "/protocol", "/coach"];
@@ -57,7 +60,7 @@ export default function AppLayout() {
           </div>
         </div>
         <nav className="flex-1 px-3 space-y-1">
-          {nav.map(({ to, label, icon: Icon }) => (
+          {nav.filter((item) => !DESKTOP_HIDDEN.includes(item.to)).map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
                 isActive ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"}`}>
