@@ -140,6 +140,15 @@ export default function Settings() {
         </SettingRow>
       </SettingsSection>
 
+      <SettingsSection title="Resources" hint="Reference and support material.">
+        <SettingRow title="Evidence library" description="The research behind every protocol and ingredient.">
+          <Link to="/evidence-library"><Button variant="outline" size="sm">Open</Button></Link>
+        </SettingRow>
+        <SettingRow title="Help center" description="Guides, FAQs and how AQLA works.">
+          <Link to="/help-center"><Button variant="outline" size="sm">Open</Button></Link>
+        </SettingRow>
+      </SettingsSection>
+
       <div className="mt-6 mb-10">
         <Button variant="ghost" onClick={() => base44.auth.logout("/")}
           className="gap-2 text-muted-foreground hover:text-foreground">

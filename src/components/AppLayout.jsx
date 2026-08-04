@@ -8,21 +8,18 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: Sun },
   { to: "/history", label: "History", icon: History },
   { to: "/map", label: "Brain Map", icon: Radar },
-  { to: "/tests", label: "Tests", icon: Timer },
   { to: "/games", label: "Train", icon: Gamepad2 },
   { to: "/protocol", label: "Protocol", icon: ClipboardList },
   { to: "/toolkit", label: "Toolkit", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
-  { to: "/evidence-library", label: "Science", icon: BookOpen },
-  { to: "/help-center", label: "Help", icon: CircleHelp },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

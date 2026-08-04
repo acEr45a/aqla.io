@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { CATEGORIES, GAMES, gamesIn } from "@/lib/gamesCatalog";
@@ -47,6 +48,9 @@ export default function Games() {
           Every game targets a specific mental function and tracks your training progress independently. Game results
           never change your cognitive test scores or Brain Map.
         </p>
+        <Link to="/tests" className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs text-foreground/80 hover:bg-secondary transition-colors">
+          Cognitive tests →
+        </Link>
       </div>
 
       {untrained.length > 0 && (
