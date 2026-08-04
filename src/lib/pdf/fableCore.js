@@ -14,9 +14,10 @@ export const DEFAULT_THEME = {
   bg: "#0A0A0A",
   panel: "#121212",
   border: "#262626",
-  text: "#FFFFFF",
+  text: "#F4F1EC",
   muted: "#A3A3A3",
   faint: "#6B6B6B",
+  primary: "#C9F24E",
   accent: "#8B5CF6",
   positive: "#4ADE80",
   negative: "#F87171",
@@ -89,12 +90,16 @@ export class Fable {
     doc.line(sx(28), sy(31.5), sx(36), sy(22.3));
     doc.line(sx(12.4), sy(22.5), sx(20.6), sy(22.5));
     doc.setLineCap("butt");
-    doc.setFillColor(...t.accent);
+    // node glow + core, in the brand primary (lime)
+    doc.setGState(new doc.GState({ opacity: 0.15 }));
+    doc.setFillColor(...t.primary);
+    doc.circle(sx(22.4), sy(22.5), 6.9 * s, "F");
+    doc.setGState(new doc.GState({ opacity: 1 }));
     doc.circle(sx(22.4), sy(22.5), 3.4 * s, "F");
     doc.setTextColor(...t.text);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
-    doc.text("AQLA", M + 24, 43);
+    doc.text("AQLA", M + 24, 43, { charSpace: 2.4 });
     // Centered document title
     doc.setFontSize(8);
     doc.setTextColor(...t.muted);
