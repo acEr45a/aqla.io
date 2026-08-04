@@ -5,19 +5,50 @@ import { Stethoscope } from "lucide-react";
 
 export default function Clinician() {
   const [reviews, setReviews] = useState(null);
+  const [allowed, setAllowed] = useState(null);
 
   const load = () => base44.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    base44.auth.me()
+      .then((user) => {
+        const ok = user && (user.role === "clinician" || user.role === "admin");
+        setAllowed(ok);
+        if (ok) load();
+      })
+      .catch(() => setAllowed(false));
+  }, []);
 
   const pending = reviews?.filter((r) => r.status === "pending") || [];
   const done = reviews?.filter((r) => r.status !== "pending") || [];
+
+  if (allowed === null) {
+    return <div className="max-w-4xl mx-auto px-6 py-10 text-sm text-muted-foreground">Loading clinician dashboard…</div>;
+  }
+  if (!allowed) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-10">
+        <div className="flex items-center gap-3">
+          <Stethoscope className="w-6 h-6 text-primary" strokeWidth={1.5} />
+          <div>
+            <h1 className="text-2xl md:text-3xl font-light text-foreground">Clinician dashboard</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Professional review workspace</p>
+          </div>
+        </div>
+        <div className="aqla-panel mt-8 rounded-2xl p-10 text-center">
+          <Stethoscope className="mx-auto h-7 w-7 text-muted-foreground" strokeWidth={1.5} />
+          <p className="mt-3 text-sm text-foreground">Clinician access required</p>
+          <p className="mt-2 text-xs text-muted-foreground">This workspace is restricted to clinicians and administrators.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3">
         <Stethoscope className="w-6 h-6 text-primary" strokeWidth={1.5} />
         <div>
-          <h1 className="text-2xl md:text-3xl font-light text-foreground">Clinician review</h1>
+          <h1 className="text-2xl md:text-3xl font-light text-foreground">Clinician dashboard</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Supplement recommendations awaiting professional decision</p>
         </div>
       </div>

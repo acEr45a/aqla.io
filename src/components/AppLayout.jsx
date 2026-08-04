@@ -8,7 +8,7 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings, ShieldCheck, History } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Timer, BookOpen, Gamepad2, CircleHelp, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
@@ -33,11 +33,16 @@ const PRIMARY_NAV = NAV.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(m
 const SECONDARY_NAV = NAV.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
 
 export default function AppLayout() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState(null);
   const { pathname } = useLocation();
   const onAdmin = pathname.startsWith("/admin");
-  useEffect(() => { base44.auth.me().then((user) => setIsAdmin(user.role === "admin")); }, []);
-  const nav = isAdmin ? [...NAV, { to: "/admin", label: "Admin", icon: ShieldCheck }] : NAV;
+  useEffect(() => {
+    base44.auth.me().then((user) => setRole(user.role || "user")).catch(() => setRole("user"));
+  }, []);
+  const extraNav = [];
+  if (role === "admin") extraNav.push({ to: "/admin", label: "Admin", icon: ShieldCheck });
+  if (role === "clinician" || role === "admin") extraNav.push({ to: "/clinician", label: "Clinician", icon: Stethoscope });
+  const nav = [...NAV, ...extraNav];
   const primaryNav = nav.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
   const secondaryNav = nav.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
   return (

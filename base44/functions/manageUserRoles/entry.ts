@@ -10,7 +10,7 @@ export default async function(req: Request): Promise<Response> {
     const body = await req.json().catch(() => ({}));
 
     if (body.action === "set_role") {
-      if (!body.user_id || !["admin", "user"].includes(body.role)) {
+      if (!body.user_id || !["admin", "clinician", "user"].includes(body.role)) {
         return Response.json({ error: "Invalid request" }, { status: 400 });
       }
       if (body.user_id === admin.id) {

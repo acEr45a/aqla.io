@@ -1,7 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { ShieldCheck, UserRound } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ShieldCheck, UserRound, Stethoscope } from "lucide-react";
+
+const ROLE_TONE = {
+  admin: "bg-primary/10 text-primary",
+  clinician: "bg-[#7B94FF]/10 text-[#7B94FF]",
+  user: "bg-secondary text-muted-foreground",
+};
+
+const ROLE_ICON = {
+  admin: ShieldCheck,
+  clinician: Stethoscope,
+  user: UserRound,
+};
 
 export default function AdminRolePanel() {
   const [state, setState] = useState(null);
@@ -32,27 +50,36 @@ export default function AdminRolePanel() {
     <section className="aqla-panel overflow-hidden rounded-2xl">
       <div className="p-5">
         <p className="font-display text-foreground">Access control</p>
-        <p className="mt-1 text-xs text-muted-foreground">Promote a member to admin or return them to a standard account.</p>
+        <p className="mt-1 text-xs text-muted-foreground">Assign members to standard, clinician, or admin access.</p>
         {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
       </div>
       <div className="divide-y divide-border/40 border-t border-border/60">
         {state.users.map((user) => {
-          const isAdmin = user.role === "admin";
+          const Icon = ROLE_ICON[user.role] || UserRound;
           const isSelf = user.id === state.currentUserId;
           return (
             <div key={user.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
-              <div className={`rounded-lg p-2 ${isAdmin ? "bg-primary/10 text-primary" : "bg-secondary text-muted-foreground"}`}>
-                {isAdmin ? <ShieldCheck className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+              <div className={`rounded-lg p-2 ${ROLE_TONE[user.role] || ROLE_TONE.user}`}>
+                <Icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm text-foreground">{user.name}{isSelf && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}</p>
                 <p className="truncate text-xs text-muted-foreground">{user.email}</p>
               </div>
-              <span className={`text-xs uppercase tracking-widest ${isAdmin ? "text-primary" : "text-muted-foreground"}`}>{user.role}</span>
-              <Button size="sm" variant={isAdmin ? "outline" : "default"} disabled={isSelf || busyId === user.id}
-                onClick={() => setRole(user.id, isAdmin ? "user" : "admin")}>
-                {busyId === user.id ? "Saving…" : isAdmin ? "Revoke admin" : "Make admin"}
-              </Button>
+              <Select
+                value={user.role}
+                disabled={isSelf || busyId === user.id}
+                onValueChange={(role) => setRole(user.id, role)}
+              >
+                <SelectTrigger className="w-[150px] h-9 rounded-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Member</SelectItem>
+                  <SelectItem value="clinician">Clinician</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           );
         })}
