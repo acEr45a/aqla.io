@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import ReviewCard from "@/components/clinician/ReviewCard";
 import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
+import SendToAdminCard from "@/components/clinician/SendToAdminCard";
 import { Stethoscope } from "lucide-react";
 
 export default function Clinician() {
@@ -87,6 +88,11 @@ export default function Clinician() {
           )}
         </>
       )}
+      <section className="mt-12">
+        <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">Escalate to admin</p>
+        <SendToAdminCard />
+      </section>
+
       {plans !== null && (
         <section className="mt-12">
           <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
