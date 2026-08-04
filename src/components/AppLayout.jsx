@@ -8,7 +8,7 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 const NAV = [
@@ -20,7 +20,6 @@ const NAV = [
   { to: "/toolkit", label: "Toolkit", icon: FlaskConical },
   { to: "/progress", label: "Progress", icon: TrendingUp },
   { to: "/coach", label: "AQLA Intelligence", icon: MessageCircle },
-  { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 const SHORT_LABELS = { "Brain Map": "Map", Experiments: "Trials", Toolkit: "Tools", Dashboard: "Home", "AQLA Intelligence": "AQLA" };
