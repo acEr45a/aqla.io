@@ -1,0 +1,55 @@
+{
+  "name": "SiteVisit",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "App route the user visited"
+    },
+    "referrer": {
+      "type": "string",
+      "description": "Where the visit came from (document.referrer origin or 'direct')",
+      "default": "direct"
+    },
+    "device_type": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "tablet",
+        "desktop"
+      ],
+      "default": "desktop"
+    },
+    "browser": {
+      "type": "string",
+      "description": "Browser family derived from user agent"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "path"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

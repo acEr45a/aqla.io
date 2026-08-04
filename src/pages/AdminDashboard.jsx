@@ -6,6 +6,7 @@ import RegistrationChart from "@/components/admin/RegistrationChart";
 import ActivityChart from "@/components/admin/ActivityChart";
 import ProtocolChart from "@/components/admin/ProtocolChart";
 import SiteVisitsChart from "@/components/admin/SiteVisitsChart";
+import VisitBreakdown from "@/components/admin/VisitBreakdown";
 import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import UserPlanPanel from "@/components/admin/UserPlanPanel";
@@ -84,6 +85,7 @@ export default function AdminDashboard() {
               <ActivityChart data={data.days} />
             </div>
             <SiteVisitsChart data={data.days} />
+            <VisitBreakdown visits={data.visits} />
             <ProtocolChart data={data.protocolFamilies} />
             <PdfStudioPanel />
           </>

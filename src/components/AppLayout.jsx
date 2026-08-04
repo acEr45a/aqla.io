@@ -10,6 +10,8 @@ import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getVisitMeta } from "@/lib/visitMeta";
+import { localDateKey } from "@/lib/dateKey";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: Sun },
@@ -41,6 +43,12 @@ export default function AppLayout() {
   }, []);
   useEffect(() => {
     base44.appLogs?.logUserInApp?.(pathname).catch(() => {});
+    const meta = getVisitMeta();
+    base44.entities.SiteVisit.create({
+      path: pathname,
+      date: localDateKey(),
+      ...meta,
+    }).catch(() => {});
   }, [pathname]);
   const extraNav = [];
   if (role === "admin") extraNav.push({ to: "/admin", label: "Admin", icon: ShieldCheck });

@@ -10,7 +10,7 @@ export default async function(req: Request): Promise<Response> {
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (user.role !== "admin") return Response.json({ error: "Forbidden" }, { status: 403 });
 
-    const [users, assessments, checkIns, protocols, tests, emails, games, reviews, experiments, profiles, domains] = await Promise.all([
+    const [users, assessments, checkIns, protocols, tests, emails, games, reviews, experiments, profiles, domains, siteVisits] = await Promise.all([
       base44.asServiceRole.entities.User.list("-created_date", 500),
       base44.asServiceRole.entities.Assessment.list("-created_date", 500),
       base44.asServiceRole.entities.DailyCheckIn.list("-date", 500),
@@ -22,32 +22,30 @@ export default async function(req: Request): Promise<Response> {
       base44.asServiceRole.entities.Experiment.list("-created_date", 500),
       base44.asServiceRole.entities.HealthProfile.list("-created_date", 500),
       base44.asServiceRole.entities.BrainDomain.list("-updated_date", 500),
+      base44.asServiceRole.entities.SiteVisit.list("-created_date", 1000),
     ]);
 
     const userById = users.reduce((map, item) => ({ ...map, [item.id]: item }), {});
 
     const visitByDate = {};
-    try {
-      const visitsStats = await base44.appLogs.getStats();
-      const pickDate = (o) => o?.date || o?.day || o?.dateKey || o?._id || o?.timestamp;
-      const pickCount = (o) => (typeof o === "number" ? o : (o?.count ?? o?.visits ?? o?.value ?? o?.total ?? 1));
-      let arr = null;
-      if (Array.isArray(visitsStats)) arr = visitsStats;
-      else if (visitsStats && typeof visitsStats === "object") {
-        for (const k of ["visits", "days", "data", "results", "items", "rows"]) {
-          if (Array.isArray(visitsStats[k])) { arr = visitsStats[k]; break; }
-        }
-        if (!arr) {
-          for (const [k, v] of Object.entries(visitsStats)) {
-            if (typeof v === "number" && /\d{4}-\d{2}-\d{2}/.test(k)) visitByDate[k] = v;
-          }
-        }
+    for (const v of siteVisits) {
+      const key = (v.date || dateKey(v.created_date)).slice(0, 10);
+      visitByDate[key] = (visitByDate[key] || 0) + 1;
+    }
+    const tally = (field) => {
+      const map = {};
+      for (const v of siteVisits) {
+        const k = v[field] || "unknown";
+        map[k] = (map[k] || 0) + 1;
       }
-      if (arr) for (const item of arr) {
-        const d = pickDate(item);
-        if (d) { const key = String(d).slice(0, 10); visitByDate[key] = (visitByDate[key] || 0) + pickCount(item); }
-      }
-    } catch (e) { /* appLogs unavailable in this context */ }
+      return Object.entries(map).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+    };
+    const visitBreakdown = {
+      total: siteVisits.length,
+      devices: tally("device_type"),
+      browsers: tally("browser"),
+      referrers: tally("referrer"),
+    };
 
     const days = Array.from({ length: 14 }, (_, index) => {
       const date = new Date();
@@ -161,6 +159,7 @@ export default async function(req: Request): Promise<Response> {
     return Response.json({
       overview: { users: users.length, assessments: assessments.length, checkIns: checkIns.length, activeProtocols: activeProtocols.length, summaryEmails: emails.length },
       days,
+      visits: visitBreakdown,
       protocolFamilies,
       analytics,
       siteData: { inventory, eligibility, dataPoints: inventory.reduce((sum, item) => sum + item.count, 0) },
