@@ -4,10 +4,12 @@ import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
 import { Send, X, Terminal, Code2 } from "lucide-react";
 
 // Backend Ops = lime (platform health / metrics). Architect = indigo (deep build / structure).
+// Each mode keeps its own conversation history, stored separately under a distinct name.
 const MODES = {
   ops: {
     key: "ops",
     label: "Backend Ops",
+    conversationName: "Backend Ops",
     accent: "#C9F24E",
     icon: Terminal,
     placeholder: "Ask Backend Ops about platform state…",
@@ -20,6 +22,7 @@ const MODES = {
   architect: {
     key: "architect",
     label: "AQLA Architect",
+    conversationName: "AQLA Architect",
     accent: "#6C9EFF",
     icon: Code2,
     placeholder: "Ask the Architect about structure, ideas, or code…",
@@ -39,50 +42,70 @@ const MODE_TAG = {
 export default function OpsConsoleWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("ops");
-  const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState({ ops: null, architect: null });
+  const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
   const [input, setInput] = useState("");
   const endRef = useRef(null);
 
   const cfg = MODES[mode];
 
+  // Load (or create) the conversation for the active mode when the panel opens.
   useEffect(() => {
-    if (!open || conversation) return;
+    if (!open) return;
+    if (conversations[mode]) return;
     let cancelled = false;
     (async () => {
       try {
         const existing = await base44.agents.listConversations({ agent_name: "backend_ops" });
-        const latest = Array.isArray(existing) && existing.length ? existing[0] : null;
+        const list = Array.isArray(existing) ? existing : [];
+        const match = list.find((c) => c?.metadata?.name === cfg.conversationName) || null;
         if (cancelled) return;
-        setConversation(
-          latest || (await base44.agents.createConversation({ agent_name: "backend_ops", metadata: { name: "Backend Ops widget" } }))
-        );
+        const resolved =
+          match ||
+          (await base44.agents.createConversation({
+            agent_name: "backend_ops",
+            metadata: { name: cfg.conversationName },
+          }));
+        if (cancelled) return;
+        setConversations((prev) => ({ ...prev, [mode]: resolved }));
       } catch {
         if (cancelled) return;
-        const created = await base44.agents.createConversation({ agent_name: "backend_ops", metadata: { name: "Backend Ops widget" } });
-        if (!cancelled) setConversation(created);
+        const created = await base44.agents.createConversation({
+          agent_name: "backend_ops",
+          metadata: { name: cfg.conversationName },
+        });
+        if (cancelled) return;
+        setConversations((prev) => ({ ...prev, [mode]: created }));
       }
     })();
     return () => { cancelled = true; };
-  }, [open, conversation]);
+  }, [open, mode, conversations, cfg.conversationName]);
 
+  // Subscribe to the active mode's conversation.
   useEffect(() => {
-    if (!conversation?.id) return;
-    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) =>
-      setMessages(data.messages || [])
+    const conv = conversations[mode];
+    if (!conv?.id) return;
+    // Seed history immediately so previous messages show before the first streamed event.
+    if (Array.isArray(conv.messages)) {
+      setMessagesByMode((prev) => ({ ...prev, [mode]: conv.messages }));
+    }
+    const unsubscribe = base44.agents.subscribeToConversation(conv.id, (data) =>
+      setMessagesByMode((prev) => ({ ...prev, [mode]: data.messages || [] }))
     );
     return () => unsubscribe();
-  }, [conversation?.id]);
+  }, [conversations, mode]);
+
+  const messages = messagesByMode[mode];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, mode]);
 
   const send = async (text) => {
-    if (!text.trim() || !conversation) return;
+    if (!text.trim() || !conversations[mode]) return;
     const framed = `${MODE_TAG[mode]}\n\n${text}`;
     setInput("");
-    await base44.agents.addMessage(conversation, { role: "user", content: framed });
+    await base44.agents.addMessage(conversations[mode], { role: "user", content: framed });
   };
 
   const accentStyle = { color: cfg.accent };
@@ -113,7 +136,7 @@ export default function OpsConsoleWidget() {
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: cfg.accent }} />
                 <span className="font-mono text-[11px] uppercase tracking-widest text-foreground">
-                  Backend Ops
+                  {cfg.label}
                 </span>
               </div>
               <button
@@ -194,7 +217,7 @@ export default function OpsConsoleWidget() {
               />
               <button
                 type="submit"
-                disabled={!input.trim() || !conversation}
+                disabled={!input.trim() || !conversations[mode]}
                 className="flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30"
                 style={{ background: cfg.accent, color: "#0A0A0A" }}
               >
