@@ -75,14 +75,22 @@ export class Fable {
     const { doc, W, M, t } = this;
     doc.setFillColor(...t.bg);
     doc.rect(0, 0, W, this.H, "F");
-    // AQLA mark — concentric circles + wordmark
+    // AQLA neural mark — open signal path converging on an active node (matches AqlaLogo)
+    const s = 0.5;
+    const ox = M + 11 - 22.4 * s;
+    const oy = 38 - 22.5 * s;
+    const sx = (x) => ox + x * s;
+    const sy = (y) => oy + y * s;
     doc.setDrawColor(...t.text);
-    doc.setLineWidth(1.3);
-    doc.circle(M + 9, 38, 8, "S");
-    doc.setLineWidth(0.7);
-    doc.circle(M + 9, 38, 4.4, "S");
-    doc.setFillColor(...t.text);
-    doc.circle(M + 9, 38, 1.4, "F");
+    doc.setLineWidth(1.05);
+    doc.setLineCap("round");
+    doc.line(sx(8), sy(31.5), sx(18.2), sy(10.5));
+    doc.line(sx(18.2), sy(10.5), sx(28), sy(31.5));
+    doc.line(sx(28), sy(31.5), sx(36), sy(22.3));
+    doc.line(sx(12.4), sy(22.5), sx(20.6), sy(22.5));
+    doc.setLineCap("butt");
+    doc.setFillColor(...t.accent);
+    doc.circle(sx(22.4), sy(22.5), 3.4 * s, "F");
     doc.setTextColor(...t.text);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
