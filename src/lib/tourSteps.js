@@ -21,6 +21,11 @@ export const TOUR_STEPS = [
     body: "Want your protocol on paper? Tap “Download today's plan (PDF)” to get a branded, step-by-step daily plan — it refreshes every morning with your latest data.",
   },
   {
+    selector: '[data-tour="supply"]',
+    title: "Formula Logistics",
+    body: "Your active protocol formulas are tracked here — delivery status, what's supplied this cycle, and when your next shipment arrives. Nothing to order manually; it follows your protocol automatically.",
+  },
+  {
     selector: '[data-tour="checkin"]',
     title: "Daily check-in",
     body: "Under 60 seconds each day. This is what keeps your Brain Map and protocol accurate.",

@@ -7,9 +7,10 @@ import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
 import VoiceChatCard from "@/components/today/VoiceChatCard";
 import DashboardTour from "@/components/today/DashboardTour";
+import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import { localDateKey } from "@/lib/dateKey";
-import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
+import { ChevronDown, MessageCircle, ClipboardList, Sparkles, ShieldCheck } from "lucide-react";
 
 function Signal({ label, value, color }) {
   return (
@@ -97,7 +98,13 @@ export default function Today() {
       {/* Protocol actions */}
       <div data-tour="protocol" className="mt-8">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
+          <div className="flex items-center gap-2.5">
+            <h3 className="font-display text-lg text-foreground">Today's protocol</h3>
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary/20 bg-primary/5">
+              <ShieldCheck className="w-3 h-3 text-primary" />
+              <span className="text-[10px] uppercase tracking-widest text-primary font-medium">AQLA Verified</span>
+            </span>
+          </div>
           <div className="flex items-center gap-3">
             {protocol && (
               <Link to="/protocol" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5">
@@ -155,6 +162,8 @@ export default function Today() {
         </Link>
       </div>
 
+      <FormulaLogisticsCard />
+
       <VoiceChatCard />
 
       {checkIns.length < 3 && <AddToCalendarCard protocol={protocol} />}
@@ -168,6 +177,10 @@ export default function Today() {
           <p className="mt-2 text-sm text-foreground/90 leading-relaxed max-w-xl">
             {weakest.domain_name} is your lowest domain at {Math.round(weakest.score)}. {weakest.next_action || weakest.summary}
           </p>
+          <div className="mt-3 flex items-center gap-1.5">
+            <ShieldCheck className="w-3 h-3 text-primary" />
+            <span className="text-[10px] uppercase tracking-widest text-primary/80">AQLA Verified — evidence-informed</span>
+          </div>
         </div>
       )}
 
