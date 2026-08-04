@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import DifficultyMeter from "@/components/tests/DifficultyMeter";
 
 // Wechsler Memory Scale (WMS-IV) / WAIS-IV Digit Span adaptation.
 // Forward + Backward conditions, two trials per length, discontinue rule,
@@ -166,8 +167,13 @@ export default function MemoryTest({ onComplete }) {
   }
 
   if (phase === "showing") {
+    const meterTotal = condition === "forward" ? MAX_FORWARD - FORWARD_START + 1 : MAX_BACKWARD - BACKWARD_START + 1;
+    const meterLevel = condition === "forward" ? len - FORWARD_START + 1 : len - BACKWARD_START + 1;
     return (
       <div className="text-center">
+        <div className="flex justify-center mb-6">
+          <DifficultyMeter level={meterLevel} total={meterTotal} label={`${condition === "backward" ? "Backward" : "Forward"} span`} />
+        </div>
         <p className="font-display text-7xl tabular-nums h-20 flex items-center justify-center">
           {gap ? (
             <span className="text-muted-foreground/30">·</span>
@@ -185,8 +191,13 @@ export default function MemoryTest({ onComplete }) {
 
   if (phase === "done") return null;
 
+  const meterTotal = condition === "forward" ? MAX_FORWARD - FORWARD_START + 1 : MAX_BACKWARD - BACKWARD_START + 1;
+  const meterLevel = condition === "forward" ? len - FORWARD_START + 1 : len - BACKWARD_START + 1;
   return (
     <form onSubmit={submit} className="text-center max-w-xs mx-auto">
+      <div className="flex justify-center mb-5">
+        <DifficultyMeter level={meterLevel} total={meterTotal} label={`${condition === "backward" ? "Backward" : "Forward"} span`} />
+      </div>
       <p className="text-sm text-foreground mb-1">
         {condition === "backward" ? "Type the digits in reverse order" : "Type the digits in order"}
       </p>
