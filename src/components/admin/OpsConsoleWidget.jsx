@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
-import { Send, X, Terminal, Code2 } from "lucide-react";
+import OpsSidebar from "@/components/admin/OpsSidebar";
+import { Send, X, Terminal, Code2, PanelLeft } from "lucide-react";
 
 // Backend Ops = lime (platform health / metrics). Architect = indigo (deep build / structure).
-// Each mode keeps its own conversation history, stored separately under a distinct name.
+// Each mode keeps its own conversation history, persisted server-side and tagged with metadata.mode.
 const MODES = {
   ops: {
     key: "ops",
     label: "Backend Ops",
-    conversationName: "Backend Ops",
     accent: "#C9F24E",
     icon: Terminal,
     placeholder: "Ask Backend Ops about platform state…",
@@ -22,7 +22,6 @@ const MODES = {
   architect: {
     key: "architect",
     label: "AQLA Architect",
-    conversationName: "AQLA Architect",
     accent: "#6C9EFF",
     icon: Code2,
     placeholder: "Ask the Architect about structure, ideas, or code…",
@@ -39,61 +38,98 @@ const MODE_TAG = {
   architect: "[Architect mode — development checklist, features, architecture, code structure]",
 };
 
+// Map a conversation to its mode (new convs use metadata.mode; legacy ones use the old fixed names).
+const convMode = (conv) => {
+  const m = conv?.metadata?.mode;
+  if (m === "ops" || m === "architect") return m;
+  const name = conv?.metadata?.name;
+  if (name === "Backend Ops" || name === "Backend Ops widget") return "ops";
+  if (name === "AQLA Architect") return "architect";
+  return null;
+};
+
+const stripTag = (text) => text.replace(/^\[[^\]]*\]\s*/, "").trim();
+const titleFromMessage = (text) => {
+  const clean = stripTag(text).split("\n")[0].trim();
+  return clean.length > 42 ? `${clean.slice(0, 42)}…` : clean || "New chat";
+};
+
 export default function OpsConsoleWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("ops");
-  const [conversations, setConversations] = useState({ ops: null, architect: null });
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [conversationsByMode, setConversationsByMode] = useState({ ops: [], architect: [] });
+  const [activeIdByMode, setActiveIdByMode] = useState({ ops: null, architect: null });
   const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
   const [input, setInput] = useState("");
   const endRef = useRef(null);
 
   const cfg = MODES[mode];
 
-  // Load (or create) the conversation for the active mode when the panel opens.
+  const loadConversations = async (m) => {
+    try {
+      const all = await base44.agents.listConversations({ agent_name: "backend_ops" });
+      const list = (Array.isArray(all) ? all : [])
+        .filter((c) => convMode(c) === m)
+        .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
+      setConversationsByMode((prev) => ({ ...prev, [m]: list }));
+      return list;
+    } catch {
+      return [];
+    }
+  };
+
+  const openConversation = async (conv, m) => {
+    setActiveIdByMode((prev) => ({ ...prev, [m]: conv.id }));
+    try {
+      const full = await base44.agents.getConversation(conv.id);
+      setMessagesByMode((prev) => ({ ...prev, [m]: full.messages || [] }));
+    } catch {
+      setMessagesByMode((prev) => ({ ...prev, [m]: conv.messages || [] }));
+    }
+  };
+
+  const newChat = async (m) => {
+    try {
+      const created = await base44.agents.createConversation({
+        agent_name: "backend_ops",
+        metadata: { name: "New chat", mode: m },
+      });
+      setConversationsByMode((prev) => ({ ...prev, [m]: [created, ...prev[m]] }));
+      setActiveIdByMode((prev) => ({ ...prev, [m]: created.id }));
+      setMessagesByMode((prev) => ({ ...prev, [m]: [] }));
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // When the panel opens, load the active mode's conversations (and select/create as needed).
   useEffect(() => {
     if (!open) return;
-    if (conversations[mode]) return;
     let cancelled = false;
     (async () => {
-      try {
-        const existing = await base44.agents.listConversations({ agent_name: "backend_ops" });
-        const list = Array.isArray(existing) ? existing : [];
-        const match = list.find((c) => c?.metadata?.name === cfg.conversationName) || null;
-        if (cancelled) return;
-        const resolved =
-          match ||
-          (await base44.agents.createConversation({
-            agent_name: "backend_ops",
-            metadata: { name: cfg.conversationName },
-          }));
-        if (cancelled) return;
-        setConversations((prev) => ({ ...prev, [mode]: resolved }));
-      } catch {
-        if (cancelled) return;
-        const created = await base44.agents.createConversation({
-          agent_name: "backend_ops",
-          metadata: { name: cfg.conversationName },
-        });
-        if (cancelled) return;
-        setConversations((prev) => ({ ...prev, [mode]: created }));
+      const list = await loadConversations(mode);
+      if (cancelled) return;
+      if (activeIdByMode[mode]) return;
+      if (list.length) {
+        await openConversation(list[0], mode);
+      } else {
+        await newChat(mode);
       }
     })();
     return () => { cancelled = true; };
-  }, [open, mode, conversations, cfg.conversationName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mode]);
 
-  // Subscribe to the active mode's conversation.
+  // Subscribe to the active conversation for the current mode (streams new messages).
   useEffect(() => {
-    const conv = conversations[mode];
-    if (!conv?.id) return;
-    // Seed history immediately so previous messages show before the first streamed event.
-    if (Array.isArray(conv.messages)) {
-      setMessagesByMode((prev) => ({ ...prev, [mode]: conv.messages }));
-    }
-    const unsubscribe = base44.agents.subscribeToConversation(conv.id, (data) =>
+    const id = activeIdByMode[mode];
+    if (!id) return;
+    const unsubscribe = base44.agents.subscribeToConversation(id, (data) =>
       setMessagesByMode((prev) => ({ ...prev, [mode]: data.messages || [] }))
     );
     return () => unsubscribe();
-  }, [conversations, mode]);
+  }, [activeIdByMode, mode]);
 
   const messages = messagesByMode[mode];
 
@@ -102,10 +138,20 @@ export default function OpsConsoleWidget() {
   }, [messages, mode]);
 
   const send = async (text) => {
-    if (!text.trim() || !conversations[mode]) return;
+    if (!text.trim() || !activeIdByMode[mode]) return;
+    const conv = conversationsByMode[mode].find((c) => c.id === activeIdByMode[mode]);
     const framed = `${MODE_TAG[mode]}\n\n${text}`;
     setInput("");
-    await base44.agents.addMessage(conversations[mode], { role: "user", content: framed });
+    // Name the chat after the first message if it's still the default.
+    if (conv && (conv.metadata?.name === "New chat" || !conv.metadata?.name)) {
+      const title = titleFromMessage(text);
+      base44.agents.updateConversation(conv.id, { metadata: { name: title, mode } }).catch(() => {});
+      setConversationsByMode((prev) => ({
+        ...prev,
+        [mode]: prev[mode].map((c) => (c.id === conv.id ? { ...c, metadata: { name: title, mode } } : c)),
+      }));
+    }
+    await base44.agents.addMessage(conv || { id: activeIdByMode[mode] }, { role: "user", content: framed });
   };
 
   const accentStyle = { color: cfg.accent };
@@ -127,13 +173,20 @@ export default function OpsConsoleWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed bottom-5 right-5 z-50 flex h-[560px] w-[min(380px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50"
+          className="fixed bottom-5 right-5 z-50 flex h-[560px] w-[min(460px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50"
           style={{ boxShadow: `0 0 0 1px ${cfg.accent}22, 0 20px 50px rgba(0,0,0,0.55)` }}
         >
           {/* Header with toggle */}
           <div className="border-b border-border/60 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowSidebar((v) => !v)}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  aria-label="Toggle history"
+                >
+                  <PanelLeft className="h-3.5 w-3.5" />
+                </button>
                 <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: cfg.accent }} />
                 <span className="font-mono text-[11px] uppercase tracking-widest text-foreground">
                   {cfg.label}
@@ -156,11 +209,7 @@ export default function OpsConsoleWidget() {
                     key={m.key}
                     onClick={() => setMode(m.key)}
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors"
-                    style={
-                      active
-                        ? { background: m.accent, color: "#0A0A0A" }
-                        : { color: "hsl(var(--muted-foreground))" }
-                    }
+                    style={active ? { background: m.accent, color: "#0A0A0A" } : { color: "hsl(var(--muted-foreground))" }}
                   >
                     <m.icon className="h-3.5 w-3.5" />
                     {m.label}
@@ -170,61 +219,75 @@ export default function OpsConsoleWidget() {
             </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
-            {messages.length === 0 && (
-              <div className="space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  {mode === "ops"
-                    ? "Diagnose platform data, delivery, and stuck users."
-                    : "Plan features, refine ideas, and review the dev checklist."}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {cfg.prompts.map((prompt) => (
-                    <button
-                      key={prompt}
-                      onClick={() => send(prompt)}
-                      className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-                      onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${cfg.accent}55`)}
-                      onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
+          {/* Body: sidebar + chat */}
+          <div className="flex flex-1 overflow-hidden">
+            {showSidebar && (
+              <div className="w-[150px] shrink-0">
+                <OpsSidebar
+                  conversations={conversationsByMode[mode]}
+                  activeId={activeIdByMode[mode]}
+                  accent={cfg.accent}
+                  onSelect={(conv) => openConversation(conv, mode)}
+                  onNew={() => newChat(mode)}
+                />
               </div>
             )}
-            {messages.map((message, index) => (
-              <OpsMessageBubble key={index} message={message} accent={cfg.accent} />
-            ))}
-            <div ref={endRef} />
-          </div>
 
-          {/* Input */}
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              send(input);
-            }}
-            className="border-t border-border/60 p-3"
-          >
-            <div className="flex items-center gap-2 rounded-full bg-secondary/60 pl-4 pr-1.5 py-1.5">
-              <input
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder={cfg.placeholder}
-                className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim() || !conversations[mode]}
-                className="flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30"
-                style={{ background: cfg.accent, color: "#0A0A0A" }}
+            {/* Messages */}
+            <div className="flex flex-1 flex-col">
+              <div className="flex-1 space-y-4 overflow-y-auto p-4">
+                {messages.length === 0 && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      {mode === "ops"
+                        ? "Diagnose platform data, delivery, and stuck users."
+                        : "Plan features, refine ideas, and review the dev checklist."}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {cfg.prompts.map((prompt) => (
+                        <button
+                          key={prompt}
+                          onClick={() => send(prompt)}
+                          className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${cfg.accent}55`)}
+                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
+                        >
+                          {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {messages.map((message, index) => (
+                  <OpsMessageBubble key={index} message={message} accent={cfg.accent} />
+                ))}
+                <div ref={endRef} />
+              </div>
+
+              {/* Input */}
+              <form
+                onSubmit={(event) => { event.preventDefault(); send(input); }}
+                className="border-t border-border/60 p-3"
               >
-                <Send className="h-3.5 w-3.5" />
-              </button>
+                <div className="flex items-center gap-2 rounded-full bg-secondary/60 pl-4 pr-1.5 py-1.5">
+                  <input
+                    value={input}
+                    onChange={(event) => setInput(event.target.value)}
+                    placeholder={cfg.placeholder}
+                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || !activeIdByMode[mode]}
+                    className="flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30"
+                    style={{ background: cfg.accent, color: "#0A0A0A" }}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </>
