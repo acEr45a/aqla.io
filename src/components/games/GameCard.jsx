@@ -12,7 +12,12 @@ export default function GameCard({ game, best, plays, onPlay }) {
         <span className="absolute -left-5 -bottom-10 w-28 h-28 rounded-full border border-foreground/10" />
         <span className="absolute left-8 -bottom-16 w-32 h-32 rounded-full border border-foreground/5" />
         <Icon className={`absolute left-1/2 top-1/2 w-12 h-12 -translate-x-1/2 -translate-y-1/2 ${game.iconTone}`} strokeWidth={1.15} />
-        <span className="absolute top-2.5 right-3 rounded-full bg-background/60 px-2 py-1 text-[10px] text-foreground tabular-nums backdrop-blur-sm">{game.minutes}</span>
+        <span className="absolute top-2.5 right-3 inline-flex items-center gap-1.5">
+          {game.specialty && (
+            <span className="rounded-full bg-primary/80 px-2 py-1 text-[9px] font-medium uppercase tracking-wide text-primary-foreground backdrop-blur-sm">Specialty</span>
+          )}
+          <span className="rounded-full bg-background/60 px-2 py-1 text-[10px] text-foreground tabular-nums backdrop-blur-sm">{game.minutes}</span>
+        </span>
         <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-background/55">
           <Play className="w-7 h-7 text-foreground" strokeWidth={1.5} />
         </span>
