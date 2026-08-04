@@ -19,6 +19,7 @@ import AnalyticsPanel from "@/components/admin/AnalyticsPanel";
 import SiteDataPanel from "@/components/admin/SiteDataPanel";
 import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
+import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -110,6 +111,8 @@ export default function AdminDashboard() {
         {tab === "ops" && <BackendOpsConsole />}
         {tab === "development" && <DevelopmentPanel />}
       </div>
+
+      <OpsConsoleWidget />
     </div>);
 
 }
