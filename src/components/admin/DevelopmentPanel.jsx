@@ -26,7 +26,7 @@ export default function DevelopmentPanel() {
     if (!raw.trim()) return;
     setRefining(true);
     setError("");
-    const res = await base44.functions.invoke("devIdeaAssistant", { action: "refine", raw, source: "chat" });
+    const res = await base44.functions.invoke("backendOpsAi", { task: "refineIdea", raw, source: "chat" });
     if (res.data?.error) setError(res.data.error);
     else setRaw("");
     setRefining(false);
@@ -36,7 +36,7 @@ export default function DevelopmentPanel() {
   const generateBank = async () => {
     setGenerating(true);
     setError("");
-    const res = await base44.functions.invoke("devIdeaAssistant", { action: "wordbank", focus });
+    const res = await base44.functions.invoke("backendOpsAi", { task: "wordbank", focus });
     if (res.data?.error) setError(res.data.error);
     setGenerating(false);
     load();

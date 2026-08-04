@@ -22,7 +22,7 @@ export default function PdfStudioPanel() {
     if (!instruction.trim() || busy) return;
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("pdfEditorAssistant", { instruction });
+      const res = await base44.functions.invoke("backendOpsAi", { task: "pdfTheme", instruction });
       setNote(res.data.note || "Theme updated.");
       setInstruction("");
       await refresh();
