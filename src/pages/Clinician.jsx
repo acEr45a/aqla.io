@@ -87,14 +87,20 @@ export default function Clinician() {
           )}
         </>
       )}
-      {plans !== null && plans.length > 0 && (
+      {plans !== null && (
         <section className="mt-12">
           <p className="mb-4 text-xs uppercase tracking-widest text-muted-foreground">
             Member plan decisions · <span className="tabular-nums text-foreground">{plans.length}</span>
           </p>
-          <div className="space-y-4">
-            {plans.map((p) => <PlanDecisionCard key={p.id} review={p} />)}
-          </div>
+          {plans.length === 0 ? (
+            <div className="aqla-panel rounded-2xl p-8 text-center text-sm text-muted-foreground">
+              No member plan decisions have been recorded yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {plans.map((p) => <PlanDecisionCard key={p.id} review={p} />)}
+            </div>
+          )}
         </section>
       )}
 
