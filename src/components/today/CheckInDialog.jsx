@@ -4,6 +4,8 @@ import { localDateKey } from "@/lib/dateKey";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import VoiceCheckIn from "@/components/today/VoiceCheckIn";
+import { Sliders, MessageCircle } from "lucide-react";
 
 const FIELDS = [
   { key: "clarity", label: "How mentally clear do you feel?" },
@@ -16,6 +18,7 @@ const DEMANDS = ["Deep focused work", "Meetings & people", "Learning", "Creative
 
 
 export default function CheckInDialog({ open, onOpenChange, onSaved }) {
+  const [mode, setMode] = useState("form");
   const [values, setValues] = useState({ clarity: 5, energy: 5, stress: 5, sleep_quality: 5 });
   const [caffeineDrinks, setCaffeineDrinks] = useState("");
   const [caffeineTime, setCaffeineTime] = useState("");
@@ -24,13 +27,15 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const save = async () => {
+  const save = async (payload) => {
     setSaving(true);
     setError("");
     try {
       await base44.entities.DailyCheckIn.create({
         date: localDateKey(),
-        ...values, caffeine_drinks: caffeineDrinks, caffeine_last_time: caffeineTime, demand, note,
+        clarity: 5, energy: 5, stress: 5, sleep_quality: 5,
+        caffeine_drinks: "", caffeine_last_time: "", demand: "", note: "",
+        ...payload,
       });
       onOpenChange(false);
       onSaved?.();
@@ -42,12 +47,33 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
     }
   };
 
+  const saveForm = () => save({
+    ...values, caffeine_drinks: caffeineDrinks, caffeine_last_time: caffeineTime, demand, note,
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="font-display font-normal text-xl">Daily check-in</DialogTitle>
         </DialogHeader>
+
+        <div className="flex gap-1 p-1 rounded-full bg-secondary/60 border border-border">
+          <button onClick={() => setMode("form")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-xs transition-colors ${
+              mode === "form" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>
+            <Sliders className="w-3.5 h-3.5" /> Sliders
+          </button>
+          <button onClick={() => setMode("voice")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-full text-xs transition-colors ${
+              mode === "voice" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"}`}>
+            <MessageCircle className="w-3.5 h-3.5" /> Talk to AQLA
+          </button>
+        </div>
+
+        {mode === "voice" ? (
+          <VoiceCheckIn onComplete={(vals) => save(vals)} onCancel={() => setMode("form")} />
+        ) : (
         <div className="space-y-6 py-2">
           {FIELDS.map((f) => (
             <div key={f.key}>
@@ -87,12 +113,14 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
           </div>
           <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional note — side effects, context, anything unusual…"
             className="bg-secondary/50 border-border text-sm" rows={2} />
-          <button onClick={save} disabled={saving}
+          <button onClick={saveForm} disabled={saving}
             className="w-full py-3.5 rounded-full bg-primary text-primary-foreground font-medium disabled:opacity-50 hover:opacity-90 transition-opacity">
             {saving ? "Saving…" : "Complete check-in"}
           </button>
           {error && <p className="text-xs text-destructive text-center">{error}</p>}
         </div>
+        )}
+        {error && mode === "voice" && <p className="text-xs text-destructive text-center">{error}</p>}
       </DialogContent>
     </Dialog>
   );
