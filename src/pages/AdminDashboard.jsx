@@ -10,7 +10,7 @@ import VisitBreakdown from "@/components/admin/VisitBreakdown";
 import AdminUserTable from "@/components/admin/AdminUserTable";
 import AdminRolePanel from "@/components/admin/AdminRolePanel";
 import UserPlanPanel from "@/components/admin/UserPlanPanel";
-import BackendOpsConsole from "@/components/admin/BackendOpsConsole";
+import BackendOpsSummary from "@/components/admin/BackendOpsSummary";
 import DevelopmentPanel from "@/components/admin/DevelopmentPanel";
 import PdfStudioPanel from "@/components/admin/PdfStudioPanel";
 
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             <AdminUserTable users={data.recentUsers} onDeleted={load} />
           </>
         }
-        {tab === "ops" && <BackendOpsConsole />}
+        {tab === "ops" && <BackendOpsSummary />}
         {tab === "development" && <DevelopmentPanel />}
       </div>
 
