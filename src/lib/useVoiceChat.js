@@ -24,20 +24,37 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
   const endCbRef = useRef(onSpeechEnd);
   endCbRef.current = onSpeechEnd;
 
+  const bufferRef = useRef("");
+  const silenceTimerRef = useRef(null);
+
   useEffect(() => {
     if (!Recognition) return;
     const rec = new Recognition();
     rec.lang = loadVoicePrefs().accent || "en-US";
-    rec.interimResults = false;
-    rec.continuous = false;
-    rec.onresult = (event) => {
-      const text = event.results[0][0].transcript;
+    // Listen continuously and only submit after a real silence gap, so a
+    // mid-sentence pause never cuts the user off.
+    rec.interimResults = true;
+    rec.continuous = true;
+    const submitBuffer = () => {
+      clearTimeout(silenceTimerRef.current);
+      const text = bufferRef.current.trim();
+      bufferRef.current = "";
       if (text) cbRef.current?.(text);
     };
-    rec.onend = () => setListening(false);
+    rec.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) bufferRef.current += event.results[i][0].transcript + " ";
+      }
+      // Any speech activity (even interim) resets the silence window.
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        if (bufferRef.current.trim()) rec.stop(); // onend submits
+      }, 1500);
+    };
+    rec.onend = () => { setListening(false); submitBuffer(); };
     rec.onerror = () => setListening(false);
     recRef.current = rec;
-    return () => { rec.onresult = null; rec.abort?.(); };
+    return () => { clearTimeout(silenceTimerRef.current); rec.onresult = null; rec.onend = null; rec.abort?.(); };
   }, []);
 
   useEffect(() => () => audioRef.current?.pause(), []);
@@ -51,6 +68,7 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
   const startListening = useCallback(() => {
     if (!recRef.current || listening) return;
     stopSpeaking();
+    bufferRef.current = "";
     recRef.current.lang = loadVoicePrefs().accent || "en-US";
     setVoiceMode(true);
     setListening(true);

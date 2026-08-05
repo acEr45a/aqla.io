@@ -28,6 +28,7 @@ Rules:
 - Infer each numeric value (1-10) from the user's natural-language answer. If they give no number, estimate from their words ("pretty good" ≈ 7, "awful" ≈ 2, "fine" ≈ 6). If genuinely ambiguous, ask a gentle one-line clarifier instead of moving on.
 - If the user interrupts or cuts you off, accept it gracefully — treat whatever they say as their answer to the current question and continue. Never comment on the interruption.
 - If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
+- NEVER re-ask or rephrase a question whose value is already captured. Look at the "Already captured" list — those topics are DONE. Move straight to the first topic that is still missing.
 - Capture caffeine intake (drinks, rough amount, timing), today's main demand, and a short note ONLY if the user mentions them naturally — never ask for these directly.
 - When all four core topics are answered, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
 
@@ -51,24 +52,26 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
   const interpretation = [...messages].reverse().find((m) => m.role === "aqla" && m.interpretation)?.interpretation || "";
   const answeredCount = FIELDS.filter((f) => typeof collected[f.key] === "number").length;
 
-  const runInterview = useCallback(async (msgArray, userText, isFirst) => {
+  const runInterview = useCallback(async (msgArray, userText) => {
     setLoading(true);
-    const usedBefore = !!localStorage.getItem(INTRO_KEY);
     const history = msgArray.map((m) => `${m.role === "user" ? "User" : "AQLA"}: ${m.text}`).join("\n");
-    const turn = isFirst
-      ? `This is the very beginning. ${usedBefore ? "The user has done this before, so skip any intro and just ask the first question (mental clarity) naturally." : "Formally introduce yourself first: say your name (AQLA Intelligence), explain in one sentence that you're their personal brain-health coach doing a quick daily voice check-in, that you'll ask four short questions in their own words, they can tap to cut you off and answer anytime, and they can redo any answer. Then ask the first question (mental clarity). Keep the whole reply under four sentences."}`
-      : `The user just said: "${userText}"`;
+    const captured = msgArray
+      .filter((m) => m.role === "aqla" && m.extracted)
+      .reduce((acc, m) => ({ ...acc, ...m.extracted }), {});
+    const capturedList = Object.entries(captured).filter(([, v]) => v != null && v !== "");
 
     let res;
     try {
       res = await base44.integrations.Core.InvokeLLM({
-        model: "gemini_3_1_pro",
+        model: "gemini_3_flash",
         prompt: `${INTERVIEW_PROMPT}
 
 Conversation so far:
 ${history || "(none yet)"}
 
-${turn}
+Already captured (do NOT ask about these again): ${capturedList.length ? capturedList.map(([k, v]) => `${k}=${v}`).join(", ") : "nothing yet"}
+
+The user just said: "${userText}"
 
 Return your reply, the full set of extracted values so far (merge with anything already extracted), and whether all four core topics are now answered.`,
         response_json_schema: {
@@ -104,7 +107,6 @@ Return your reply, the full set of extracted values so far (merge with anything 
     messagesRef.current = next;
     setMessages(next);
     setLoading(false);
-    if (isFirst && !usedBefore) localStorage.setItem(INTRO_KEY, "1");
     if (voiceModeRef.current) voiceRef.current?.speak(res.reply);
   }, []);
 
@@ -156,7 +158,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
     messagesRef.current = next;
     setMessages(next);
     setInput("");
-    runInterview(next, text, false);
+    runInterview(next, text);
   };
 
   const voice = useVoiceChat({
