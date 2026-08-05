@@ -108,18 +108,28 @@ export default function OpsConsoleWidget() {
     }
   };
 
-  const newChat = async (m) => {
-    try {
-      const created = await base44.agents.createConversation({
-        agent_name: "backend_ops",
-        metadata: { name: "New chat", mode: m },
-      });
-      setConversationsByMode((prev) => ({ ...prev, [m]: [created, ...prev[m]] }));
-      setActiveIdByMode((prev) => ({ ...prev, [m]: created.id }));
-      setMessagesByMode((prev) => ({ ...prev, [m]: [] }));
-    } catch {
-      /* ignore */
-    }
+  const creatingPromiseRef = useRef({ ops: null, architect: null });
+  // Returns a promise that resolves to the created conversation (or null on failure).
+  // Concurrent callers share the same promise so we never create two chats at once.
+  const newChat = (m) => {
+    if (creatingPromiseRef.current[m]) return creatingPromiseRef.current[m];
+    creatingPromiseRef.current[m] = (async () => {
+      try {
+        const created = await base44.agents.createConversation({
+          agent_name: "backend_ops",
+          metadata: { name: "New chat", mode: m },
+        });
+        setConversationsByMode((prev) => ({ ...prev, [m]: [created, ...prev[m]] }));
+        setActiveIdByMode((prev) => ({ ...prev, [m]: created.id }));
+        setMessagesByMode((prev) => ({ ...prev, [m]: [] }));
+        return created;
+      } catch {
+        return null;
+      } finally {
+        creatingPromiseRef.current[m] = null;
+      }
+    })();
+    return creatingPromiseRef.current[m];
   };
 
   // When the panel opens, load the active mode's conversations (and select/create as needed).
@@ -158,11 +168,16 @@ export default function OpsConsoleWidget() {
 
   const send = async (text) => {
     const trimmed = text.trim();
-    const activeId = activeIdByMode[mode];
-    if (!trimmed || !activeId || sending) return;
+    if (!trimmed || sending) return;
+    let activeId = activeIdByMode[mode];
     let conv = conversationsByMode[mode].find((c) => c.id === activeId);
-    // Always pass a full conversation object to addMessage (the SDK requires it).
-    if (!conv) {
+    // No active conversation yet (e.g. just opened) — create one on demand so the quick-start prompts work immediately.
+    if (!activeId || !conv) {
+      conv = await newChat(mode);
+      if (!conv) return;
+      activeId = conv.id;
+    } else {
+      // Always pass a full conversation object to addMessage (the SDK requires it).
       try {
         conv = await base44.agents.getConversation(activeId);
         setConversationsByMode((prev) => (prev[mode].some((c) => c.id === activeId) ? prev : { ...prev, [mode]: [conv, ...prev[mode]] }));
