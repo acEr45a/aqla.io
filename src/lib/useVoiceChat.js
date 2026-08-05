@@ -10,7 +10,7 @@ export const speechSupported = typeof window !== "undefined" && "Audio" in windo
 export const micSupported = !!Recognition;
 export const voiceSupported = speechSupported;
 
-const VOICE_BY_MOOD = { calm: "river", neutral: "river", focused: "spark", warm: "honey" };
+export const VOICE_BY_MOOD = { calm: "river", neutral: "river", focused: "spark", warm: "honey" };
 
 // Browser speech recognition with high-quality generated speech for AQLA replies.
 export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
@@ -62,21 +62,25 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
     setListening(false);
   }, []);
 
-  const speak = useCallback(async (text) => {
+  const speak = useCallback(async (text, prefetchedUrl) => {
     if (!text || !speechSupported) return;
     stopSpeaking();
     setSpeaking(true);
-    const prefs = loadVoicePrefs();
-    const { url } = await base44.integrations.Core.GenerateSpeech({
-      text,
-      voice: VOICE_BY_MOOD[prefs.mood] || "honey",
-      language_code: "en",
-    });
+    let url = prefetchedUrl;
+    if (!url) {
+      const prefs = loadVoicePrefs();
+      const res = await base44.integrations.Core.GenerateSpeech({
+        text,
+        voice: VOICE_BY_MOOD[prefs.mood] || "honey",
+        language_code: "en",
+      });
+      url = res.url;
+    }
     const audio = new Audio(url);
     audioRef.current = audio;
     audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
     audio.onerror = () => setSpeaking(false);
-    await audio.play();
+    audio.play().catch(() => setSpeaking(false));
   }, [stopSpeaking]);
 
   return { listening, speaking, voiceMode, setVoiceMode, startListening, stopListening, speak, stopSpeaking };

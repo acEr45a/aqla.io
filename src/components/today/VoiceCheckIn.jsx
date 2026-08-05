@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
+import useVoiceChat, { micSupported, VOICE_BY_MOOD } from "@/lib/useVoiceChat";
+import { loadVoicePrefs } from "@/lib/voicePrefs";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
 import { RotateCcw, Send, Check, MessageCircle } from "lucide-react";
 
@@ -107,9 +108,67 @@ Return your reply, the full set of extracted values so far (merge with anything 
     if (voiceModeRef.current) voiceRef.current?.speak(res.reply);
   }, []);
 
+  // Prefetch the first question's LLM reply AND its audio on mount, so tapping
+  // "Start" begins speaking instantly instead of waiting on a serial chain.
+  const firstTurnRef = useRef(null); // { msg, audioUrl }
+  const [firstReady, setFirstReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const usedBefore = !!localStorage.getItem(INTRO_KEY);
+        const history = "";
+        const turn = `This is the very beginning. ${usedBefore ? "The user has done this before, so skip any intro and just ask the first question (mental clarity) naturally." : "Formally introduce yourself first: say your name (AQLA Intelligence), explain in one sentence that you're their personal brain-health coach doing a quick daily voice check-in, that you'll ask four short questions in their own words, they can tap to cut you off and answer anytime, and they can redo any answer. Then ask the first question (mental clarity). Keep the whole reply under four sentences."}`;
+        const res = await base44.integrations.Core.InvokeLLM({
+          model: "gemini_3_1_pro",
+          prompt: `${INTERVIEW_PROMPT}\n\nConversation so far:\n${history || "(none yet)"}\n\n${turn}\n\nReturn your reply, the full set of extracted values so far (merge with anything already extracted), and whether all four core topics are now answered.`,
+          response_json_schema: {
+            type: "object",
+            properties: {
+              reply: { type: "string" },
+              extracted_values: { type: "object", properties: {
+                clarity: { type: ["number", "null"] }, energy: { type: ["number", "null"] },
+                stress: { type: ["number", "null"] }, sleep_quality: { type: ["number", "null"] },
+                caffeine_drinks: { type: ["string", "null"] }, caffeine_last_time: { type: ["string", "null"] },
+                demand: { type: ["string", "null"] }, note: { type: ["string", "null"] },
+              } },
+              complete: { type: "boolean" }, interpretation: { type: "string" },
+            },
+            required: ["reply", "extracted_values", "complete", "interpretation"],
+          },
+        });
+        if (cancelled) return;
+        const msg = { role: "aqla", text: res.reply, extracted: res.extracted_values, complete: res.complete, interpretation: res.interpretation };
+        // Prefetch the spoken audio in parallel with nothing else waiting.
+        let audioUrl = null;
+        try {
+          const prefs = loadVoicePrefs();
+          const { url } = await base44.integrations.Core.GenerateSpeech({
+            text: res.reply, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
+          });
+          audioUrl = url;
+        } catch { /* fallback: generate on the fly when speaking */ }
+        if (cancelled) return;
+        firstTurnRef.current = { msg, audioUrl };
+        setFirstReady(true);
+      } catch { /* fallback to live runInterview on Start */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const start = useCallback(() => {
     if (started) return;
     setStarted(true);
+    const prefetched = firstTurnRef.current;
+    if (prefetched?.msg) {
+      setLoading(false);
+      const next = [prefetched.msg];
+      messagesRef.current = next;
+      setMessages(next);
+      if (!localStorage.getItem(INTRO_KEY)) localStorage.setItem(INTRO_KEY, "1");
+      if (voiceModeRef.current) voiceRef.current?.speak(prefetched.msg.text, prefetched.audioUrl);
+      return;
+    }
     runInterview([], "", true);
   }, [started, runInterview]);
 
@@ -182,7 +241,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
           </p>
           <button onClick={start}
             className="mt-5 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
-            Start voice check-in
+            {firstReady ? "Start voice check-in" : "Preparing…"}
           </button>
         </div>
       ) : (
