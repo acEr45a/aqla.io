@@ -13,17 +13,19 @@ const FIELDS = [
 
 const INTRO_KEY = "aqla_voice_checkin_used";
 
-const INTERVIEW_PROMPT = `You are AQLA Intelligence conducting a voice daily check-in. You are talking to the user out loud, so keep every reply short, warm and natural — like a thoughtful friend who genuinely listens.
+const INTERVIEW_PROMPT = `You are AQLA Intelligence, the user's personal brain-health coach, conducting a voice daily check-in. You are talking to the user out loud, so keep every reply short, warm and natural — like a thoughtful friend who genuinely listens.
 
-Ask the user, ONE question at a time, about these four topics (each a 1-10 scale):
+This is a strict turn-based conversation. You ask exactly ONE question, then STOP and wait for the user's answer. Never ask more than one question per turn. Never list topics. After each user answer, briefly acknowledge it in one short sentence (reflect their own wording so they feel heard), then ask ONLY the next not-yet-answered question.
+
+Ask about these four topics, one at a time, each a 1-10 scale:
 1. Mental clarity (1 = foggy/scattered, 10 = sharp and crystal clear)
 2. Energy (1 = exhausted, 10 = fully charged)
 3. Stress (1 = completely calm, 10 = overwhelmed)
 4. Sleep quality (1 = terrible, 10 = deeply restorative)
 
 Rules:
-- First briefly acknowledge what the user just said in one short sentence (reflect their own wording so they feel heard), then ask the NEXT not-yet-answered question. Never ask more than one question at a time, never list topics.
 - Infer each numeric value (1-10) from the user's natural-language answer. If they give no number, estimate from their words ("pretty good" ≈ 7, "awful" ≈ 2, "fine" ≈ 6). If genuinely ambiguous, ask a gentle one-line clarifier instead of moving on.
+- If the user interrupts or cuts you off, accept it gracefully — treat whatever they say as their answer to the current question and continue. Never comment on the interruption.
 - If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
 - Capture caffeine intake (drinks, rough amount, timing), today's main demand, and a short note ONLY if the user mentions them naturally — never ask for these directly.
 - When all four core topics are answered, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
@@ -53,13 +55,13 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
     const usedBefore = !!localStorage.getItem(INTRO_KEY);
     const history = msgArray.map((m) => `${m.role === "user" ? "User" : "AQLA"}: ${m.text}`).join("\n");
     const turn = isFirst
-      ? `This is the very beginning. ${usedBefore ? "The user has done this before, so skip any intro and just ask the first question (mental clarity) naturally." : "Introduce yourself in one sentence — who you are, that you'll ask a few quick questions in their own words and they can redo any answer — then ask the first question (mental clarity)."}`
+      ? `This is the very beginning. ${usedBefore ? "The user has done this before, so skip any intro and just ask the first question (mental clarity) naturally." : "Formally introduce yourself first: say your name (AQLA Intelligence), explain in one sentence that you're their personal brain-health coach doing a quick daily voice check-in, that you'll ask four short questions in their own words, they can tap to cut you off and answer anytime, and they can redo any answer. Then ask the first question (mental clarity). Keep the whole reply under four sentences."}`
       : `The user just said: "${userText}"`;
 
     let res;
     try {
       res = await base44.integrations.Core.InvokeLLM({
-        model: "claude-sonnet-5",
+        model: "gemini_3_1_pro",
         prompt: `${INTERVIEW_PROMPT}
 
 Conversation so far:
@@ -176,7 +178,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
           <MessageCircle className="mx-auto w-6 h-6 text-primary" strokeWidth={1.5} />
           <p className="mt-3 text-sm text-foreground">Talk through your check-in instead</p>
           <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            AQLA Intelligence will ask you a few quick questions in your own words. You can redo any answer, and it'll read your day back to you at the end.
+            AQLA Intelligence will introduce itself, then ask you four quick questions in your own words. Tap the mic anytime to cut it off and answer — you can redo any answer, and it'll read your day back to you at the end.
           </p>
           <button onClick={start}
             className="mt-5 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
