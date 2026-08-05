@@ -205,6 +205,40 @@ export default function OpsConsoleWidget() {
     }
   };
 
+  // Resolve a failed/problematic tool call by asking Backend Ops to investigate and fix it.
+  const resolveTool = async ({ name, arguments: args, result, error }) => {
+    let activeId = activeIdByMode[mode];
+    let conv = conversationsByMode[mode].find((c) => c.id === activeId);
+    if (!activeId || !conv) {
+      conv = await newChat(mode);
+      if (!conv) return;
+      activeId = conv.id;
+    } else {
+      try {
+        conv = await base44.agents.getConversation(activeId);
+      } catch {
+        conv = { id: activeId, agent_name: "backend_ops" };
+      }
+    }
+    const detail = [
+      `A tool call in this conversation reported a problem and needs resolution.`,
+      `Tool: ${name}`,
+      args ? `Arguments: ${JSON.stringify(args)}` : "",
+      result ? `Result: ${JSON.stringify(result)}` : "",
+      error ? `Error: ${error}` : "",
+      `Please investigate the root cause and perform the appropriate corrective action.`,
+    ].filter(Boolean).join("\n");
+    const framed = `${MODE_TAG[mode]}\n\n${detail}`;
+    setSending(true);
+    try {
+      await base44.agents.addMessage(conv, { role: "user", content: framed });
+    } catch {
+      /* surfaced via subscription state */
+    } finally {
+      setSending(false);
+    }
+  };
+
   const accentStyle = { color: cfg.accent };
 
   return (
@@ -314,7 +348,7 @@ export default function OpsConsoleWidget() {
                   </div>
                 )}
                 {messages.map((message, index) => (
-                  <OpsMessageBubble key={index} message={message} accent={cfg.accent} />
+                  <OpsMessageBubble key={index} message={message} accent={cfg.accent} onResolve={resolveTool} />
                 ))}
                 <div ref={endRef} />
               </div>
