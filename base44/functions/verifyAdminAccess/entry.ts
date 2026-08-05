@@ -14,9 +14,16 @@ export default async function(req: Request): Promise<Response> {
     const trustDevice = Boolean(body?.trust_device);
     const otpCode = body?.otp ? String(body.otp).replace(/\D/g, "") : "";
 
-    // 1. Verify the passcode against the stored secret.
-    const adminPassword = secrets.get("ADMIN_PASSWORD");
-    if (!adminPassword || password !== adminPassword) {
+    // 1. Verify the passcode against the stored SHA-256 hash.
+    const adminPasswordHash = secrets.get("ADMIN_PASSWORD");
+    if (!adminPasswordHash) {
+      return Response.json({ verified: false, error: "Passcode not configured." });
+    }
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+    const inputHash = Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    if (inputHash !== adminPasswordHash.trim().toLowerCase()) {
       return Response.json({ verified: false, error: "Incorrect passcode." });
     }
 
