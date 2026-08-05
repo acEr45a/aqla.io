@@ -1,35 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, Mail, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, Loader2, KeyRound, Fingerprint } from "lucide-react";
 import { isAdminVerified, markAdminVerified } from "@/lib/adminSession";
+
+const DEVICE_KEY = "aqla_admin_device_id";
+
+function getDeviceId() {
+  if (typeof window === "undefined") return "";
+  let id = localStorage.getItem(DEVICE_KEY);
+  if (!id) {
+    id = (crypto.randomUUID?.() || `dev-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    localStorage.setItem(DEVICE_KEY, id);
+  }
+  return id;
+}
 
 export default function AdminSecurityGate({ children }) {
   const [verified, setVerified] = useState(isAdminVerified);
-  const [stage, setStage] = useState("request");
-  const [email, setEmail] = useState("");
+  const [deviceId, setDeviceId] = useState("");
+  const [isTrusted, setIsTrusted] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
+  const [trustDevice, setTrustDevice] = useState(true);
+  const [otpSent, setOtpSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const id = getDeviceId();
+    setDeviceId(id);
+    base44.auth.me()
+      .then((u) => {
+        const trusted = Array.isArray(u?.admin_trusted_devices) && u.admin_trusted_devices.includes(id);
+        setIsTrusted(trusted);
+      })
+      .catch(() => {})
+      .finally(() => setChecking(false));
+  }, []);
+
   if (verified) return children;
 
-  const sendCode = async () => {
+  const sendOtp = async () => {
     setBusy(true); setError("");
-    const res = await base44.functions.invoke("sendAdminOtp", {});
-    setBusy(false);
-    if (res.data?.sent) { setEmail(res.data.email); setStage("code"); }
-    else setError(res.data?.error || "Could not send the code.");
+    try {
+      const res = await base44.functions.invoke("sendAdminOtp", {});
+      if (res.data?.sent) setOtpSent(true);
+      else setError(res.data?.error || "Could not send the code.");
+    } catch (e) {
+      setError(e?.message || "Could not send the code.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const verify = async () => {
     setBusy(true); setError("");
-    const res = await base44.functions.invoke("verifyAdminOtp", { code });
-    setBusy(false);
-    if (res.data?.verified) { markAdminVerified(); setVerified(true); }
-    else setError(res.data?.error || "Verification failed.");
+    try {
+      const res = await base44.functions.invoke("verifyAdminAccess", {
+        password,
+        device_id: deviceId,
+        otp: isTrusted ? "" : code,
+        trust_device: isTrusted ? false : trustDevice,
+      });
+      if (res.data?.verified) {
+        markAdminVerified();
+        setVerified(true);
+      } else {
+        setError(res.data?.error || "Verification failed.");
+      }
+    } catch (e) {
+      setError(e?.message || "Verification failed.");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  if (checking) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-10">
@@ -37,28 +92,72 @@ export default function AdminSecurityGate({ children }) {
         <div className="rounded-xl bg-primary/10 p-2.5 text-primary w-fit"><ShieldCheck className="h-5 w-5" /></div>
         <h1 className="mt-4 text-2xl font-light text-foreground">Verify it's you</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          The admin console requires a second sign-in every session. We'll email you a one-time code — this repeats after every page reload.
+          {isTrusted
+            ? "This device is trusted. Enter your passcode to open the console."
+            : "New device detected. Enter your passcode, then verify with a one-time email code."}
         </p>
 
-        {stage === "request" ? (
-          <Button onClick={sendCode} disabled={busy} className="mt-6 w-full rounded-full">
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-            Email me a verification code
-          </Button>
-        ) : (
-          <div className="mt-6 space-y-3">
-            <p className="text-xs text-muted-foreground">Code sent to {email}. It expires in 10 minutes.</p>
-            <Input value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              inputMode="numeric" placeholder="000000"
-              className="text-center text-lg tracking-[0.4em] tabular-nums" />
-            <Button onClick={verify} disabled={busy || code.length !== 6} className="w-full rounded-full">
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Enter admin console
-            </Button>
-            <button onClick={sendCode} disabled={busy} className="w-full text-xs text-muted-foreground hover:text-foreground">
-              Resend code
-            </button>
+        <div className="mt-6 space-y-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <KeyRound className="h-3.5 w-3.5" /> Admin passcode
+          </div>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Passcode"
+            className="bg-secondary/50"
+          />
+          <p className="text-[11px] text-muted-foreground/70">Hint: Name123</p>
+        </div>
+
+        {!isTrusted && (
+          <div className="mt-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Mail className="h-3.5 w-3.5" /> Email verification code
+              </span>
+              {!otpSent && (
+                <button onClick={sendOtp} disabled={busy} className="text-xs text-primary hover:underline">
+                  Send code
+                </button>
+              )}
+            </div>
+            {otpSent && (
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                placeholder="000000"
+                className="text-center text-lg tracking-[0.4em] tabular-nums bg-secondary/50"
+              />
+            )}
+            {otpSent && (
+              <button onClick={sendOtp} disabled={busy} className="text-xs text-muted-foreground hover:text-foreground">
+                Resend code
+              </button>
+            )}
+            <label className="flex items-center gap-2.5 pt-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={trustDevice}
+                onChange={(e) => setTrustDevice(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Fingerprint className="h-3.5 w-3.5" /> Trust this device (skip the code next time)
+              </span>
+            </label>
           </div>
         )}
+
+        <Button
+          onClick={verify}
+          disabled={busy || !password || (!isTrusted && (!otpSent || code.length !== 6))}
+          className="mt-6 w-full rounded-full"
+        >
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Enter admin console
+        </Button>
 
         {error && <p className="mt-4 text-xs text-destructive">{error}</p>}
       </div>

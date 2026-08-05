@@ -13,6 +13,14 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the branded welcome email has been sent to this user."
+    },
+    "admin_trusted_devices": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Device fingerprints the admin has marked as trusted \u2014 these skip OTP on sign-in."
     }
   },
   "required": [

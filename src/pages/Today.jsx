@@ -9,6 +9,8 @@ import VoiceChatCard from "@/components/today/VoiceChatCard";
 import DashboardTour from "@/components/today/DashboardTour";
 import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
+import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
+import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
 
@@ -154,6 +156,17 @@ export default function Today() {
           <p className="font-display text-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-primary" /> AQLA Intelligence</p>
           <p className="mt-1 text-xs text-muted-foreground">Ask why your focus changed, what to adjust first, or what the evidence says.</p>
         </Link>
+      </div>
+
+      {/* Evidence-backed daily actions */}
+      <div className="mt-8">
+        <h3 className="font-display text-lg text-foreground mb-1">Daily actions</h3>
+        <p className="text-xs text-muted-foreground mb-4">Evidence-backed habits that support your brain health. Tap any card to see the science.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {LIFESTYLE_EVIDENCE.map((action) => (
+            <EvidenceActionCard key={action.id} action={action} />
+          ))}
+        </div>
       </div>
 
       <FormulaLogisticsCard />
