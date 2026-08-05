@@ -69,7 +69,7 @@ export default function OpsConsoleWidget() {
 
   const loadConversations = async (m) => {
     try {
-      const all = await base44.agents.listConversations({ agent_name: "backend_ops" });
+      const all = await base44.agents.getConversations({ agent_name: "backend_ops" });
       const list = (Array.isArray(all) ? all : [])
         .filter((c) => convMode(c) === m)
         .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
@@ -188,10 +188,9 @@ export default function OpsConsoleWidget() {
     const framed = `${MODE_TAG[mode]}\n\n${trimmed}`;
     setInput("");
     setSending(true);
-    // Name the chat after the first message if it's still the default.
+    // Name the chat after the first message if it's still the default (local only — SDK has no rename API).
     if (conv && (conv.metadata?.name === "New chat" || !conv.metadata?.name)) {
       const title = titleFromMessage(trimmed);
-      base44.agents.updateConversation(conv.id, { metadata: { name: title, mode } }).catch(() => {});
       setConversationsByMode((prev) => ({
         ...prev,
         [mode]: prev[mode].map((c) => (c.id === conv.id ? { ...c, metadata: { name: title, mode } } : c)),
