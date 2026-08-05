@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, Mail, Loader2, KeyRound, Fingerprint } from "lucide-react";
+import { ShieldCheck, Mail, Loader2, KeyRound, Fingerprint, Eye, EyeOff } from "lucide-react";
 import { isAdminVerified, markAdminVerified } from "@/lib/adminSession";
 
 const DEVICE_KEY = "aqla_admin_device_id";
@@ -27,6 +27,7 @@ export default function AdminSecurityGate({ children }) {
   const [trustDevice, setTrustDevice] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -101,13 +102,23 @@ export default function AdminSecurityGate({ children }) {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <KeyRound className="h-3.5 w-3.5" /> Admin passcode
           </div>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Passcode"
-            className="bg-secondary/50"
-          />
+          <div className="relative">
+            <Input
+              type={showPass ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Passcode"
+              className="bg-secondary/50 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass((v) => !v)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={showPass ? "Hide passcode" : "Show passcode"}
+            >
+              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
           <p className="text-[11px] text-muted-foreground/70">Hint: Name123</p>
         </div>
 
