@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShieldCheck, Mail, Loader2, KeyRound, Fingerprint, Eye, EyeOff } from "lucide-react";
+import { ShieldCheck, Mail, Loader2, Fingerprint } from "lucide-react";
 import { isAdminVerified, markAdminVerified } from "@/lib/adminSession";
 
 const DEVICE_KEY = "aqla_admin_device_id";
@@ -22,12 +22,10 @@ export default function AdminSecurityGate({ children }) {
   const [deviceId, setDeviceId] = useState("");
   const [isTrusted, setIsTrusted] = useState(false);
   const [checking, setChecking] = useState(true);
-  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [trustDevice, setTrustDevice] = useState(true);
   const [otpSent, setOtpSent] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -41,6 +39,32 @@ export default function AdminSecurityGate({ children }) {
       .catch(() => {})
       .finally(() => setChecking(false));
   }, []);
+
+  // Trusted devices auto-verify on mount — no passcode needed.
+  useEffect(() => {
+    if (checking || verified || !isTrusted || !deviceId) return;
+    const autoVerify = async () => {
+      setBusy(true);
+      try {
+        const res = await base44.functions.invoke("verifyAdminAccess", {
+          device_id: deviceId,
+        });
+        if (res.data?.verified) {
+          markAdminVerified();
+          setVerified(true);
+        } else {
+          // Device fell out of trust (admin removed it) — fall through to OTP flow.
+          setIsTrusted(false);
+          setError(res.data?.error || "This device is no longer trusted.");
+        }
+      } catch (e) {
+        setError(e?.message || "Could not verify this device.");
+      } finally {
+        setBusy(false);
+      }
+    };
+    autoVerify();
+  }, [checking, isTrusted, deviceId, verified]);
 
   if (verified) return children;
 
@@ -57,14 +81,13 @@ export default function AdminSecurityGate({ children }) {
     }
   };
 
-  const verify = async () => {
+  const verifyOtp = async () => {
     setBusy(true); setError("");
     try {
       const res = await base44.functions.invoke("verifyAdminAccess", {
-        password,
         device_id: deviceId,
-        otp: isTrusted ? "" : code,
-        trust_device: isTrusted ? false : trustDevice,
+        otp: code,
+        trust_device: trustDevice,
       });
       if (res.data?.verified) {
         markAdminVerified();
@@ -79,7 +102,7 @@ export default function AdminSecurityGate({ children }) {
     }
   };
 
-  if (checking) {
+  if (checking || (isTrusted && !error)) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -93,78 +116,50 @@ export default function AdminSecurityGate({ children }) {
         <div className="rounded-xl bg-primary/10 p-2.5 text-primary w-fit"><ShieldCheck className="h-5 w-5" /></div>
         <h1 className="mt-4 text-2xl font-light text-foreground">Verify it's you</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {isTrusted
-            ? "This device is trusted. Enter your passcode to open the console."
-            : "New device detected. Enter your passcode, then verify with a one-time email code."}
+          New device detected. Verify with a one-time email code to open the admin console.
         </p>
 
         <div className="mt-6 space-y-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <KeyRound className="h-3.5 w-3.5" /> Admin passcode
-          </div>
-          <div className="relative">
-            <Input
-              type={showPass ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Passcode"
-              className="bg-secondary/50 pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass((v) => !v)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPass ? "Hide passcode" : "Show passcode"}
-            >
-              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
-          <p className="text-[11px] text-muted-foreground/70">Hint: Name123</p>
-        </div>
-
-        {!isTrusted && (
-          <div className="mt-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Mail className="h-3.5 w-3.5" /> Email verification code
-              </span>
-              {!otpSent && (
-                <button onClick={sendOtp} disabled={busy} className="text-xs text-primary hover:underline">
-                  Send code
-                </button>
-              )}
-            </div>
-            {otpSent && (
-              <Input
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                inputMode="numeric"
-                placeholder="000000"
-                className="text-center text-lg tracking-[0.4em] tabular-nums bg-secondary/50"
-              />
-            )}
-            {otpSent && (
-              <button onClick={sendOtp} disabled={busy} className="text-xs text-muted-foreground hover:text-foreground">
-                Resend code
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Mail className="h-3.5 w-3.5" /> Email verification code
+            </span>
+            {!otpSent && (
+              <button onClick={sendOtp} disabled={busy} className="text-xs text-primary hover:underline">
+                Send code
               </button>
             )}
-            <label className="flex items-center gap-2.5 pt-1 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={trustDevice}
-                onChange={(e) => setTrustDevice(e.target.checked)}
-                className="h-4 w-4 rounded border-border accent-primary"
-              />
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Fingerprint className="h-3.5 w-3.5" /> Trust this device (skip the code next time)
-              </span>
-            </label>
           </div>
-        )}
+          {otpSent && (
+            <Input
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              inputMode="numeric"
+              placeholder="000000"
+              className="text-center text-lg tracking-[0.4em] tabular-nums bg-secondary/50"
+            />
+          )}
+          {otpSent && (
+            <button onClick={sendOtp} disabled={busy} className="text-xs text-muted-foreground hover:text-foreground">
+              Resend code
+            </button>
+          )}
+          <label className="flex items-center gap-2.5 pt-1 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={trustDevice}
+              onChange={(e) => setTrustDevice(e.target.checked)}
+              className="h-4 w-4 rounded border-border accent-primary"
+            />
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Fingerprint className="h-3.5 w-3.5" /> Trust this device (skip the code next time)
+            </span>
+          </label>
+        </div>
 
         <Button
-          onClick={verify}
-          disabled={busy || !password || (!isTrusted && (!otpSent || code.length !== 6))}
+          onClick={verifyOtp}
+          disabled={busy || !otpSent || code.length !== 6}
           className="mt-6 w-full rounded-full"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Enter admin console
