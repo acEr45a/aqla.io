@@ -5,7 +5,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, ShieldAlert, Activity, Send, Search } from "lucide-react";
+import { Users, ShieldAlert, Activity, Send, Search, RefreshCw } from "lucide-react";
+
+const PLAN_FAMILIES = ["SPARK", "FLOW", "DRIVE", "LEARN", "RESET", "DIGITAL"];
 
 const CATEGORIES = [
   { value: "general", label: "General" },
@@ -22,6 +24,9 @@ export default function MemberDirectory() {
   const [draft, setDraft] = useState({ title: "", message: "", category: "general" });
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [planDraft, setPlanDraft] = useState({ family: "", reason: "" });
+  const [changingPlan, setChangingPlan] = useState(false);
+  const [planMsg, setPlanMsg] = useState("");
 
   const load = async () => {
     try {
@@ -42,9 +47,40 @@ export default function MemberDirectory() {
   const open = (m) => {
     setSelected(m);
     setDraft({ title: "", message: "", category: "general" });
+    setPlanDraft({ family: m.protocol?.family || "", reason: "" });
+    setPlanMsg("");
     setError("");
   };
   const close = () => setSelected(null);
+
+  const changePlan = async () => {
+    if (!planDraft.family) {
+      setPlanMsg("Pick a plan family first.");
+      return;
+    }
+    if (planDraft.family === selected.protocol?.family) {
+      setPlanMsg("That's already their active plan.");
+      return;
+    }
+    setChangingPlan(true);
+    setPlanMsg("");
+    try {
+      const res = await base44.functions.invoke("changeMemberPlan", {
+        user_id: selected.id,
+        family: planDraft.family,
+        reason: planDraft.reason,
+      });
+      if (res.data?.ok) {
+        setPlanMsg("Plan updated — member notified by pop-up and email.");
+        load();
+      } else {
+        setPlanMsg(res.data?.error || "Could not change plan.");
+      }
+    } catch {
+      setPlanMsg("Could not change plan.");
+    }
+    setChangingPlan(false);
+  };
 
   const send = async () => {
     if (!draft.message.trim()) {
@@ -206,6 +242,34 @@ export default function MemberDirectory() {
                     className="bg-secondary/40 border-border text-sm"
                   />
                   {error && <p className="text-xs text-[#E8A28F]">{error}</p>}
+                </div>
+
+                <div className="aqla-panel rounded-2xl p-4 space-y-2.5">
+                  <p className="text-[11px] uppercase tracking-widest text-primary flex items-center gap-1.5">
+                    <RefreshCw className="w-3 h-3" /> Change plan
+                  </p>
+                  <select
+                    value={planDraft.family}
+                    onChange={(e) => setPlanDraft({ ...planDraft, family: e.target.value })}
+                    className="w-full rounded-full border border-border bg-secondary/40 px-4 py-2 text-sm text-foreground outline-none"
+                  >
+                    <option value="">Select a plan family…</option>
+                    {PLAN_FAMILIES.map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                  <input
+                    value={planDraft.reason}
+                    onChange={(e) => setPlanDraft({ ...planDraft, reason: e.target.value })}
+                    placeholder="Reason / note for the member (optional)"
+                    className="w-full rounded-full border border-border bg-secondary/40 px-4 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  />
+                  <Button onClick={changePlan} disabled={changingPlan} className="w-full">
+                    {changingPlan ? "Updating…" : "Change plan & notify member"}
+                  </Button>
+                  {planMsg && (
+                    <p className={`text-xs ${planMsg.includes("notified") || planMsg.includes("updated") ? "text-[#C9F24E]" : "text-[#E8A28F]"}`}>{planMsg}</p>
+                  )}
                 </div>
               </div>
 

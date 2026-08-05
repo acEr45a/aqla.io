@@ -143,3 +143,36 @@ export function clinicianAlertEmail({
     "This alert was raised from the AQLA clinician dashboard and sent to every admin."
   );
 }
+
+export function planChangeEmail({
+  memberName,
+  family,
+  reason,
+  clinicianName,
+}: {
+  memberName: string;
+  family: string;
+  reason: string;
+  clinicianName: string;
+}): string {
+  const body = `
+    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">Hi ${escapeHtml(memberName)},</p>
+    <p style="margin:16px 0;font-size:15px;line-height:1.7;color:${C.text};">
+      Your clinician${clinicianName ? `, ${escapeHtml(clinicianName)}` : ""}, has updated your active AQLA protocol.
+    </p>
+    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:12px;padding:20px 22px;margin:20px 0;">
+      <p style="margin:0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Your new plan</p>
+      <p style="margin:8px 0 0;font-size:22px;font-weight:600;color:${C.accent};letter-spacing:0.3px;">${escapeHtml(family)}</p>
+      ${reason ? `<p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(reason)}</p>` : ""}
+    </div>
+    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">
+      Log in to AQLA to see your updated daily actions — this change is already live on your dashboard.
+    </p>`;
+  return shell(
+    `Your AQLA plan is now ${family}`,
+    "AQLA · Plan update",
+    `Your plan is now ${family}`,
+    body,
+    "Your clinician updated your active protocol from the AQLA clinician dashboard. If this wasn't expected, reach out to your clinician."
+  );
+}
