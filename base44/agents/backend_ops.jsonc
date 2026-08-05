@@ -140,7 +140,7 @@
     },
     {
       "function_name": "resolveAppIssue",
-      "description": "Resolve an issue surfaced by the app health scan (runAppDiagnostics). Payload: { action: '<resolve_action>' }. Supported actions: 'cleanup_expired_otps' (deletes expired, unused admin verification codes), 'kick_onboard_users' (returns the list of users who never finished an assessment). Always confirm the action with the admin before running."
+      "description": "Deletes expired, unused admin verification codes to resolve the Security hygiene warning."
     }
   ],
   "context_files": [],

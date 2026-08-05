@@ -52,7 +52,7 @@ export default function Today() {
   }, []);
 
   const today = localDateKey();
-  const checkedInToday = checkIns.some((c) => c.date === today);
+  const checkedInToday = checkIns.some((c) => c.date === today && c.valid !== false);
   const latest = checkIns[0];
   const readiness = latest ? Math.round(((latest.clarity + latest.energy + latest.sleep_quality + (10 - latest.stress)) / 40) * 100) : null;
   const hour = new Date().getHours();
@@ -62,7 +62,7 @@ export default function Today() {
   const weekCount = checkIns.filter((c) => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 7);
-    return new Date(c.date) >= cutoff;
+    return new Date(c.date) >= cutoff && c.valid !== false;
   }).length;
 
   return (
