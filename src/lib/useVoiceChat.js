@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 
 const Recognition = typeof window !== "undefined"
@@ -19,6 +18,7 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
   const [voiceMode, setVoiceMode] = useState(false);
   const recRef = useRef(null);
   const audioRef = useRef(null);
+  const utteranceRef = useRef(null);
   const cbRef = useRef(onTranscript);
   cbRef.current = onTranscript;
   const endCbRef = useRef(onSpeechEnd);
@@ -62,11 +62,16 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
     return () => { clearTimeout(silenceTimerRef.current); rec.onresult = null; rec.onend = null; rec.abort?.(); };
   }, []);
 
-  useEffect(() => () => audioRef.current?.pause(), []);
+  useEffect(() => () => {
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+  }, []);
 
   const stopSpeaking = useCallback(() => {
     audioRef.current?.pause();
     audioRef.current = null;
+    utteranceRef.current = null;
+    window.speechSynthesis?.cancel();
     setSpeaking(false);
   }, []);
 
@@ -86,25 +91,28 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
     setListening(false);
   }, []);
 
-  const speak = useCallback(async (text, prefetchedUrl) => {
+  const speak = useCallback((text, prefetchedUrl) => {
     if (!text || !speechSupported) return;
     stopSpeaking();
     setSpeaking(true);
-    let url = prefetchedUrl;
-    if (!url) {
-      const prefs = loadVoicePrefs();
-      const res = await base44.integrations.Core.GenerateSpeech({
-        text,
-        voice: VOICE_BY_MOOD[prefs.mood] || "honey",
-        language_code: "en",
-      });
-      url = res.url;
+
+    if (prefetchedUrl) {
+      const audio = new Audio(prefetchedUrl);
+      audioRef.current = audio;
+      audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
+      audio.onerror = () => setSpeaking(false);
+      audio.play().catch(() => setSpeaking(false));
+      return;
     }
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
-    audio.onerror = () => setSpeaking(false);
-    audio.play().catch(() => setSpeaking(false));
+
+    // Browser speech starts immediately instead of waiting for generated audio.
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = loadVoicePrefs().accent || "en-US";
+    utterance.rate = 1.05;
+    utteranceRef.current = utterance;
+    utterance.onend = () => { utteranceRef.current = null; setSpeaking(false); endCbRef.current?.(); };
+    utterance.onerror = () => { utteranceRef.current = null; setSpeaking(false); };
+    window.speechSynthesis.speak(utterance);
   }, [stopSpeaking]);
 
   return { listening, speaking, voiceMode, setVoiceMode, startListening, stopListening, speak, stopSpeaking };
