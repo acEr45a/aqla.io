@@ -25,34 +25,39 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
   endCbRef.current = onSpeechEnd;
 
   const bufferRef = useRef("");
+  const interimRef = useRef("");
   const silenceTimerRef = useRef(null);
 
   useEffect(() => {
     if (!Recognition) return;
     const rec = new Recognition();
     rec.lang = loadVoicePrefs().accent || "en-US";
-    // Listen continuously and only submit after a real silence gap, so a
-    // mid-sentence pause never cuts the user off.
     rec.interimResults = true;
     rec.continuous = true;
     const submitBuffer = () => {
       clearTimeout(silenceTimerRef.current);
-      const text = bufferRef.current.trim();
+      const text = `${bufferRef.current} ${interimRef.current}`.trim();
       bufferRef.current = "";
+      interimRef.current = "";
       if (text) cbRef.current?.(text);
     };
     rec.onresult = (event) => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) bufferRef.current += event.results[i][0].transcript + " ";
+      let finalText = "";
+      let interimText = "";
+      for (let i = 0; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += `${transcript} `;
+        else interimText += `${transcript} `;
       }
-      // Any speech activity (even interim) resets the silence window.
+      bufferRef.current = finalText;
+      interimRef.current = interimText;
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = setTimeout(() => {
-        if (bufferRef.current.trim()) rec.stop(); // onend submits
-      }, 1500);
+        if (`${bufferRef.current} ${interimRef.current}`.trim()) rec.stop();
+      }, 1400);
     };
     rec.onend = () => { setListening(false); submitBuffer(); };
-    rec.onerror = () => setListening(false);
+    rec.onerror = () => { clearTimeout(silenceTimerRef.current); setListening(false); };
     recRef.current = rec;
     return () => { clearTimeout(silenceTimerRef.current); rec.onresult = null; rec.onend = null; rec.abort?.(); };
   }, []);
@@ -69,6 +74,7 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
     if (!recRef.current || listening) return;
     stopSpeaking();
     bufferRef.current = "";
+    interimRef.current = "";
     recRef.current.lang = loadVoicePrefs().accent || "en-US";
     setVoiceMode(true);
     setListening(true);
