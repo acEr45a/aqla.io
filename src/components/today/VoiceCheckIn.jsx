@@ -63,7 +63,7 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
     let res;
     try {
       res = await base44.integrations.Core.InvokeLLM({
-        model: "gemini_3_flash",
+        model: "gpt_5_mini",
         prompt: `${INTERVIEW_PROMPT}
 
 Conversation so far:
