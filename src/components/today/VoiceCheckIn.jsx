@@ -108,69 +108,47 @@ Return your reply, the full set of extracted values so far (merge with anything 
     if (voiceModeRef.current) voiceRef.current?.speak(res.reply);
   }, []);
 
-  // Prefetch the first question's LLM reply AND its audio on mount, so tapping
-  // "Start" begins speaking instantly instead of waiting on a serial chain.
-  const firstTurnRef = useRef(null); // { msg, audioUrl }
-  const [firstReady, setFirstReady] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const usedBefore = !!localStorage.getItem(INTRO_KEY);
-        const history = "";
-        const turn = `This is the very beginning. ${usedBefore ? "The user has done this before, so skip any intro and just ask the first question (mental clarity) naturally." : "Formally introduce yourself first: say your name (AQLA Intelligence), explain in one sentence that you're their personal brain-health coach doing a quick daily voice check-in, that you'll ask four short questions in their own words, they can tap to cut you off and answer anytime, and they can redo any answer. Then ask the first question (mental clarity). Keep the whole reply under four sentences."}`;
-        const res = await base44.integrations.Core.InvokeLLM({
-          model: "gemini_3_1_pro",
-          prompt: `${INTERVIEW_PROMPT}\n\nConversation so far:\n${history || "(none yet)"}\n\n${turn}\n\nReturn your reply, the full set of extracted values so far (merge with anything already extracted), and whether all four core topics are now answered.`,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              reply: { type: "string" },
-              extracted_values: { type: "object", properties: {
-                clarity: { type: ["number", "null"] }, energy: { type: ["number", "null"] },
-                stress: { type: ["number", "null"] }, sleep_quality: { type: ["number", "null"] },
-                caffeine_drinks: { type: ["string", "null"] }, caffeine_last_time: { type: ["string", "null"] },
-                demand: { type: ["string", "null"] }, note: { type: ["string", "null"] },
-              } },
-              complete: { type: "boolean" }, interpretation: { type: "string" },
-            },
-            required: ["reply", "extracted_values", "complete", "interpretation"],
-          },
-        });
-        if (cancelled) return;
-        const msg = { role: "aqla", text: res.reply, extracted: res.extracted_values, complete: res.complete, interpretation: res.interpretation };
-        // Prefetch the spoken audio in parallel with nothing else waiting.
-        let audioUrl = null;
-        try {
-          const prefs = loadVoicePrefs();
-          const { url } = await base44.integrations.Core.GenerateSpeech({
-            text: res.reply, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
-          });
-          audioUrl = url;
-        } catch { /* fallback: generate on the fly when speaking */ }
-        if (cancelled) return;
-        firstTurnRef.current = { msg, audioUrl };
-        setFirstReady(true);
-      } catch { /* fallback to live runInterview on Start */ }
-    })();
-    return () => { cancelled = true; };
+  // The first turn is a fixed intro + first question — no LLM round-trip needed.
+  const buildFirstMessage = useCallback(() => {
+    const usedBefore = !!localStorage.getItem(INTRO_KEY);
+    const intro = usedBefore
+      ? ""
+      : "Hi, I'm AQLA Intelligence, your personal brain-health coach. I'll ask you four quick questions in your own words — tap the mic anytime to cut me off, and you can redo any answer. ";
+    return { role: "aqla", text: `${intro}Let's start: how's your mental clarity today, in your own words?`, extracted: {}, complete: false, interpretation: "" };
   }, []);
 
+  // Prefetch only the spoken audio for that first message on mount — no LLM wait.
+  const firstTurnRef = useRef(null); // { msg, audioUrl }
+  useEffect(() => {
+    let cancelled = false;
+    const msg = buildFirstMessage();
+    firstTurnRef.current = { msg, audioUrl: null };
+    (async () => {
+      try {
+        const prefs = loadVoicePrefs();
+        const { url } = await base44.integrations.Core.GenerateSpeech({
+          text: msg.text, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
+        });
+        if (cancelled) return;
+        firstTurnRef.current = { msg, audioUrl: url };
+      } catch { /* speak() will generate live if this fails */ }
+    })();
+    return () => { cancelled = true; };
+  }, [buildFirstMessage]);
+
+  const startCalledRef = useRef(false);
   const start = useCallback(() => {
-    if (started) return;
+    if (started || startCalledRef.current) return;
+    startCalledRef.current = true;
     setStarted(true);
     const prefetched = firstTurnRef.current;
-    if (prefetched?.msg) {
-      setLoading(false);
-      const next = [prefetched.msg];
-      messagesRef.current = next;
-      setMessages(next);
-      if (!localStorage.getItem(INTRO_KEY)) localStorage.setItem(INTRO_KEY, "1");
-      if (voiceModeRef.current) voiceRef.current?.speak(prefetched.msg.text, prefetched.audioUrl);
-      return;
-    }
-    runInterview([], "", true);
-  }, [started, runInterview]);
+    const msg = prefetched?.msg || buildFirstMessage();
+    const next = [msg];
+    messagesRef.current = next;
+    setMessages(next);
+    if (!localStorage.getItem(INTRO_KEY)) localStorage.setItem(INTRO_KEY, "1");
+    if (voiceModeRef.current) voiceRef.current?.speak(msg.text, prefetched?.audioUrl);
+  }, [started, buildFirstMessage]);
 
   const submitText = (text) => {
     if (!text.trim() || loading || isComplete) return;
@@ -241,7 +219,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
           </p>
           <button onClick={start}
             className="mt-5 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">
-            {firstReady ? "Start voice check-in" : "Preparing…"}
+            Start voice check-in
           </button>
         </div>
       ) : (
