@@ -24,6 +24,28 @@ export default function Clinician() {
   const [allowed, setAllowed] = useState(null);
   const [query, setQuery] = useState("");
   const [urgentOnly, setUrgentOnly] = useState(false);
+  const [revertingId, setRevertingId] = useState(null);
+  const [revertError, setRevertError] = useState(null);
+  const [revertedId, setRevertedId] = useState(null);
+
+  const revertPlan = async (review) => {
+    if (!review?.id || revertingId) return;
+    setRevertingId(review.id);
+    setRevertError(null);
+    setRevertedId(null);
+    try {
+      const res = await base44.functions.invoke("revertPlanChange", { plan_review_id: review.id });
+      if (res.data?.ok) {
+        setRevertedId(review.id);
+        load();
+      } else {
+        setRevertError(review.id);
+      }
+    } catch {
+      setRevertError(review.id);
+    }
+    setRevertingId(null);
+  };
 
   const load = () => {
     base44.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
@@ -167,7 +189,16 @@ export default function Clinician() {
             </div>
           ) : (
             <div className="space-y-4">
-              {plans.map((p) => <PlanDecisionCard key={p.id} review={p} />)}
+              {plans.map((p) => (
+                <PlanDecisionCard
+                  key={p.id}
+                  review={p}
+                  onRevert={revertPlan}
+                  revertingId={revertingId}
+                  revertError={revertError}
+                  revertedId={revertedId}
+                />
+              ))}
             </div>
           )}
         </section>

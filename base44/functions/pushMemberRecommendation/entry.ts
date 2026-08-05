@@ -1,8 +1,9 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { recommendationEmail } from "../../shared/emailTemplates.ts";
 
 // Admin & clinician: pushes a recommendation to a member.
 // Creates a MemberRecommendation record (status: active) so it surfaces as a
-// pop-up on the member's dashboard, and emails the member a copy.
+// pop-up on the member's dashboard, and emails the member a styled copy.
 export default async function(req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -27,7 +28,7 @@ export default async function(req: Request): Promise<Response> {
       status: "active",
     });
 
-    // Email the target member (registered app users only).
+    // Email the target member (registered app users only) a styled HTML copy.
     const svc = base44.asServiceRole;
     const target = await svc.entities.User.get(user_id);
     if (target?.email) {
@@ -35,7 +36,12 @@ export default async function(req: Request): Promise<Response> {
         await svc.integrations.Core.SendEmail({
           to: target.email,
           subject: title || "A new recommendation from your AQLA clinician",
-          body: `Hi ${target.full_name || "there"},\n\nYour clinician has a new recommendation for you:\n\n${message}\n\nLog in to AQLA — it's waiting on your dashboard.`,
+          body: recommendationEmail({
+            memberName: target.full_name || "there",
+            title: title || "A new recommendation from your AQLA clinician",
+            message,
+            clinicianName: user.full_name || "",
+          }),
         });
       } catch { /* email failure should not block the recommendation */ }
     }

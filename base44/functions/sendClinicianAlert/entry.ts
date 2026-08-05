@@ -1,7 +1,9 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
+import { clinicianAlertEmail } from "../../shared/emailTemplates.ts";
 
-/* Clinician → Admin alert: emails every admin with a clinical concern, formula problem,
-   or improvement suggestion raised from the clinician dashboard. */
+/* Clinician → Admin alert: emails every admin a styled HTML copy of a clinical
+   concern, formula problem, or improvement suggestion raised from the clinician
+   dashboard. */
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,26 +25,20 @@ export default async function (req: Request): Promise<Response> {
 
     const sender = user.full_name || user.email || "AQLA clinician";
     const fullSubject = `[Clinician alert · ${category}] ${subject}`;
-    const emailBody = [
-      `A clinician has raised a note for the admin team.`,
-      ``,
-      `From: ${sender}`,
-      `Category: ${category}`,
-      `Subject: ${subject}`,
-      `Submitted: ${new Date().toISOString()}`,
-      ``,
-      `--- Detail ---`,
+    const html = clinicianAlertEmail({
+      sender,
+      category,
+      subject,
       detail,
-      ``,
-      `Review this in the AQLA admin console → Clinician dashboard.`,
-    ].join("\n");
+      submittedAt: new Date().toISOString(),
+    });
 
     const results = await Promise.all(
       admins.map((admin) =>
         base44.asServiceRole.integrations.Core.SendEmail({
           to: admin.email,
           subject: fullSubject,
-          body: emailBody,
+          body: html,
           from_name: `AQLA Clinician (${sender})`,
         }).then(() => ({ admin: admin.email, status: "delivered" }))
           .catch((e) => ({ admin: admin.email, status: "failed", error: e.message }))
