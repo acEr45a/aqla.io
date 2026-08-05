@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Radar, CalendarCheck, ShieldCheck, ArrowRight, Bot } from "lucide-react";
+import { Radar, CalendarCheck, ShieldCheck, ArrowRight, Bot, AlertOctagon } from "lucide-react";
 import HelpAgentChat from "@/components/help/HelpAgentChat";
+import IssueReportForm from "@/components/help/IssueReportForm";
 
 const GUIDES = [
   {
@@ -43,6 +44,15 @@ export default function HelpCenter() {
           <h2 className="font-display text-xl text-foreground">Ask the AQLA Assistant</h2>
         </div>
         <HelpAgentChat />
+      </section>
+
+      <section className="mt-10">
+        <div className="flex items-center gap-2.5 mb-4">
+          <AlertOctagon className="w-4 h-4 text-primary" strokeWidth={1.5} />
+          <h2 className="font-display text-xl text-foreground">Report an issue</h2>
+        </div>
+        <p className="mb-4 max-w-xl text-sm leading-relaxed text-muted-foreground">Found a bug, data problem, or safety concern? Send it straight to the admin team — they'll review and follow up.</p>
+        <IssueReportForm />
       </section>
 
       <nav className="mt-8 flex flex-wrap gap-2" aria-label="Help topics">

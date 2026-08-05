@@ -176,3 +176,82 @@ export function planChangeEmail({
     "Your clinician updated your active protocol from the AQLA clinician dashboard. If this wasn't expected, reach out to your clinician."
   );
 }
+
+export function userIssueEmail({
+  userName,
+  userEmail,
+  category,
+  subject,
+  detail,
+  submittedAt,
+}: {
+  userName: string;
+  userEmail: string;
+  category: string;
+  subject: string;
+  detail: string;
+  submittedAt: string;
+}): string {
+  const rows = [
+    ["From", `${userName}${userEmail ? ` (${userEmail})` : ""}`],
+    ["Category", category],
+    ["Subject", subject],
+    ["Submitted", submittedAt],
+  ]
+    .map(
+      ([k, v]) => `
+      <tr>
+        <td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};vertical-align:top;width:120px;">${escapeHtml(k)}</td>
+        <td style="padding:8px 0;font-size:14px;color:${C.text};font-weight:500;">${escapeHtml(v)}</td>
+      </tr>`
+    )
+    .join("");
+  const body = `
+    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">A user has reported an issue from the AQLA Help Center.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border};">
+      ${rows}
+    </table>
+    <p style="margin:18px 0 8px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Detail</p>
+    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:12px;padding:18px 20px;">
+      <p style="margin:0;font-size:14px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(detail)}</p>
+    </div>
+    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">Review and follow up from the AQLA admin console.</p>`;
+  return shell(
+    `[User issue · ${category}] ${subject}`,
+    "AQLA · User issue",
+    `${category} — ${subject}`,
+    body,
+    "This issue was submitted from the AQLA Help Center."
+  );
+}
+
+export function adminNotifyClinicianEmail({
+  clinicianName,
+  subject,
+  message,
+  adminName,
+  submittedAt,
+}: {
+  clinicianName: string;
+  subject: string;
+  message: string;
+  adminName: string;
+  submittedAt: string;
+}): string {
+  const body = `
+    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">Hi ${escapeHtml(clinicianName)},</p>
+    <p style="margin:16px 0;font-size:15px;line-height:1.7;color:${C.text};">The AQLA admin team has sent you a note.</p>
+    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:12px;padding:20px 22px;margin:20px 0;">
+      <p style="margin:0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Subject</p>
+      <p style="margin:8px 0 0;font-size:17px;font-weight:600;color:${C.accent};letter-spacing:0.2px;">${escapeHtml(subject)}</p>
+      <p style="margin:14px 0 0;font-size:15px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(message)}</p>
+    </div>
+    <p style="margin:20px 0 0;font-size:13px;line-height:1.7;color:${C.muted};">From ${escapeHtml(adminName)} · ${escapeHtml(submittedAt)}</p>`;
+  return shell(
+    subject,
+    "AQLA · Admin note",
+    subject,
+    body,
+    "You received this note from the AQLA admin team."
+  );
+}

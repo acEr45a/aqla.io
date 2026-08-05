@@ -22,6 +22,7 @@ import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
+import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
         {tab === "siteData" && <SiteDataPanel siteData={data.siteData} days={data.days} />}
         {tab === "users" &&
         <>
+            <NotifyClinicianCard users={data.allUsers} />
             <AdminRolePanel />
             <UserPlanPanel users={data.usersByPlan} />
             <AdminUserTable users={data.recentUsers} onDeleted={load} />

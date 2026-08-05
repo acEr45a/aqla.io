@@ -1,5 +1,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { clinicianAlertEmail } from "../../shared/emailTemplates.ts";
+import { broadcastToAdmins } from "../../shared/adminBroadcast.ts";
 
 /* Clinician → Admin alert: emails every admin a styled HTML copy of a clinical
    concern, formula problem, or improvement suggestion raised from the clinician
@@ -19,12 +20,7 @@ export default async function (req: Request): Promise<Response> {
     const detail = (body.detail || "").toString().trim();
     if (!detail) return Response.json({ error: "Detail is required" }, { status: 400 });
 
-    const users = await base44.asServiceRole.entities.User.list("-created_date", 200);
-    const admins = users.filter((u) => u.role === "admin" && u.email);
-    if (admins.length === 0) return Response.json({ error: "No admin recipients found" }, { status: 404 });
-
     const sender = user.full_name || user.email || "AQLA clinician";
-    const fullSubject = `[Clinician alert · ${category}] ${subject}`;
     const html = clinicianAlertEmail({
       sender,
       category,
@@ -33,20 +29,13 @@ export default async function (req: Request): Promise<Response> {
       submittedAt: new Date().toISOString(),
     });
 
-    const results = await Promise.all(
-      admins.map((admin) =>
-        base44.asServiceRole.integrations.Core.SendEmail({
-          to: admin.email,
-          subject: fullSubject,
-          body: html,
-          from_name: `AQLA Clinician (${sender})`,
-        }).then(() => ({ admin: admin.email, status: "delivered" }))
-          .catch((e) => ({ admin: admin.email, status: "failed", error: e.message }))
-      )
-    );
-
-    const delivered = results.filter((r) => r.status === "delivered").length;
-    return Response.json({ delivered, total: admins.length, results });
+    const { delivered, total, results } = await broadcastToAdmins(base44.asServiceRole, {
+      subject: `[Clinician alert · ${category}] ${subject}`,
+      html,
+      fromName: `AQLA Clinician (${sender})`,
+    });
+    if (total === 0) return Response.json({ error: "No admin recipients found" }, { status: 404 });
+    return Response.json({ delivered, total, results });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
