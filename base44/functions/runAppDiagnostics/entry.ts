@@ -62,7 +62,12 @@ export default async function (req: Request): Promise<Response> {
     // 7. Onboarding funnel — users stuck without an assessment
     const assessedIds = new Set(assessments.map((a) => a.created_by_id));
     const stuck = users.filter((u) => !assessedIds.has(u.id)).length;
-    add('Onboarding funnel', stuck === 0 ? 'pass' : 'warn', stuck === 0 ? 'Every registered user has completed an assessment.' : `${stuck} of ${users.length} users have not completed an assessment.`);
+    checks.push({
+      name: 'Onboarding funnel',
+      status: stuck === 0 ? 'pass' : 'warn',
+      detail: stuck === 0 ? 'Every registered user has completed an assessment.' : `${stuck} of ${users.length} users have not completed an assessment.`,
+      resolve_action: stuck > 0 ? 'kick_onboard_users' : null,
+    });
 
     // 8. Email delivery
     const failedEmails = digests.filter((d) => d.status === 'failed').length;
@@ -71,7 +76,12 @@ export default async function (req: Request): Promise<Response> {
     // 9. Security hygiene — expired unused OTPs
     const now = new Date();
     const stale = otps.filter((o) => !o.used && new Date(o.expires_at) < now).length;
-    add('Security hygiene', stale <= 5 ? 'pass' : 'warn', stale <= 5 ? 'Admin verification codes are clean.' : `${stale} expired verification codes should be cleaned up.`);
+    checks.push({
+      name: 'Security hygiene',
+      status: stale <= 5 ? 'pass' : 'warn',
+      detail: stale <= 5 ? 'Admin verification codes are clean.' : `${stale} expired verification codes should be cleaned up.`,
+      resolve_action: stale > 0 ? 'cleanup_expired_otps' : null,
+    });
 
     const score = Math.max(0, Math.round(100 - checks.reduce((sum, c) => sum + (c.status === 'fail' ? 20 : c.status === 'warn' ? 8 : 0), 0)));
 

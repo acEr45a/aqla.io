@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import HealthGauge from "@/components/admin/HealthGauge";
-import { Activity, CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw } from "lucide-react";
+import { Activity, CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw, Wrench } from "lucide-react";
 
 const STATUS_ICON = {
   pass: <CheckCircle2 className="h-4 w-4 text-[#7BC950]" />,
@@ -13,6 +13,8 @@ export default function AppHealthPanel() {
   const [result, setResult] = useState(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
+  const [resolving, setResolving] = useState(null);
+  const [resolved, setResolved] = useState({});
 
   const runTest = async () => {
     setRunning(true); setError("");
@@ -24,6 +26,20 @@ export default function AppHealthPanel() {
       setError(e.message);
     }
     setRunning(false);
+  };
+
+  const resolveIssue = async (check) => {
+    if (!check.resolve_action || resolving) return;
+    setResolving(check.name);
+    try {
+      const res = await base44.functions.invoke("resolveAppIssue", { action: check.resolve_action });
+      if (!res.data?.resolved) throw new Error(res.data?.error || "Resolve failed.");
+      setResolved((prev) => ({ ...prev, [check.name]: res.data?.deleted ?? res.data?.stuck_users?.length ?? "done" }));
+      await runTest();
+    } catch (e) {
+      setError(e.message);
+    }
+    setResolving(null);
   };
 
   useEffect(() => { runTest(); }, []);
@@ -55,15 +71,30 @@ export default function AppHealthPanel() {
         <div className="mt-4 grid gap-6 lg:grid-cols-[240px_1fr] lg:items-center">
           <HealthGauge score={result.score} />
           <div className="space-y-2">
-            {result.checks.map((check) => (
-              <div key={check.name} className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-secondary/40 px-3 py-2">
-                <span className="mt-0.5 shrink-0">{STATUS_ICON[check.status]}</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-foreground">{check.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{check.detail}</p>
+            {result.checks.map((check) => {
+              const canResolve = check.status !== "pass" && check.resolve_action;
+              const isResolving = resolving === check.name;
+              const done = resolved[check.name];
+              return (
+                <div key={check.name} className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-secondary/40 px-3 py-2">
+                  <span className="mt-0.5 shrink-0">{STATUS_ICON[check.status]}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-foreground">{check.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{check.detail}</p>
+                  </div>
+                  {canResolve && (
+                    <button
+                      onClick={() => resolveIssue(check)}
+                      disabled={isResolving}
+                      className="flex shrink-0 items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[10px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
+                    >
+                      {isResolving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wrench className="h-3 w-3" />}
+                      {done != null ? "Re-run" : "Resolve"}
+                    </button>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
