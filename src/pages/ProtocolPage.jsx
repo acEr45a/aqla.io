@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import ProtocolPlanCard from "@/components/protocols/ProtocolPlanCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
+import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
+import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
 import { Shield, ArrowRight } from "lucide-react";
 
 export default function ProtocolPage() {
@@ -70,6 +72,16 @@ export default function ProtocolPage() {
               </div>
               {a.time && <span className="text-xs text-muted-foreground tabular-nums">{a.time}</span>}
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="font-display text-lg text-foreground mb-1">Evidence-backed daily actions</h2>
+        <p className="text-xs text-muted-foreground mb-4">The science behind each habit in your protocol. Tap any card to see the evidence.</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          {LIFESTYLE_EVIDENCE.map((action) => (
+            <EvidenceActionCard key={action.id} action={action} />
           ))}
         </div>
       </section>
