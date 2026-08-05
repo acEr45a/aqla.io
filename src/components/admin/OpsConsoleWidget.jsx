@@ -57,7 +57,7 @@ const titleFromMessage = (text) => {
 export default function OpsConsoleWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("ops");
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 768 : true);
   const [conversationsByMode, setConversationsByMode] = useState({ ops: [], architect: [] });
   const [activeIdByMode, setActiveIdByMode] = useState({ ops: null, architect: null });
   const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
@@ -210,7 +210,7 @@ export default function OpsConsoleWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed bottom-5 right-5 z-50 flex h-[560px] w-[min(460px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50"
+          className="fixed bottom-4 right-3 sm:bottom-5 sm:right-5 z-50 flex h-[min(560px,85svh)] w-[min(460px,calc(100vw-1.5rem))] sm:w-[min(460px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50"
           style={{ boxShadow: `0 0 0 1px ${cfg.accent}22, 0 20px 50px rgba(0,0,0,0.55)` }}
         >
           {/* Header with toggle */}
@@ -257,18 +257,21 @@ export default function OpsConsoleWidget() {
           </div>
 
           {/* Body: sidebar + chat */}
-          <div className="flex flex-1 overflow-hidden">
+          <div className="relative flex flex-1 overflow-hidden">
             {showSidebar && (
-              <div className="w-[150px] shrink-0">
-                <OpsSidebar
-                  conversations={conversationsByMode[mode]}
-                  activeId={activeIdByMode[mode]}
-                  accent={cfg.accent}
-                  onSelect={(conv) => openConversation(conv, mode)}
-                  onNew={() => newChat(mode)}
-                  onDelete={(conv) => deleteChat(conv, mode)}
-                />
-              </div>
+              <>
+                <div className="absolute inset-0 z-10 bg-black/50 sm:hidden" onClick={() => setShowSidebar(false)} />
+                <div className="absolute inset-0 z-20 w-full sm:relative sm:inset-auto sm:z-auto sm:w-[150px] shrink-0">
+                  <OpsSidebar
+                    conversations={conversationsByMode[mode]}
+                    activeId={activeIdByMode[mode]}
+                    accent={cfg.accent}
+                    onSelect={(conv) => { openConversation(conv, mode); if (window.innerWidth < 768) setShowSidebar(false); }}
+                    onNew={() => { newChat(mode); if (window.innerWidth < 768) setShowSidebar(false); }}
+                    onDelete={(conv) => deleteChat(conv, mode)}
+                  />
+                </div>
+              </>
             )}
 
             {/* Messages */}
@@ -281,12 +284,12 @@ export default function OpsConsoleWidget() {
                         ? "Diagnose platform data, delivery, and stuck users."
                         : "Plan features, refine ideas, and review the dev checklist."}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       {cfg.prompts.map((prompt) => (
                         <button
                           key={prompt}
                           onClick={() => send(prompt)}
-                          className="rounded-full border border-border px-3 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                          className="w-full sm:w-auto text-left rounded-full border border-border px-4 py-2.5 sm:px-3 sm:py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
                           onMouseEnter={(e) => (e.currentTarget.style.borderColor = `${cfg.accent}55`)}
                           onMouseLeave={(e) => (e.currentTarget.style.borderColor = "")}
                         >

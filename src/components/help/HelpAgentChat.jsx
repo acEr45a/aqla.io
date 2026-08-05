@@ -73,7 +73,7 @@ export default function HelpAgentChat() {
   }
 
   return (
-    <div className="aqla-panel rounded-3xl overflow-hidden flex flex-col" style={{ height: "520px" }}>
+    <div className="aqla-panel rounded-3xl overflow-hidden flex flex-col h-[60vh] min-h-[420px] sm:h-[520px] max-h-[75vh]">
       <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border/40">
         <CircleHelp className="w-4 h-4 text-primary" strokeWidth={1.5} />
         <span className="font-display text-sm text-foreground">AQLA Help Assistant</span>

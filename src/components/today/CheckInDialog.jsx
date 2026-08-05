@@ -53,7 +53,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border max-w-md">
+      <DialogContent className="bg-card border-border max-w-md max-h-[90svh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display font-normal text-xl">Daily check-in</DialogTitle>
         </DialogHeader>
