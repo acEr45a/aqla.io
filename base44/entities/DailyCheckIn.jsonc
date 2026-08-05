@@ -35,6 +35,11 @@
     },
     "note": {
       "type": "string"
+    },
+    "valid": {
+      "type": "boolean",
+      "default": true,
+      "description": "False when an admin has invalidated this check-in to force a retake. The record is kept for audit."
     }
   },
   "required": [

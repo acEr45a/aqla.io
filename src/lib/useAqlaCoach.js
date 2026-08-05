@@ -1,12 +1,35 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
+
+// Token-waste attack resistance for AQLA Intelligence.
+const MAX_INPUT_CHARS = 2000;
+const MAX_TURNS_PER_HOUR = 20;
+const REPEAT_LIMIT = 3; // same prompt this many times in a row → canned redirect
+
+const CANNED = {
+  tooLong: "That's a lot to take in — could you trim it to a sentence or two so I can give you a focused answer?",
+  rateLimited: "You're asking a lot right now — let's slow down. Give me a moment and ask one question at a time.",
+  loop: "I think we've covered this one a few times. If something isn't clear, try rephrasing, or check the Help Center for a fuller breakdown.",
+};
+
+const hourKey = () => {
+  const bucket = new Date();
+  bucket.setMinutes(0, 0, 0);
+  return `aqla-coach-turns-${bucket.getTime()}`;
+};
+
+const turnsThisHour = () => Number(localStorage.getItem(hourKey()) || 0);
+const bumpTurns = () => {
+  try { localStorage.setItem(hourKey(), String(turnsThisHour() + 1)); } catch { /* ignore */ }
+};
 
 // Shared AQLA Intelligence conversation logic (Coach page + floating assistant).
 export function useAqlaCoach() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState(null);
+  const lastPromptsRef = useRef([]);
 
   useEffect(() => {
     Promise.all([
@@ -20,9 +43,32 @@ export function useAqlaCoach() {
   }, []);
 
   const ask = async (question) => {
-    if (!question.trim() || loading) return;
-    setMessages((m) => [...m, { role: "user", text: question }]);
+    const trimmed = (question || "").trim();
+    if (!trimmed || loading) return;
+
+    // Guard 1: input length cap — prevents flooding the prompt with huge payloads.
+    if (trimmed.length > MAX_INPUT_CHARS) {
+      setMessages((m) => [...m, { role: "user", text: trimmed }, { role: "aqla", mode: "chat", chat_reply: CANNED.tooLong }]);
+      return;
+    }
+
+    // Guard 2: rolling-window rate limit per hour.
+    if (turnsThisHour() >= MAX_TURNS_PER_HOUR) {
+      setMessages((m) => [...m, { role: "user", text: trimmed }, { role: "aqla", mode: "chat", chat_reply: CANNED.rateLimited }]);
+      return;
+    }
+
+    // Guard 3: repeat / loop detection — same prompt REPEAT_LIMIT times in a row.
+    const recent = lastPromptsRef.current.slice(-REPEAT_LIMIT);
+    if (recent.length === REPEAT_LIMIT && recent.every((p) => p === trimmed)) {
+      setMessages((m) => [...m, { role: "user", text: trimmed }, { role: "aqla", mode: "chat", chat_reply: CANNED.loop }]);
+      return;
+    }
+    lastPromptsRef.current.push(trimmed);
+
+    setMessages((m) => [...m, { role: "user", text: trimmed }]);
     setLoading(true);
+    bumpTurns();
 
     const res = await base44.integrations.Core.InvokeLLM({
       prompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
@@ -39,7 +85,7 @@ Available plan families: ${JSON.stringify((context?.protocols || []).map((plan) 
 Recent check-ins (1-10 scales; caffeine is free text the user typed — interpret the drink type, approximate caffeine load in mg, and timing yourself, and state your interpretation as an inference, not a fact): ${JSON.stringify((context?.checkIns || []).map((c) => ({ date: c.date, clarity: c.clarity, energy: c.energy, stress: c.stress, sleep: c.sleep_quality, caffeine_drinks: c.caffeine_drinks, caffeine_last_time: c.caffeine_last_time })))}
 Experiments: ${JSON.stringify((context?.experiments || []).map((e) => ({ hypothesis: e.hypothesis, confidence: e.confidence, results: e.results })))}
 
-USER QUESTION: ${question}`,
+USER QUESTION: ${trimmed}`,
       response_json_schema: {
         type: "object",
         properties: {

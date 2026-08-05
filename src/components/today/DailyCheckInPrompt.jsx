@@ -11,7 +11,7 @@ export default function DailyCheckInPrompt() {
     const promptKey = `aqla-daily-check-in-prompt-${today}`;
     if (localStorage.getItem(promptKey)) return;
 
-    base44.entities.DailyCheckIn.filter({ date: today }, "-created_date", 1).then((rows) => {
+    base44.entities.DailyCheckIn.filter({ date: today, valid: { $ne: false } }, "-created_date", 1).then((rows) => {
       if (rows.length) return;
       localStorage.setItem(promptKey, "shown");
       setOpen(true);
