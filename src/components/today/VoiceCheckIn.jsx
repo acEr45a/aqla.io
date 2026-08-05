@@ -29,9 +29,13 @@ Rules:
 - If the user interrupts or cuts you off, accept it gracefully — treat whatever they say as their answer to the current question and continue. Never comment on the interruption.
 - If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
 - NEVER re-ask or rephrase a question whose value is already captured. Look at the "Already captured" list — those topics are DONE. Move straight to the first topic that is still missing.
-- Capture caffeine intake (drinks, rough amount, timing), today's main demand, and a short note ONLY if the user mentions them naturally — never ask for these directly.
-- CRITICAL — completion rule: set complete=true ONLY when all four of clarity, energy, stress, and sleep_quality are non-null numbers (1-10). If even one is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
-- When all four core topics are answered, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
+- After the four core topics are answered, continue and ask each of these follow-ups one at a time, only moving on once captured:
+5. Caffeine — "Did you have any caffeine today? What and roughly how much?" Capture caffeine_drinks (e.g. "two double espressos, one green tea"). If the user says none, set caffeine_drinks to "none" and move on.
+6. Last caffeine timing — "When did you have the last one?" Capture caffeine_last_time in everyday wording (e.g. "around 2pm", "just now"). If caffeine_drinks is "none", set caffeine_last_time to "n/a".
+7. Main demand — "What's the main demand on your brain today — deep focused work, meetings & people, learning, creative work, or a recovery day?" Capture demand as the user's own words.
+8. Optional note — "Anything else worth noting — side effects, context, anything unusual?" Capture note; if the user says nothing, set note to "".
+- CRITICAL — completion rule: set complete=true ONLY when clarity, energy, stress, sleep_quality, caffeine_drinks, caffeine_last_time, and demand are all non-null and non-empty (note may be empty). If any required field is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
+- When every required field is captured, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
 
 export default function VoiceCheckIn({ onComplete, onCancel }) {
   const [messages, setMessages] = useState([]);
