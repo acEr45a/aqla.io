@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import ReviewCard from "@/components/clinician/ReviewCard";
 import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
 import SendToAdminCard from "@/components/clinician/SendToAdminCard";
+import MemberDirectory from "@/components/clinician/MemberDirectory";
 import { Stethoscope, Search, ShieldAlert, ArrowUpDown, Clock, CheckCircle2 } from "lucide-react";
 
 const STAT = ({ icon: Icon, label, value, accent }) => (
@@ -100,6 +101,10 @@ export default function Clinician() {
         <STAT icon={CheckCircle2} label="Decided" value={decidedCount} accent="#C9F24E" />
         <STAT icon={Stethoscope} label="Plan decisions" value={plans === null ? "—" : plans.length} accent="#7B94FF" />
       </div>
+
+      <section className="mt-10">
+        <MemberDirectory />
+      </section>
 
       {/* Search + urgency filter */}
       <div className="mt-6 flex flex-col sm:flex-row gap-3">

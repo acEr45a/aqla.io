@@ -10,6 +10,7 @@ import DashboardTour from "@/components/today/DashboardTour";
 import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
+import RecommendationModal from "@/components/today/RecommendationModal";
 import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
@@ -195,6 +196,7 @@ export default function Today() {
 
       <CheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} onSaved={load} />
       <DashboardTour open={tourOpen} onClose={() => setTourOpen(false)} />
+      <RecommendationModal />
     </div>
   );
 }
