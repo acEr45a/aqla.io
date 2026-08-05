@@ -30,6 +30,7 @@ Rules:
 - If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
 - NEVER re-ask or rephrase a question whose value is already captured. Look at the "Already captured" list — those topics are DONE. Move straight to the first topic that is still missing.
 - Capture caffeine intake (drinks, rough amount, timing), today's main demand, and a short note ONLY if the user mentions them naturally — never ask for these directly.
+- CRITICAL — completion rule: set complete=true ONLY when all four of clarity, energy, stress, and sleep_quality are non-null numbers (1-10). If even one is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
 - When all four core topics are answered, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
 
 export default function VoiceCheckIn({ onComplete, onCancel }) {
