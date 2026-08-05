@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { base44 } from "@/api/base44Client";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 
 const Recognition = typeof window !== "undefined"
@@ -105,14 +106,17 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
       return;
     }
 
-    // Browser speech starts immediately instead of waiting for generated audio.
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = loadVoicePrefs().accent || "en-US";
-    utterance.rate = 1.05;
-    utteranceRef.current = utterance;
-    utterance.onend = () => { utteranceRef.current = null; setSpeaking(false); endCbRef.current?.(); };
-    utterance.onerror = () => { utteranceRef.current = null; setSpeaking(false); };
-    window.speechSynthesis.speak(utterance);
+    // High-quality AI-generated speech (same warm voice used before).
+    const prefs = loadVoicePrefs();
+    base44.integrations.Core.GenerateSpeech({
+      text, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
+    }).then(({ url }) => {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
+      audio.onerror = () => setSpeaking(false);
+      audio.play().catch(() => setSpeaking(false));
+    }).catch(() => setSpeaking(false));
   }, [stopSpeaking]);
 
   return { listening, speaking, voiceMode, setVoiceMode, startListening, stopListening, speak, stopSpeaking };
