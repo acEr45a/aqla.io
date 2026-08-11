@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { ChevronDown, Check, Loader2, TriangleAlert } from "lucide-react";
+import { ChevronDown, Check, Loader2, TriangleAlert, Flag } from "lucide-react";
 
 const parse = (value) => { try { return typeof value === "string" ? JSON.parse(value) : value; } catch { return value; } };
 
@@ -58,7 +58,7 @@ function ToolCall({ toolCall, accent, onResolve }) {
   );
 }
 
-export default function OpsMessageBubble({ message, accent, onResolve }) {
+export default function OpsMessageBubble({ message, accent, onResolve, flaggable, onFlag, flagged }) {
   const isUser = message.role === "user";
   const accentColor = accent || "hsl(var(--primary))";
   return (
@@ -78,6 +78,16 @@ export default function OpsMessageBubble({ message, accent, onResolve }) {
               }}
             >{message.content}</ReactMarkdown></div>)}
         {message.tool_calls?.map((toolCall, index) => <ToolCall key={index} toolCall={toolCall} accent={accentColor} onResolve={onResolve} />)}
+        {!isUser && flaggable && (
+          <button
+            onClick={() => onFlag?.(message)}
+            disabled={flagged}
+            className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-muted-foreground transition-colors hover:text-[#E8A28F] disabled:opacity-100"
+          >
+            <Flag className="h-3 w-3" style={{ color: flagged ? "#E8A28F" : undefined }} fill={flagged ? "#E8A28F" : "none"} />
+            {flagged ? "Flagged for clinician review" : "Flag for clinician review"}
+          </button>
+        )}
       </div>
     </div>
   );

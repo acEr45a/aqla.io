@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
 import OpsSidebar from "@/components/admin/OpsSidebar";
+import { manualFlagResponse } from "@/lib/clinicalFlag";
 import { Send, X, Terminal, Code2, PanelLeft } from "lucide-react";
 
 // Backend Ops = lime (platform health / metrics). Architect = indigo (deep build / structure).
@@ -63,6 +64,8 @@ export default function OpsConsoleWidget() {
   const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [adminUser, setAdminUser] = useState(null);
+  const [flaggedContent, setFlaggedContent] = useState(() => new Set());
   const endRef = useRef(null);
 
   const cfg = MODES[mode];
@@ -165,6 +168,14 @@ export default function OpsConsoleWidget() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, mode]);
+
+  useEffect(() => { base44.auth.me().then(setAdminUser).catch(() => {}); }, []);
+
+  const handleFlag = async (message) => {
+    if (!message?.content || flaggedContent.has(message.content)) return;
+    const ok = await manualFlagResponse({ message: message.content, admin: adminUser });
+    if (ok) setFlaggedContent((prev) => new Set(prev).add(message.content));
+  };
 
   const send = async (text) => {
     const trimmed = text.trim();
@@ -348,7 +359,15 @@ export default function OpsConsoleWidget() {
                   </div>
                 )}
                 {messages.map((message, index) => (
-                  <OpsMessageBubble key={index} message={message} accent={cfg.accent} onResolve={resolveTool} />
+                  <OpsMessageBubble
+                    key={index}
+                    message={message}
+                    accent={cfg.accent}
+                    onResolve={resolveTool}
+                    flaggable={mode === "architect"}
+                    onFlag={handleFlag}
+                    flagged={flaggedContent.has(message.content)}
+                  />
                 ))}
                 <div ref={endRef} />
               </div>

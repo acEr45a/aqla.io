@@ -4,6 +4,7 @@ import ReviewCard from "@/components/clinician/ReviewCard";
 import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
 import SendToAdminCard from "@/components/clinician/SendToAdminCard";
 import MemberDirectory from "@/components/clinician/MemberDirectory";
+import ClinicalFlagsPanel from "@/components/clinician/ClinicalFlagsPanel";
 import { Stethoscope, Search, ShieldAlert, ArrowUpDown, Clock, CheckCircle2 } from "lucide-react";
 
 const STAT = ({ icon: Icon, label, value, accent }) => (
@@ -126,6 +127,10 @@ export default function Clinician() {
 
       <section className="mt-10">
         <MemberDirectory />
+      </section>
+
+      <section className="mt-6">
+        <ClinicalFlagsPanel />
       </section>
 
       {/* Search + urgency filter */}

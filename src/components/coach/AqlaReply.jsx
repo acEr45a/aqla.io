@@ -38,6 +38,11 @@ export default function AqlaReply({ message, compact = false, onSpeak, onConfirm
       {message.safety_note && (
         <p className="text-xs text-[#F2C04E] border-t border-border/40 pt-3">{message.safety_note}</p>
       )}
+      {message.clinical_note && (
+        <p className="flex items-center gap-1.5 text-[11px] text-[#E8A28F] border-t border-border/40 pt-3">
+          <span>⚑</span> {message.clinical_note}
+        </p>
+      )}
       {message.plan_change_requested && message.recommended_family !== "NONE" && (
         <div className="border-t border-border/40 pt-3">
           {message.plan_change_status ? <p className="text-xs text-muted-foreground">Plan change {message.plan_change_status}.</p> : (
