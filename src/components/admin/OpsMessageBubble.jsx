@@ -64,12 +64,12 @@ export default function OpsMessageBubble({ message, accent, onResolve, flaggable
   return (
     <div className={isUser ? "flex justify-end" : "flex justify-start"}>
       <div
-        className={`max-w-[92%] min-w-0 break-all rounded-2xl px-4 py-3 sm:max-w-[85%] ${isUser ? "text-foreground" : "border border-border/60 bg-card/60"}`}
+        className={`max-w-[92%] min-w-0 rounded-2xl px-4 py-3 sm:max-w-[85%] ${isUser ? "text-foreground" : "overflow-x-auto border border-border/60 bg-card/60 scrollbar-none"}`}
         style={isUser ? { background: `${accentColor}1a` } : undefined}
       >
         {message.content && (isUser
           ? <p className="text-sm whitespace-pre-wrap break-all">{message.content}</p>
-          : <div className="prose prose-sm prose-invert max-w-none min-w-0 break-all text-sm"><ReactMarkdown
+          : <div className="prose prose-sm prose-invert max-w-none min-w-0 text-sm"><ReactMarkdown
               components={{
                 code: ({ inline, ...props }) =>
                   inline

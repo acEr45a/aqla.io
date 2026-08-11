@@ -6,7 +6,7 @@ import { TOUR_STEPS } from "@/lib/tourSteps";
 
 const PAD = 8;
 
-export default function DashboardTour({ open, onClose }) {
+export default function DashboardTour({ open, onClose, onFinished }) {
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState(null);
 
@@ -30,6 +30,7 @@ export default function DashboardTour({ open, onClose }) {
   const finish = async () => {
     onClose();
     await base44.auth.updateMe({ dashboard_tour_v2: true }).catch(() => {});
+    if (onFinished) onFinished();
   };
   const next = () => (index === TOUR_STEPS.length - 1 ? finish() : setIndex(index + 1));
 
