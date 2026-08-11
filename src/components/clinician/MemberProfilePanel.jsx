@@ -423,7 +423,7 @@ export default function MemberProfilePanel({ open, onClose, member, checkIns, co
       <SheetContent side="right" className="w-full sm:max-w-xl p-0 flex flex-col">
         {member && (
           <>
-            <SheetHeader className="px-6 pt-6 pb-3 border-b border-border/60">
+            <SheetHeader className="px-6 pt-6 pr-12 pb-3 border-b border-border/60">
               <SheetTitle className="text-xl">{member.name}</SheetTitle>
               <SheetDescription>{member.protocol ? `${member.protocol.family} · ${member.protocol.name}` : "No active protocol"}</SheetDescription>
             </SheetHeader>
