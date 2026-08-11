@@ -7,7 +7,6 @@ import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
 import VoiceChatCard from "@/components/today/VoiceChatCard";
 import DashboardTour from "@/components/today/DashboardTour";
-import FirstCheckInWelcome from "@/components/today/FirstCheckInWelcome";
 import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
@@ -33,7 +32,6 @@ export default function Today() {
   const [showSupport, setShowSupport] = useState(false);
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
 
   const load = () => {
     base44.auth.me().then((u) => {
@@ -197,13 +195,7 @@ export default function Today() {
       )}
 
       <CheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} onSaved={load} />
-      <DashboardTour open={tourOpen} onClose={() => setTourOpen(false)} onFinished={() => setShowWelcome(true)} />
-      <FirstCheckInWelcome
-        open={showWelcome}
-        firstName={firstName}
-        onStart={() => { setShowWelcome(false); setCheckInOpen(true); }}
-        onDismiss={() => setShowWelcome(false)}
-      />
+      <DashboardTour open={tourOpen} onClose={() => setTourOpen(false)} />
       <RecommendationModal />
     </div>
   );
