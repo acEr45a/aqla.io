@@ -69,7 +69,14 @@ export default function OpsMessageBubble({ message, accent, onResolve }) {
       >
         {message.content && (isUser
           ? <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-          : <div className="prose prose-sm prose-invert max-w-none break-words text-sm"><ReactMarkdown>{message.content}</ReactMarkdown></div>)}
+          : <div className="prose prose-sm prose-invert max-w-none break-words text-sm"><ReactMarkdown
+              components={{
+                code: ({ inline, ...props }) =>
+                  inline
+                    ? <code {...props} className="break-words" style={{ overflowWrap: "anywhere" }} />
+                    : <code {...props} />,
+              }}
+            >{message.content}</ReactMarkdown></div>)}
         {message.tool_calls?.map((toolCall, index) => <ToolCall key={index} toolCall={toolCall} accent={accentColor} onResolve={onResolve} />)}
       </div>
     </div>
