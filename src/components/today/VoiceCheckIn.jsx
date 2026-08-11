@@ -34,6 +34,7 @@ Rules:
 6. Last caffeine timing — "When did you have the last one?" Capture caffeine_last_time in everyday wording (e.g. "around 2pm", "just now"). If caffeine_drinks is "none", set caffeine_last_time to "n/a".
 7. Main demand — "What's the main demand on your brain today — deep focused work, meetings & people, learning, creative work, or a recovery day?" Capture demand as the user's own words.
 8. Optional note — "Anything else worth noting — side effects, context, anything unusual?" Capture note; if the user says nothing, set note to "".
+- Never state or imply an effect of caffeine (or its timing) on their sleep, focus or energy — you are only recording what they report, not interpreting cause and effect.
 - CRITICAL — completion rule: set complete=true ONLY when clarity, energy, stress, sleep_quality, caffeine_drinks, caffeine_last_time, and demand are all non-null and non-empty (note may be empty). If any required field is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
 - When every required field is captured, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
 
@@ -120,7 +121,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
     const usedBefore = !!localStorage.getItem(INTRO_KEY);
     const intro = usedBefore
       ? ""
-      : "Hi, I'm AQLA Intelligence, your personal brain-health coach. I'll ask you four quick questions in your own words — tap the mic anytime to cut me off, and you can redo any answer. ";
+      : "Hi, I'm AQLA Intelligence, your personal brain-health coach. I'll ask you a few quick questions in your own words — clarity, energy, stress, sleep, caffeine and your day — tap the mic anytime to cut me off, and you can redo any answer. ";
     return { role: "aqla", text: `${intro}Let's start: how's your mental clarity today, in your own words?`, extracted: {}, complete: false, interpretation: "" };
   }, []);
 
@@ -222,7 +223,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
           <MessageCircle className="mx-auto w-6 h-6 text-primary" strokeWidth={1.5} />
           <p className="mt-3 text-sm text-foreground">Talk through your check-in instead</p>
           <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
-            AQLA Intelligence will introduce itself, then ask you four quick questions in your own words. Tap the mic anytime to cut it off and answer — you can redo any answer, and it'll read your day back to you at the end.
+            AQLA Intelligence will introduce itself, then ask you a few quick questions in your own words — clarity, energy, stress, sleep, caffeine and your day. Tap the mic anytime to cut it off and answer — you can redo any answer, and it'll read your day back to you at the end.
           </p>
           <button onClick={start}
             className="mt-5 px-5 py-2.5 rounded-full bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity">

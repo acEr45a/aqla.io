@@ -34,6 +34,14 @@ function deriveInsights(checkIns) {
   if (stress != null && stress >= 7) {
     insights.push({ text: `Your average stress is ${stress.toFixed(1)}/10 — currently your most elevated signal.`, conf: "observed from your check-ins" });
   }
+  const withCaffeine = rows.filter((c) => c.caffeine_drinks && c.caffeine_drinks.trim() && c.caffeine_drinks.trim().toLowerCase() !== "none");
+  if (withCaffeine.length) {
+    const times = withCaffeine.map((c) => c.caffeine_last_time).filter((t) => t && t.trim());
+    insights.push({
+      text: `You logged caffeine on ${withCaffeine.length} of ${rows.length} check-ins${times.length ? `, with your last serving recorded ${times.length} time${times.length > 1 ? "s" : ""} (most recently ${times[0]})` : ""}.`,
+      conf: "recorded from your check-ins",
+    });
+  }
   const sleep = avg("sleep_quality");
   if (sleep != null && sleep < 6) {
     insights.push({ text: `Your average sleep quality is ${sleep.toFixed(1)}/10 — below the 6/10 threshold AQLA watches for recovery.`, conf: "observed from your check-ins" });

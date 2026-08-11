@@ -90,7 +90,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
             <Textarea value={caffeineDrinks} onChange={(e) => setCaffeineDrinks(e.target.value)}
               placeholder="e.g. two double espressos, one green tea, a Red Bull in the afternoon"
               className="bg-secondary/50 border-border text-sm" rows={2} />
-            <p className="mt-2 text-xs text-muted-foreground">Describe it in your own words — AQLA Intelligence will interpret the type, amount, and timing.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Describe it in your own words — it's recorded with today's check-in and shown alongside your signals over time.</p>
             {caffeineDrinks.trim() && (
               <div className="mt-3 flex items-center justify-between gap-4">
                 <span className="text-sm text-muted-foreground">Time of last caffeine</span>
