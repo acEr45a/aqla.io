@@ -26,7 +26,10 @@ export default function CommunityInsights() {
         <div className="rounded-xl bg-primary/10 p-2.5 text-primary"><Users className="h-5 w-5" /></div>
         <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.18em] text-primary">Community insights</p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-light text-foreground">How you compare</h1>
+          <div className="mt-1 flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-light text-foreground">How you compare</h1>
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] uppercase tracking-widest text-primary">Beta</span>
+          </div>
           <p className="mt-2 text-sm text-muted-foreground">
             Anonymised, aggregated trends from {data.members} AQLA members — {data.contributors} active in the {data.window}. No individual data is ever shown.
           </p>

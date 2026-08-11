@@ -1,7 +1,7 @@
 import React from "react";
 import { Package, Truck } from "lucide-react";
 
-// Test implementation — mock data, no backend/credits.
+// Preview state — feature not yet live. Mock data shown behind a Coming Soon badge.
 const MOCK_SUPPLY = {
   status: "in_transit",
   formula: "Focus — SPARK",
@@ -19,7 +19,11 @@ export default function FormulaLogisticsCard() {
   const inTransit = status === "in_transit";
 
   return (
-    <div data-tour="supply" className="mt-8 aqla-panel rounded-3xl p-5 md:p-6">
+    <div data-tour="supply" className="relative mt-8 aqla-panel rounded-3xl p-5 md:p-6">
+      <span className="absolute top-3 right-3 rounded-full bg-secondary border border-border px-2.5 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+        Coming Soon
+      </span>
+
       <div className="flex items-center gap-2.5">
         <Package className="w-4 h-4 text-primary" strokeWidth={1.75} />
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Formula Logistics</p>
