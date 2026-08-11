@@ -17,6 +17,18 @@ const STAGES = [
   "Building your questionnaire profile",
 ];
 
+// Limiting factors derived only from the user's actual assessment answers — never assumed.
+function deriveLimitingFactors(responses) {
+  const factors = [];
+  if (responses.sleep_consistency != null && responses.sleep_consistency <= 2) factors.push("Irregular sleep timing");
+  if (responses.restored != null && responses.restored <= 2) factors.push("Waking unrestored");
+  if (responses.caffeine_late === "often") factors.push("Late caffeine exposure");
+  if (responses.screens_evening === "most_nights") factors.push("Evening screen use before bed");
+  if (responses.overwhelm != null && responses.overwhelm >= 4) factors.push("Frequent mental overload");
+  if (responses.work_interruptions === "constant") factors.push("Constant work interruptions");
+  return factors;
+}
+
 const ANALYZED = ["Self-reported cognitive experience", "Daily rhythm and energy curve", "Sleep timing and recovery quality", "Stress and workload signals", "Caffeine, hydration, and activity patterns"];
 
 export default function Analysis() {
@@ -56,9 +68,7 @@ export default function Analysis() {
         summary: d.key === bottleneck.key
           ? "AQLA identified this domain as your primary performance bottleneck based on your assessment."
           : "Derived from your assessment responses. Confidence will improve with daily check-ins.",
-        limiting_factors: d.key === bottleneck.key
-          ? ["Irregular sleep timing", "Low morning light exposure", "Late caffeine exposure"]
-          : [],
+        limiting_factors: d.key === bottleneck.key ? deriveLimitingFactors(responses) : [],
         protective_factors: d.score >= 65 ? ["Consistent self-reported patterns in this domain"] : [],
         next_action: d.key === bottleneck.key ? `Follow your ${recommended} protocol for 14 days` : "Continue daily check-ins to refine this score",
         data_sources: ["Onboarding assessment"],

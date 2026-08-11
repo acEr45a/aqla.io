@@ -28,6 +28,7 @@ export default function FormulaLogisticsCard() {
         <Package className="w-4 h-4 text-primary" strokeWidth={1.75} />
         <p className="text-xs uppercase tracking-widest text-muted-foreground">Formula Logistics</p>
       </div>
+      <p className="mt-1.5 text-[11px] text-muted-foreground/70">Example preview — not your real supply data.</p>
 
       <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

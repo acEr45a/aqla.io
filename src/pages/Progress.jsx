@@ -5,19 +5,47 @@ import { base44 } from "@/api/base44Client";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import TestScoreTimeline from "@/components/progress/TestScoreTimeline";
 
-const INSIGHTS = [
-  { text: "Your strongest focus days follow consistent wake times.", conf: "moderate confidence" },
-  { text: "Caffeine after 2:00 PM is associated with lower next-morning readiness.", conf: "moderate confidence" },
-  { text: "Exercise appears to improve your afternoon mental energy.", conf: "possible — correlation only" },
-  { text: "Your current data is insufficient to evaluate LEARN.", conf: "not enough data" },
-];
+// Rule-based observations derived only from the user's recorded check-ins — no fabricated insights.
+function deriveInsights(checkIns) {
+  const rows = (checkIns || []).filter((c) => c.valid !== false);
+  if (rows.length < 5) return null;
+  const avg = (key) => {
+    const v = rows.map((c) => c[key]).filter((x) => x != null);
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  };
+  const insights = [];
+  const clarity = avg("clarity");
+  if (clarity != null) {
+    insights.push({ text: `Your average mental clarity is ${clarity.toFixed(1)}/10 across ${rows.length} check-ins.`, conf: "observed from your check-ins" });
+    const half = Math.floor(rows.length / 2);
+    const older = rows.slice(half).map((c) => c.clarity).filter((x) => x != null);
+    const recent = rows.slice(0, half).map((c) => c.clarity).filter((x) => x != null);
+    if (older.length && recent.length) {
+      const diff = recent.reduce((a, b) => a + b, 0) / recent.length - older.reduce((a, b) => a + b, 0) / older.length;
+      insights.push({
+        text: Math.abs(diff) < 0.5
+          ? "Your clarity has been stable over this period."
+          : `Your clarity is trending ${diff > 0 ? "up" : "down"} (${diff > 0 ? "+" : ""}${diff.toFixed(1)} recent vs earlier check-ins).`,
+        conf: "observed trend — correlation only",
+      });
+    }
+  }
+  const stress = avg("stress");
+  if (stress != null && stress >= 7) {
+    insights.push({ text: `Your average stress is ${stress.toFixed(1)}/10 — currently your most elevated signal.`, conf: "observed from your check-ins" });
+  }
+  const sleep = avg("sleep_quality");
+  if (sleep != null && sleep < 6) {
+    insights.push({ text: `Your average sleep quality is ${sleep.toFixed(1)}/10 — below the 6/10 threshold AQLA watches for recovery.`, conf: "observed from your check-ins" });
+  }
+  return insights;
+}
 
-const HABITS = [
-  { habit: "Consistent wake time", impact: 82 },
-  { habit: "Morning outdoor light", impact: 68 },
-  { habit: "Caffeine cutoff before noon", impact: 61 },
-  { habit: "Hydration before 10 AM", impact: 44 },
-  { habit: "Evening screen reduction", impact: 37 },
+const SIGNAL_AVERAGES = [
+  { key: "clarity", label: "Mental clarity" },
+  { key: "energy", label: "Energy" },
+  { key: "sleep_quality", label: "Sleep quality" },
+  { key: "stress", label: "Stress (lower is better)" },
 ];
 
 export default function Progress() {
@@ -30,6 +58,15 @@ export default function Progress() {
   const data = (checkIns || []).map((c) => ({
     date: c.date?.slice(5), clarity: c.clarity, energy: c.energy, sleep: c.sleep_quality,
   }));
+
+  const insights = deriveInsights(checkIns);
+  const validRows = (checkIns || []).filter((c) => c.valid !== false);
+  const signalAverages = validRows.length
+    ? SIGNAL_AVERAGES.map((s) => {
+        const v = validRows.map((c) => c[s.key]).filter((x) => x != null);
+        return v.length ? { ...s, value: v.reduce((a, b) => a + b, 0) / v.length } : null;
+      }).filter(Boolean)
+    : null;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -88,33 +125,43 @@ export default function Progress() {
       <section className="mt-8 grid md:grid-cols-2 gap-8">
         <div>
           <h2 className="font-display text-lg text-foreground mb-5">Insights</h2>
-          <div className="space-y-5">
-            {INSIGHTS.map((ins) => (
-              <div key={ins.text} className="border-l-2 border-primary/40 pl-4">
-                <p className="text-sm text-foreground/90 leading-relaxed">{ins.text}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{ins.conf}</p>
-              </div>
-            ))}
-          </div>
+          {insights === null ? (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              AQLA needs at least 5 valid check-ins before generating insights from your data. Keep checking in daily.
+            </p>
+          ) : (
+            <div className="space-y-5">
+              {insights.map((ins) => (
+                <div key={ins.text} className="border-l-2 border-primary/40 pl-4">
+                  <p className="text-sm text-foreground/90 leading-relaxed">{ins.text}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{ins.conf}</p>
+                </div>
+              ))}
+            </div>
+          )}
           <p className="mt-6 text-[11px] text-muted-foreground">
-            AQLA distinguishes correlation from causation — insights are observations, not proven effects.
+            Insights are computed only from your recorded check-ins — observations, not proven effects.
           </p>
         </div>
         <div>
-          <h2 className="font-display text-lg text-foreground mb-5">Habit impact ranking</h2>
-          <div className="space-y-4">
-            {HABITS.map((h) => (
-              <div key={h.habit}>
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-muted-foreground">{h.habit}</span>
-                  <span className="text-foreground tabular-nums text-xs">{h.impact}</span>
+          <h2 className="font-display text-lg text-foreground mb-5">Signal averages (30 days)</h2>
+          {signalAverages ? (
+            <div className="space-y-4">
+              {signalAverages.map((s) => (
+                <div key={s.key}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="text-muted-foreground">{s.label}</span>
+                    <span className="text-foreground tabular-nums text-xs">{s.value.toFixed(1)}/10</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full rounded-full bg-primary/70 transition-all duration-700" style={{ width: `${s.value * 10}%` }} />
+                  </div>
                 </div>
-                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                  <div className="h-full rounded-full bg-primary/70 transition-all duration-700" style={{ width: `${h.impact}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground leading-relaxed">No check-in data yet — your averages will appear here.</p>
+          )}
         </div>
       </section>
     </div>
