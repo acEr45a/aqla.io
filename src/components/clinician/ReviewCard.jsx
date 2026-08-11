@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { ShieldAlert, Check, Pencil, HelpCircle, X } from "lucide-react";
+import { ShieldAlert, Check, Pencil, HelpCircle, X, User } from "lucide-react";
+import { notify } from "@/lib/clinicianToast";
 
 const STATUS_STYLE = {
   pending: "text-[#F2C04E] border-[#F2C04E]/40",
@@ -17,16 +18,21 @@ const DECISIONS = [
   { status: "rejected", label: "Reject", icon: X },
 ];
 
-export default function ReviewCard({ review, onUpdate }) {
+export default function ReviewCard({ review, onUpdate, onOpenMember }) {
   const [saving, setSaving] = useState(false);
 
   const decide = async (status) => {
     setSaving(true);
-    await base44.entities.ClinicianReview.update(review.id, {
-      status, decided_date: new Date().toISOString(),
-    });
+    try {
+      await base44.entities.ClinicianReview.update(review.id, {
+        status, decided_date: new Date().toISOString(),
+      });
+      notify("Review decided", `${review.user_name}: ${status.replace("_", " ")}.`);
+      onUpdate();
+    } catch {
+      notify("Could not save", "Please try again.");
+    }
     setSaving(false);
-    onUpdate();
   };
 
   return (
@@ -61,6 +67,15 @@ export default function ReviewCard({ review, onUpdate }) {
               <ShieldAlert className="w-3 h-3" /> {f}
             </span>
           ))}
+        </div>
+      )}
+
+      {onOpenMember && review.created_by_id && (
+        <div className="mt-4">
+          <button onClick={() => onOpenMember(review.created_by_id, "overview")}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground">
+            <User className="w-3.5 h-3.5" /> View member
+          </button>
         </div>
       )}
 

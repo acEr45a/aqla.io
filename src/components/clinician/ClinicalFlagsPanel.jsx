@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Flag, CheckCircle2, Loader2, Send } from "lucide-react";
+import { Flag, CheckCircle2, Loader2, Send, User } from "lucide-react";
 import FollowUpComposer from "@/components/clinician/FollowUpComposer";
+import { notify } from "@/lib/clinicianToast";
 
 const TABS = [
   { id: "auto", label: "User Flags", accent: "#C9F24E" },
@@ -21,7 +22,7 @@ function timeAgo(iso) {
   return `${d}d ago`;
 }
 
-export default function ClinicalFlagsPanel() {
+export default function ClinicalFlagsPanel({ onOpenMember, onAction }) {
   const [tab, setTab] = useState("auto");
   const [flags, setFlags] = useState(null);
   const [statusFilter, setStatusFilter] = useState("pending");
@@ -39,9 +40,13 @@ export default function ClinicalFlagsPanel() {
     [flags, tab, statusFilter]
   );
 
-  const markReviewed = async (id) => {
-    setUpdating(id);
-    try { await base44.entities.ClinicalFlag.update(id, { status: "reviewed" }); load(); } catch { /* ignore */ }
+  const markReviewed = async (f) => {
+    setUpdating(f.id);
+    try {
+      await base44.entities.ClinicalFlag.update(f.id, { status: "reviewed" });
+      notify("Flag reviewed", `Marked reviewed for ${f.user_name || "member"}.`);
+      load(); onAction?.();
+    } catch { /* ignore */ }
     setUpdating(null);
   };
 
@@ -99,12 +104,17 @@ export default function ClinicalFlagsPanel() {
               <div className="mt-3 flex items-center justify-between">
                 <span className="text-[10px] text-muted-foreground">{timeAgo(f.created_date)}</span>
                 <div className="flex gap-2">
+                  {tab === "auto" && f.user_id && onOpenMember && (
+                    <button onClick={() => onOpenMember(f.user_id, "safety")} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground">
+                      <User className="h-3 w-3" /> View member
+                    </button>
+                  )}
                   {tab === "auto" ? (
                     <button onClick={() => setComposing(f)} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground">
                       <Send className="h-3 w-3" /> Follow up
                     </button>
                   ) : (
-                    <button onClick={() => markReviewed(f.id)} disabled={updating === f.id || f.status === "reviewed"}
+                    <button onClick={() => markReviewed(f)} disabled={updating === f.id || f.status === "reviewed"}
                       className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50">
                       {updating === f.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />} {f.status === "reviewed" ? "Reviewed" : "Mark reviewed"}
                     </button>
