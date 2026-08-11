@@ -64,12 +64,12 @@ export default function OpsMessageBubble({ message, accent, onResolve }) {
   return (
     <div className={isUser ? "flex justify-end" : "flex justify-start"}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 ${isUser ? "text-foreground" : "border border-border/60 bg-card/60"}`}
+        className={`max-w-[92%] break-words rounded-2xl px-4 py-3 sm:max-w-[85%] ${isUser ? "text-foreground" : "border border-border/60 bg-card/60"}`}
         style={isUser ? { background: `${accentColor}1a` } : undefined}
       >
         {message.content && (isUser
-          ? <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-          : <div className="prose prose-sm prose-invert max-w-none text-sm"><ReactMarkdown>{message.content}</ReactMarkdown></div>)}
+          ? <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+          : <div className="prose prose-sm prose-invert max-w-none break-words text-sm"><ReactMarkdown>{message.content}</ReactMarkdown></div>)}
         {message.tool_calls?.map((toolCall, index) => <ToolCall key={index} toolCall={toolCall} accent={accentColor} onResolve={onResolve} />)}
       </div>
     </div>

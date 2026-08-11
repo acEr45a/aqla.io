@@ -258,14 +258,11 @@ export default function OpsConsoleWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex flex-col overflow-hidden rounded-none border-0 bg-card sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(560px,85svh)] sm:w-[min(460px,calc(100vw-2.5rem))] sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl sm:shadow-black/50"
-          style={{ boxShadow: "0 0 0 1px " + cfg.accent + "22, 0 20px 50px rgba(0,0,0,0.55)" }}
+          className="fixed inset-x-0 bottom-0 z-50 flex h-[80svh] flex-col overflow-hidden rounded-t-2xl border border-border bg-card sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(560px,85svh)] sm:w-[min(460px,calc(100vw-2.5rem))] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/50"
+          style={{ boxShadow: "0 0 0 1px " + cfg.accent + "22, 0 -10px 40px rgba(0,0,0,0.5)" }}
         >
           {/* Header with toggle */}
-          <div
-            className="border-b border-border/60 p-3"
-            style={{ paddingTop: "max(env(safe-area-inset-top), 0.75rem)" }}
-          >
+          <div className="border-b border-border/60 p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
