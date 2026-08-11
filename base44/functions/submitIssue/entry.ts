@@ -16,9 +16,26 @@ export default async function (req: Request): Promise<Response> {
     const detail = (body.detail || "").toString().trim();
     if (!detail) return Response.json({ error: "Detail is required" }, { status: 400 });
 
+    const userName = user.full_name || user.email || "AQLA user";
+    const userEmail = user.email || "";
+
+    // Persist the complaint so it appears in the admin complaints panel.
+    try {
+      await base44.entities.UserComplaint.create({
+        category,
+        subject,
+        detail,
+        status: "open",
+        user_name: userName,
+        user_email: userEmail,
+      });
+    } catch {
+      // Non-fatal: the admin email still goes out below.
+    }
+
     const html = userIssueEmail({
-      userName: user.full_name || user.email || "AQLA user",
-      userEmail: user.email || "",
+      userName,
+      userEmail,
       category,
       subject,
       detail,

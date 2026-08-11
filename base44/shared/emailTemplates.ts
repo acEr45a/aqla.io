@@ -1,16 +1,22 @@
-// Shared, on-brand HTML email templates for AQLA clinician-facing emails.
+// Shared, on-brand HTML email templates for AQLA. Premium, clinical, dark theme.
 // Inline styles only — email clients strip <style> blocks and external CSS.
 
 const C = {
-  bg: "#0f0d0a",
-  panel: "#17130f",
-  panelAlt: "#120f0b",
-  text: "#f5efe0",
+  bg: "#0c0a07",
+  panel: "#15120e",
+  panelAlt: "#1c1813",
+  panelSoft: "#191510",
+  text: "#f6f0e0",
   muted: "#a89c84",
+  faint: "#6f6755",
   accent: "#C9F24E",
-  accentInk: "#0f0d0a",
-  border: "#2a241d",
+  accentInk: "#0c0a07",
+  accentDim: "#9fb83a",
+  border: "#2c251d",
+  borderSoft: "#221d17",
   flag: "#E8A28F",
+  flagDim: "#3a241e",
+  positive: "#7BC950",
 };
 
 function escapeHtml(s: string): string {
@@ -22,7 +28,13 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function shell(title: string, heroKicker: string, heroTitle: string, bodyHtml: string, footerNote: string): string {
+function shell(
+  title: string,
+  heroKicker: string,
+  heroTitle: string,
+  bodyHtml: string,
+  footerNote: string
+): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,33 +44,60 @@ function shell(title: string, heroKicker: string, heroTitle: string, bodyHtml: s
 <title>${escapeHtml(title)}</title>
 </head>
 <body style="margin:0;padding:0;background:${C.bg};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:${C.text};-webkit-font-smoothing:antialiased;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};padding:32px 16px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};padding:40px 16px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.panel};border:1px solid ${C.border};border-radius:20px;overflow:hidden;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:${C.panel};border:1px solid ${C.border};border-radius:24px;overflow:hidden;">
           <tr>
-            <td style="padding:28px 32px;border-bottom:1px solid ${C.border};">
-              <p style="margin:0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:${C.accent};font-weight:600;">${escapeHtml(heroKicker)}</p>
-              <p style="margin:8px 0 0;font-size:19px;line-height:1.3;color:${C.text};font-weight:500;letter-spacing:-0.01em;">${escapeHtml(heroTitle)}</p>
+            <td style="padding:40px 48px 28px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="width:32px;">
+                    <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,${C.accent},${C.accentDim});display:inline-block;"></div>
+                  </td>
+                  <td style="padding-left:14px;">
+                    <p style="margin:0;font-size:11px;letter-spacing:3.5px;text-transform:uppercase;color:${C.accent};font-weight:600;">${escapeHtml(heroKicker)}</p>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;font-size:23px;line-height:1.25;color:${C.text};font-weight:600;letter-spacing:-0.02em;">${escapeHtml(heroTitle)}</p>
+              <div style="margin-top:22px;height:1px;background:linear-gradient(90deg,${C.accent},transparent);opacity:0.55;"></div>
             </td>
           </tr>
           <tr>
-            <td style="padding:28px 32px;">
+            <td style="padding:8px 48px 36px;">
               ${bodyHtml}
             </td>
           </tr>
           <tr>
-            <td style="padding:20px 32px 28px;border-top:1px solid ${C.border};background:${C.panelAlt};">
-              <p style="margin:0;font-size:12px;line-height:1.6;color:${C.muted};">${escapeHtml(footerNote)}</p>
+            <td style="padding:26px 48px 34px;border-top:1px solid ${C.borderSoft};background:${C.panelAlt};">
+              <p style="margin:0;font-size:12px;line-height:1.7;color:${C.muted};">${escapeHtml(footerNote)}</p>
+              <p style="margin:14px 0 0;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:${C.faint};">AQLA · Your personal brain operating system</p>
             </td>
           </tr>
         </table>
-        <p style="margin:20px 0 0;font-size:11px;color:${C.muted};text-align:center;letter-spacing:0.5px;">AQLA · Your personal brain operating system</p>
+        <p style="margin:20px 0 0;font-size:11px;color:${C.faint};text-align:center;letter-spacing:0.5px;">© AQLA</p>
       </td>
     </tr>
   </table>
 </body>
 </html>`;
+}
+
+function label(text: string): string {
+  return `<span style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${C.faint};font-weight:600;">${escapeHtml(text)}</span>`;
+}
+
+function metaRow(k: string, v: string): string {
+  return `
+  <tr>
+    <td style="padding:11px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:${C.faint};vertical-align:top;width:130px;font-weight:600;">${escapeHtml(k)}</td>
+    <td style="padding:11px 0;font-size:15px;color:${C.text};font-weight:500;letter-spacing:-0.01em;">${escapeHtml(v)}</td>
+  </tr>`;
+}
+
+function button(label: string): string {
+  return `<a style="display:inline-block;background:linear-gradient(135deg,${C.accent},${C.accentDim});color:${C.accentInk};text-decoration:none;font-size:14px;font-weight:600;padding:14px 30px;border-radius:999px;letter-spacing:0.3px;">${escapeHtml(label)}</a>`;
 }
 
 export function recommendationEmail({
@@ -73,20 +112,21 @@ export function recommendationEmail({
   clinicianName: string;
 }): string {
   const body = `
-    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">Hi ${escapeHtml(memberName || "there")},</p>
-    <p style="margin:16px 0;font-size:15px;line-height:1.7;color:${C.text};">
-      Your clinician${clinicianName ? `, ${escapeHtml(clinicianName)}` : ""}, has a new recommendation for you.
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">Hi ${escapeHtml(memberName || "there")},</p>
+    <p style="margin:16px 0;font-size:16px;line-height:1.75;color:${C.muted};">
+      Your clinician${clinicianName ? `, <span style="color:${C.text};font-weight:500;">${escapeHtml(clinicianName)}</span>` : ""}, has a new recommendation for you.
     </p>
-    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:12px;padding:20px 22px;margin:20px 0;">
-      <p style="margin:0;font-size:13px;font-weight:600;color:${C.accent};letter-spacing:0.3px;">${escapeHtml(title)}</p>
-      <p style="margin:12px 0 0;font-size:15px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(message)}</p>
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:16px;padding:24px 26px;margin:24px 0;">
+      ${label("Recommendation")}
+      <p style="margin:12px 0 0;font-size:18px;line-height:1.4;color:${C.text};font-weight:600;letter-spacing:-0.01em;">${escapeHtml(title)}</p>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid ${C.borderSoft};">
+        <p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(message)}</p>
+      </div>
     </div>
-    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">
-      Log in to AQLA — this recommendation is waiting on your dashboard as a pop-up, where you can acknowledge or dismiss it.
+    <p style="margin:22px 0 0;font-size:14px;line-height:1.75;color:${C.muted};">
+      This is waiting on your dashboard as a pop-up — open it to acknowledge or dismiss.
     </p>
-    <p style="margin:24px 0 0;display:inline-block;background:${C.accent};color:${C.accentInk};text-decoration:none;font-size:14px;font-weight:600;padding:12px 26px;border-radius:999px;letter-spacing:0.2px;">
-      Open your dashboard
-    </p>`;
+    <p style="margin:26px 0 0;">${button("Open your dashboard")}</p>`;
   return shell(
     title || "A new recommendation from your AQLA clinician",
     "AQLA · Clinician recommendation",
@@ -109,32 +149,22 @@ export function clinicianAlertEmail({
   detail: string;
   submittedAt: string;
 }): string {
-  const rows = [
-    ["From", sender],
-    ["Category", category],
-    ["Subject", subject],
-    ["Submitted", submittedAt],
-  ]
-    .map(
-      ([k, v]) => `
-      <tr>
-        <td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};vertical-align:top;width:120px;">${escapeHtml(k)}</td>
-        <td style="padding:8px 0;font-size:14px;color:${C.text};font-weight:500;">${escapeHtml(v)}</td>
-      </tr>`
-    )
-    .join("");
   const body = `
-    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">A clinician has raised a note for the admin team.</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border};">
-      ${rows}
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">A clinician has raised a note for the admin team.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:22px 0;border-top:1px solid ${C.borderSoft};border-bottom:1px solid ${C.borderSoft};">
+      ${metaRow("From", sender)}
+      ${metaRow("Category", category)}
+      ${metaRow("Subject", subject)}
+      ${metaRow("Submitted", submittedAt)}
     </table>
-    <p style="margin:18px 0 8px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Detail</p>
-    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:12px;padding:18px 20px;">
-      <p style="margin:0;font-size:14px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(detail)}</p>
+    ${label("Detail")}
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:16px;padding:22px 24px;margin-top:14px;">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(detail)}</p>
     </div>
-    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">
+    <p style="margin:24px 0 0;font-size:14px;line-height:1.75;color:${C.muted};">
       Review this in the AQLA admin console → Clinician dashboard.
-    </p>`;
+    </p>
+    <p style="margin:26px 0 0;">${button("Open admin console")}</p>`;
   return shell(
     `[Clinician alert · ${category}] ${subject}`,
     "AQLA · Clinician alert",
@@ -156,18 +186,19 @@ export function planChangeEmail({
   clinicianName: string;
 }): string {
   const body = `
-    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">Hi ${escapeHtml(memberName)},</p>
-    <p style="margin:16px 0;font-size:15px;line-height:1.7;color:${C.text};">
-      Your clinician${clinicianName ? `, ${escapeHtml(clinicianName)}` : ""}, has updated your active AQLA protocol.
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">Hi ${escapeHtml(memberName)},</p>
+    <p style="margin:16px 0;font-size:16px;line-height:1.75;color:${C.muted};">
+      Your clinician${clinicianName ? `, <span style="color:${C.text};font-weight:500;">${escapeHtml(clinicianName)}</span>` : ""}, has updated your active AQLA protocol.
     </p>
-    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:12px;padding:20px 22px;margin:20px 0;">
-      <p style="margin:0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Your new plan</p>
-      <p style="margin:8px 0 0;font-size:22px;font-weight:600;color:${C.accent};letter-spacing:0.3px;">${escapeHtml(family)}</p>
-      ${reason ? `<p style="margin:12px 0 0;font-size:14px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(reason)}</p>` : ""}
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:16px;padding:24px 26px;margin:24px 0;">
+      ${label("Your new plan")}
+      <p style="margin:14px 0 0;font-size:26px;font-weight:600;color:${C.accent};letter-spacing:0.4px;">${escapeHtml(family)}</p>
+      ${reason ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid ${C.borderSoft};"><p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(reason)}</p></div>` : ""}
     </div>
-    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">
+    <p style="margin:22px 0 0;font-size:14px;line-height:1.75;color:${C.muted};">
       Log in to AQLA to see your updated daily actions — this change is already live on your dashboard.
-    </p>`;
+    </p>
+    <p style="margin:26px 0 0;">${button("View my plan")}</p>`;
   return shell(
     `Your AQLA plan is now ${family}`,
     "AQLA · Plan update",
@@ -192,36 +223,26 @@ export function userIssueEmail({
   detail: string;
   submittedAt: string;
 }): string {
-  const rows = [
-    ["From", `${userName}${userEmail ? ` (${userEmail})` : ""}`],
-    ["Category", category],
-    ["Subject", subject],
-    ["Submitted", submittedAt],
-  ]
-    .map(
-      ([k, v]) => `
-      <tr>
-        <td style="padding:8px 0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};vertical-align:top;width:120px;">${escapeHtml(k)}</td>
-        <td style="padding:8px 0;font-size:14px;color:${C.text};font-weight:500;">${escapeHtml(v)}</td>
-      </tr>`
-    )
-    .join("");
   const body = `
-    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">A user has reported an issue from the AQLA Help Center.</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:18px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border};">
-      ${rows}
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">A user has reported an issue from the AQLA Help Center.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:22px 0;border-top:1px solid ${C.borderSoft};border-bottom:1px solid ${C.borderSoft};">
+      ${metaRow("From", `${userName}${userEmail ? ` (${userEmail})` : ""}`)}
+      ${metaRow("Category", category)}
+      ${metaRow("Subject", subject)}
+      ${metaRow("Submitted", submittedAt)}
     </table>
-    <p style="margin:18px 0 8px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Detail</p>
-    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:12px;padding:18px 20px;">
-      <p style="margin:0;font-size:14px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(detail)}</p>
+    ${label("Detail")}
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:16px;padding:22px 24px;margin-top:14px;">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(detail)}</p>
     </div>
-    <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">Review and follow up from the AQLA admin console.</p>`;
+    <p style="margin:24px 0 0;font-size:14px;line-height:1.75;color:${C.muted};">Review and follow up from the AQLA admin console.</p>
+    <p style="margin:26px 0 0;">${button("Open admin console")}</p>`;
   return shell(
     `[User issue · ${category}] ${subject}`,
     "AQLA · User issue",
     `${category} — ${subject}`,
     body,
-    "This issue was submitted from the AQLA Help Center."
+    "This issue was submitted from the AQLA Help Center and saved to the admin complaints panel."
   );
 }
 
@@ -239,14 +260,16 @@ export function adminNotifyClinicianEmail({
   submittedAt: string;
 }): string {
   const body = `
-    <p style="margin:0;font-size:15px;line-height:1.7;color:${C.text};">Hi ${escapeHtml(clinicianName)},</p>
-    <p style="margin:16px 0;font-size:15px;line-height:1.7;color:${C.text};">The AQLA admin team has sent you a note.</p>
-    <div style="background:${C.panelAlt};border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:12px;padding:20px 22px;margin:20px 0;">
-      <p style="margin:0;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};">Subject</p>
-      <p style="margin:8px 0 0;font-size:17px;font-weight:600;color:${C.accent};letter-spacing:0.2px;">${escapeHtml(subject)}</p>
-      <p style="margin:14px 0 0;font-size:15px;line-height:1.7;color:${C.text};white-space:pre-wrap;">${escapeHtml(message)}</p>
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">Hi ${escapeHtml(clinicianName)},</p>
+    <p style="margin:16px 0;font-size:16px;line-height:1.75;color:${C.muted};">The AQLA admin team has sent you a note.</p>
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.accent};border-radius:16px;padding:24px 26px;margin:24px 0;">
+      ${label("Subject")}
+      <p style="margin:12px 0 0;font-size:18px;font-weight:600;color:${C.text};letter-spacing:-0.01em;">${escapeHtml(subject)}</p>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid ${C.borderSoft};">
+        <p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(message)}</p>
+      </div>
     </div>
-    <p style="margin:20px 0 0;font-size:13px;line-height:1.7;color:${C.muted};">From ${escapeHtml(adminName)} · ${escapeHtml(submittedAt)}</p>`;
+    <p style="margin:22px 0 0;font-size:13px;line-height:1.75;color:${C.muted};">From ${escapeHtml(adminName)} · ${escapeHtml(submittedAt)}</p>`;
   return shell(
     subject,
     "AQLA · Admin note",

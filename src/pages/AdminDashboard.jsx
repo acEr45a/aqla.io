@@ -23,6 +23,7 @@ import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
 import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
+import UserComplaintsPanel from "@/components/admin/UserComplaintsPanel";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -87,6 +88,7 @@ export default function AdminDashboard() {
         {tab === "overview" &&
         <>
             <AppHealthPanel />
+            <UserComplaintsPanel />
             <div className="grid gap-5 lg:grid-cols-2">
               <RegistrationChart data={data.days} />
               <ActivityChart data={data.days} />

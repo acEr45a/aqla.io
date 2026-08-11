@@ -83,6 +83,72 @@ export default async function (req: Request): Promise<Response> {
       resolve_action: stale > 0 ? 'cleanup_expired_otps' : null,
     });
 
+    // 10. SEO & meta — audit the published landing page's head tags
+    let landingHtml: string | null = null;
+    try {
+      const origin = new URL(req.url).origin;
+      const landingRes = await fetch(origin, { headers: { accept: 'text/html' }, redirect: 'follow' });
+      if (landingRes.ok) {
+        landingHtml = await landingRes.text();
+        const titleMatch = landingHtml.match(/<title[^>]*>([^<]*)<\/title>/i);
+        const titleLen = titleMatch ? titleMatch[1].trim().length : 0;
+        const has = (re: RegExp) => re.test(landingHtml!);
+        const gaps: string[] = [];
+        if (titleLen < 10 || titleLen > 70) gaps.push('title length');
+        if (!has(/<meta[^>]+name=["']description["']/i)) gaps.push('meta description');
+        if (!has(/<meta[^>]+property=["']og:title["']/i)) gaps.push('og:title');
+        if (!has(/<meta[^>]+property=["']og:description["']/i)) gaps.push('og:description');
+        if (!has(/<meta[^>]+property=["']og:image["']/i)) gaps.push('og:image');
+        if (!has(/<link[^>]+rel=["']canonical["']/i)) gaps.push('canonical');
+        if (gaps.length === 0) add('SEO & meta', 'pass', 'Landing page has title, description, and Open Graph tags.');
+        else checks.push({
+          name: 'SEO & meta',
+          status: gaps.length > 3 ? 'fail' : 'warn',
+          detail: `Missing: ${gaps.join(', ')}. These affect search ranking and social sharing.`,
+          resolve_action: 'fix_seo_meta',
+        });
+      } else {
+        checks.push({
+          name: 'SEO & meta',
+          status: 'warn',
+          detail: `Could not fetch the landing page (HTTP ${landingRes.status}).`,
+          resolve_action: 'fix_seo_meta',
+        });
+      }
+    } catch (e: any) {
+      checks.push({
+        name: 'SEO & meta',
+        status: 'warn',
+        detail: `SEO audit skipped: ${e.message}`,
+        resolve_action: 'fix_seo_meta',
+      });
+    }
+
+    // 11. Page design — mobile-readiness & reader-grabbing signals
+    if (landingHtml) {
+      const has = (re: RegExp) => re.test(landingHtml);
+      const gaps: string[] = [];
+      if (!has(/<meta[^>]+name=["']viewport["']/i)) gaps.push('viewport');
+      if (!has(/<link[^>]+rel=["']manifest["']/i)) gaps.push('web manifest');
+      if (!has(/<link[^>]+rel=["']apple-touch-icon["']/i)) gaps.push('apple-touch-icon');
+      if (!has(/<meta[^>]+name=["']theme-color["']/i)) gaps.push('theme-color');
+      if (!has(/<meta[^>]+name=["']format-detection["']/i)) gaps.push('format-detection');
+      if (gaps.length === 0) add('Page design', 'pass', 'Landing page is mobile-ready with icons, manifest, and theme color.');
+      else checks.push({
+        name: 'Page design',
+        status: gaps.length > 2 ? 'warn' : 'pass',
+        detail: `Mobile-readiness gaps: ${gaps.join(', ')}.`,
+        resolve_action: 'fix_page_design',
+      });
+    } else {
+      checks.push({
+        name: 'Page design',
+        status: 'warn',
+        detail: 'Could not audit the landing page — it may not be published yet.',
+        resolve_action: 'fix_page_design',
+      });
+    }
+
     const score = Math.max(0, Math.round(100 - checks.reduce((sum, c) => sum + (c.status === 'fail' ? 20 : c.status === 'warn' ? 8 : 0), 0)));
 
     return Response.json({ score, checks, ran_at: new Date().toISOString() });

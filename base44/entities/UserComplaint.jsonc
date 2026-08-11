@@ -1,0 +1,68 @@
+{
+  "name": "UserComplaint",
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "Bug",
+        "Account",
+        "Data issue",
+        "Protocol question",
+        "Safety concern",
+        "Other"
+      ],
+      "default": "Other"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "investigating",
+        "resolved"
+      ],
+      "default": "open"
+    },
+    "admin_note": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized reporter name for the admin panel"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Denormalized reporter email for follow-up"
+    }
+  },
+  "required": [
+    "category",
+    "detail"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
