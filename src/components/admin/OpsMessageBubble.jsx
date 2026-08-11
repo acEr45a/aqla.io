@@ -63,8 +63,9 @@ export default function OpsMessageBubble({ message, accent, onResolve, flaggable
   const accentColor = accent || "hsl(var(--primary))";
   return (
     <div className={isUser ? "flex justify-end" : "flex justify-start"}>
+      <div className="min-w-0 max-w-[92%] overflow-hidden sm:max-w-[85%]">
       <div
-        className={`max-w-[92%] min-w-0 break-all rounded-2xl px-4 py-3 sm:max-w-[85%] ${isUser ? "text-foreground" : "border border-border/60 bg-card/60"}`}
+        className={`min-w-0 break-all rounded-2xl px-4 py-3 ${isUser ? "text-foreground" : "border border-border/60 bg-card/60"}`}
         style={isUser ? { background: `${accentColor}1a` } : undefined}
       >
         {message.content && (isUser
@@ -88,6 +89,7 @@ export default function OpsMessageBubble({ message, accent, onResolve, flaggable
             {flagged ? "Flagged for clinician review" : "Flag for clinician review"}
           </button>
         )}
+      </div>
       </div>
     </div>
   );
