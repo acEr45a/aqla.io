@@ -1,0 +1,103 @@
+{
+  "name": "ClinicalFlag",
+  "type": "object",
+  "properties": {
+    "flag_type": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "manual"
+      ],
+      "default": "auto",
+      "description": "auto = raised by the platform on a user-facing agent response; manual = raised by an admin from the Architect widget"
+    },
+    "source_agent": {
+      "type": "string",
+      "description": "Which agent produced the flagged content (aqla_intelligence, help_agent, architect)"
+    },
+    "message_snippet": {
+      "type": "string",
+      "description": "First 300 characters of the flagged message"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Member who received the flagged message (null for manual admin flags)"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Denormalized member name for the clinician panel"
+    },
+    "admin_id": {
+      "type": "string",
+      "description": "Admin who raised a manual flag (null for auto flags)"
+    },
+    "admin_name": {
+      "type": "string",
+      "description": "Denormalized admin name for the clinician panel"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "reviewed",
+        "actioned"
+      ],
+      "default": "pending"
+    },
+    "clinician_note": {
+      "type": "string",
+      "description": "Optional note added by the clinician when reviewing or following up"
+    }
+  },
+  "required": [
+    "flag_type",
+    "source_agent",
+    "message_snippet",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "clinician"
+          }
+        }
+      ]
+    },
+    "create": {},
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "clinician"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "clinician"
+          }
+        }
+      ]
+    }
+  }
+}

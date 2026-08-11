@@ -278,3 +278,38 @@ export function adminNotifyClinicianEmail({
     "You received this note from the AQLA admin team."
   );
 }
+
+export function clinicalFlagEmail({
+  sourceAgent,
+  messageSnippet,
+  userName,
+  flaggedAt,
+}: {
+  sourceAgent: string;
+  messageSnippet: string;
+  userName: string;
+  flaggedAt: string;
+}): string {
+  const body = `
+    <p style="margin:0;font-size:16px;line-height:1.75;color:${C.text};">An AQLA assistant produced a response that was automatically flagged for clinical review.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:22px 0;border-top:1px solid ${C.borderSoft};border-bottom:1px solid ${C.borderSoft};">
+      ${metaRow("Member", userName)}
+      ${metaRow("Source", sourceAgent)}
+      ${metaRow("Flagged", flaggedAt)}
+    </table>
+    ${label("Flagged message")}
+    <div style="background:linear-gradient(160deg,${C.panelSoft},${C.panelAlt});border:1px solid ${C.border};border-left:3px solid ${C.flag};border-radius:16px;padding:22px 24px;margin-top:14px;">
+      <p style="margin:0;font-size:15px;line-height:1.75;color:${C.text};white-space:pre-wrap;">${escapeHtml(messageSnippet)}</p>
+    </div>
+    <p style="margin:24px 0 0;font-size:14px;line-height:1.75;color:${C.muted};">
+      Open the Clinician dashboard &rarr; Clinical Flags &rarr; User Flags to review and follow up with the member.
+    </p>
+    <p style="margin:26px 0 0;">${button("Open clinician dashboard")}</p>`;
+  return shell(
+    `[Clinical flag · ${sourceAgent}] Flagged response needs review`,
+    "AQLA · Clinical flag",
+    "A response was flagged for clinical review",
+    body,
+    "You received this because you are an AQLA clinician or admin. Auto-flagging is a safety net — please review the flagged content before it influences the member."
+  );
+}

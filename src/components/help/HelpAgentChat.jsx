@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Send, Loader2, CircleHelp } from "lucide-react";
+import { Send, Loader2, CircleHelp, Flag } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { autoFlagResponse, detectClinicalContent, CLINICAL_NOTE } from "@/lib/clinicalFlag";
 
 export default function HelpAgentChat() {
   const [conversation, setConversation] = useState(null);
@@ -9,11 +10,14 @@ export default function HelpAgentChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [user, setUser] = useState(null);
   const scrollRef = useRef(null);
+  const processedRef = useRef(new Set());
 
   useEffect(() => {
     let unsub = () => {};
     (async () => {
+      base44.auth.me().then(setUser).catch(() => {});
       try {
         const existing = await base44.agents.listConversations({ agent_name: "help_agent" });
         let conv;
@@ -43,6 +47,17 @@ export default function HelpAgentChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Auto-flag the latest assistant response for clinician review when it contains clinical content.
+  useEffect(() => {
+    if (!messages.length || !user) return;
+    const last = [...messages].reverse().find((m) => m.role !== "user" && m.content);
+    if (!last || processedRef.current.has(last.content)) return;
+    processedRef.current.add(last.content);
+    if (detectClinicalContent(last.content)) {
+      autoFlagResponse({ sourceAgent: "help_agent", message: last.content, user }).catch(() => {});
+    }
+  }, [messages, user]);
 
   const handleSend = async () => {
     if (!input.trim() || !conversation || sending) return;
@@ -114,6 +129,11 @@ export default function HelpAgentChat() {
                     </div>
                   );
                 })}
+                {detectClinicalContent(msg.content) && (
+                  <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#E8A28F]">
+                    <Flag className="h-3 w-3" /> {CLINICAL_NOTE}
+                  </p>
+                )}
               </div>
             )}
           </div>

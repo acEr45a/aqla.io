@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
+import { autoFlagResponse, CLINICAL_NOTE } from "@/lib/clinicalFlag";
 
 // Token-waste attack resistance for AQLA Intelligence.
 const MAX_INPUT_CHARS = 2000;
@@ -30,8 +31,10 @@ export function useAqlaCoach() {
   const [loading, setLoading] = useState(false);
   const [context, setContext] = useState(null);
   const lastPromptsRef = useRef([]);
+  const userRef = useRef(null);
 
   useEffect(() => {
+    base44.auth.me().then((u) => { userRef.current = u; }).catch(() => {});
     Promise.all([
       base44.entities.BrainDomain.list("-updated_date"),
       base44.entities.Protocol.list("-created_date"),
@@ -78,6 +81,8 @@ FIRST decide the mode of your reply:
 
 Analysis rules: ground answers ONLY in the user data below; mention uncertainty; separate observation from inference; never diagnose, never advise on medication, never override safety rules; admit when data is insufficient; recommend clinician review for red flags. Be concise and precise. No hype. If the user explicitly asks to change plans, assess the five available families and propose at most one different plan. Never change it yourself: set plan_change_requested true so the app can ask the user to confirm.
 
+ZERO-HALLUCINATION RULES: Never assert clinical claims not supported by the evidence grades in the Ingredient entity. For supplement dosing, always cite the evidence_grade. When uncertain, state uncertainty and recommend consulting a clinician. Never invent drug interactions, contraindications, or diagnostic conclusions. If your reply touches supplements, safety, dosing, or protocol changes, the platform auto-flags it for clinician review.
+
 USER DATA:
 Brain domains: ${JSON.stringify((context?.domains || []).map((d) => ({ name: d.domain_name, score: d.score, trend: d.trend, limiting: d.limiting_factors })))}
 Active protocol: ${JSON.stringify(context?.protocol ? { name: context.protocol.name, family: context.protocol.family, objective: context.protocol.objective, why: context.protocol.why_selected } : "none")}
@@ -104,7 +109,11 @@ USER QUESTION: ${trimmed}`,
       },
     });
 
-    setMessages((m) => [...m, { role: "aqla", ...res }]);
+    const displayText = res.mode === "chat"
+      ? (res.chat_reply || "")
+      : [res.observed, res.explanation, res.next_action, res.safety_note].filter(Boolean).join(" ");
+    const flagged = await autoFlagResponse({ sourceAgent: "aqla_intelligence", message: displayText, user: userRef.current });
+    setMessages((m) => [...m, { role: "aqla", ...(flagged ? { ...res, clinical_note: CLINICAL_NOTE } : res) }]);
     setLoading(false);
   };
 
