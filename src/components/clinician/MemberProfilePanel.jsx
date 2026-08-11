@@ -9,7 +9,8 @@ import { localDateKey } from "@/lib/dateKey";
 import { CHAPTERS } from "@/lib/assessmentData";
 import CheckInSparklines from "@/components/clinician/CheckInSparklines";
 import CognitiveScoreGauges from "@/components/clinician/CognitiveScoreGauges";
-import { Sparkles, RefreshCw, Loader2, Activity, ShieldAlert, ClipboardList, Brain, Send, AlertTriangle } from "lucide-react";
+import AiComposer from "@/components/clinician/AiComposer";
+import { Sparkles, RefreshCw, Loader2, Activity, ShieldAlert, ClipboardList, Brain, Send, AlertTriangle, PenLine } from "lucide-react";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -311,6 +312,7 @@ function ActionsTab({ member, onChanged }) {
   const [planDraft, setPlanDraft] = useState({ family: member.protocol?.family || "", reason: "" });
   const [changingPlan, setChangingPlan] = useState(false);
   const [planMsg, setPlanMsg] = useState("");
+  const [showComposer, setShowComposer] = useState(false);
 
   const sendRec = async () => {
     if (!recDraft.message.trim() || sendingRec) return;
@@ -351,6 +353,27 @@ function ActionsTab({ member, onChanged }) {
 
   return (
     <div className="space-y-5">
+      {showComposer && (
+        <AiComposer
+          member={member}
+          onClose={() => setShowComposer(false)}
+          onSent={() => { onChanged?.(); setShowComposer(false); }}
+        />
+      )}
+
+      <div className="aqla-panel rounded-2xl p-4 space-y-2.5">
+        <p className="text-[11px] uppercase tracking-widest text-primary flex items-center gap-1.5">
+          <PenLine className="w-3 h-3" /> AI composer
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Draft a member-facing message from this member's clinical data only — Backend Ops (Gemini) strips identifiers and admin-only data before drafting.
+        </p>
+        <button onClick={() => setShowComposer(true)}
+          className="w-full rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground">
+          Draft with AI
+        </button>
+      </div>
+
       <div className="aqla-panel rounded-2xl p-4 space-y-2.5">
         <p className="text-[11px] uppercase tracking-widest text-primary flex items-center gap-1.5">
           <Send className="w-3 h-3" /> Push recommendation
