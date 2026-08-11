@@ -247,8 +247,8 @@ export default function OpsConsoleWidget() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card shadow-lg shadow-black/40 transition-transform hover:scale-105"
-          style={{ boxShadow: `0 0 0 1px ${cfg.accent}22, 0 10px 30px rgba(0,0,0,0.45)` }}
+          className="fixed right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card shadow-lg shadow-black/40 transition-transform hover:scale-105"
+          style={{ bottom: "max(env(safe-area-inset-bottom), 1.25rem)", boxShadow: `0 0 0 1px ${cfg.accent}22, 0 10px 30px rgba(0,0,0,0.45)` }}
           aria-label="Open Backend Ops"
         >
           <cfg.icon className="h-5 w-5" style={accentStyle} />
@@ -258,11 +258,14 @@ export default function OpsConsoleWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed bottom-4 right-3 sm:bottom-5 sm:right-5 z-50 flex h-[min(560px,85svh)] w-[min(460px,calc(100vw-1.5rem))] sm:w-[min(460px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl shadow-black/50"
-          style={{ boxShadow: `0 0 0 1px ${cfg.accent}22, 0 20px 50px rgba(0,0,0,0.55)` }}
+          className="fixed inset-0 z-50 flex flex-col overflow-hidden rounded-none border-0 bg-card sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[min(560px,85svh)] sm:w-[min(460px,calc(100vw-2.5rem))] sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl sm:shadow-black/50"
+          style={{ boxShadow: "0 0 0 1px " + cfg.accent + "22, 0 20px 50px rgba(0,0,0,0.55)" }}
         >
           {/* Header with toggle */}
-          <div className="border-b border-border/60 p-3">
+          <div
+            className="border-b border-border/60 p-3"
+            style={{ paddingTop: "max(env(safe-area-inset-top), 0.75rem)" }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
@@ -357,6 +360,7 @@ export default function OpsConsoleWidget() {
               <form
                 onSubmit={(event) => { event.preventDefault(); send(input); }}
                 className="border-t border-border/60 p-3"
+                style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)" }}
               >
                 <div className="flex items-center gap-2 rounded-full bg-secondary/60 pl-4 pr-1.5 py-1.5">
                   <input
