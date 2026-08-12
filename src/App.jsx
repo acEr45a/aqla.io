@@ -39,6 +39,7 @@ import AccountManagement from '@/pages/AccountManagement';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import AdminDashboard from '@/pages/AdminDashboard';
+import SuperAdmins from '@/pages/SuperAdmins';
 import CommunityInsights from '@/pages/CommunityInsights';
 import AdminSecurityGate from '@/components/admin/AdminSecurityGate';
 
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/account-management" element={<AccountManagement />} />
           <Route path="/admin" element={<AdminSecurityGate><AdminDashboard /></AdminSecurityGate>} />
+          <Route path="/super-admins" element={<SuperAdmins />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

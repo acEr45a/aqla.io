@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { getPublicSettings, executeV3, renderV2, getV2Response, verifyCaptchaToken } from "@/lib/captcha";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
@@ -20,6 +21,17 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
+  const [settings, setSettings] = useState(null);
+  const [showV2, setShowV2] = useState(false);
+  const v2Ref = useRef(null);
+  const [v2WidgetId, setV2WidgetId] = useState(null);
+
+  useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
+  useEffect(() => {
+    if (showV2 && v2Ref.current && settings?.captcha?.v2_site_key) {
+      setV2WidgetId(renderV2(v2Ref.current, settings.captcha.v2_site_key));
+    }
+  }, [showV2, settings]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +42,23 @@ export default function Register() {
     }
     setLoading(true);
     try {
+      if (!settings?.test_mode && settings?.captcha) {
+        if (showV2 && v2WidgetId != null) {
+          const v2Token = getV2Response(v2WidgetId);
+          if (!v2Token) { setError("Please complete the reCAPTCHA."); setLoading(false); return; }
+          const verify = await verifyCaptchaToken(v2Token, "v2");
+          if (!verify.success) { setError("reCAPTCHA verification failed. Try again."); setLoading(false); return; }
+        } else {
+          const v3Token = await executeV3(settings.captcha.v3_site_key, "register");
+          const verify = await verifyCaptchaToken(v3Token, "v3");
+          if (!verify.success || (verify.score ?? 1) < (verify.threshold ?? 0.5)) {
+            setShowV2(true);
+            setError("Please complete the security check below.");
+            setLoading(false);
+            return;
+          }
+        }
+      }
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
@@ -220,6 +249,12 @@ export default function Register() {
             />
           </div>
         </div>
+        {showV2 && (
+          <div className="space-y-2">
+            <Label>Security check</Label>
+            <div ref={v2Ref} className="min-h-[78px]" />
+          </div>
+        )}
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>

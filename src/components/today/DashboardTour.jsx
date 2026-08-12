@@ -42,16 +42,24 @@ export default function DashboardTour({ open, onClose, onFinished }) {
 
   return createPortal(
     <div className="fixed inset-0 z-[100]">
-      <div className="absolute inset-0 bg-background/85 backdrop-blur-[2px]" onClick={finish} />
       {rect && (
-        <div
-          className="absolute rounded-2xl border-2 border-primary/70 pointer-events-none transition-all duration-300"
-          style={{
-            top: rect.top - PAD, left: rect.left - PAD,
-            width: rect.width + PAD * 2, height: rect.height + PAD * 2,
-            boxShadow: "0 0 0 9999px hsl(var(--background) / 0.85)",
-          }}
-        />
+        <>
+          <div className="absolute bg-background/85 backdrop-blur-[2px]" onClick={finish}
+            style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top - PAD) }} />
+          <div className="absolute bg-background/85 backdrop-blur-[2px]" onClick={finish}
+            style={{ top: rect.bottom + PAD, left: 0, right: 0, bottom: 0 }} />
+          <div className="absolute bg-background/85 backdrop-blur-[2px]" onClick={finish}
+            style={{ top: rect.top - PAD, left: 0, width: Math.max(0, rect.left - PAD), height: rect.height + PAD * 2 }} />
+          <div className="absolute bg-background/85 backdrop-blur-[2px]" onClick={finish}
+            style={{ top: rect.top - PAD, left: rect.right + PAD, right: 0, height: rect.height + PAD * 2 }} />
+          <div
+            className="absolute rounded-2xl border-2 border-primary/70 pointer-events-none transition-all duration-300"
+            style={{
+              top: rect.top - PAD, left: rect.left - PAD,
+              width: rect.width + PAD * 2, height: rect.height + PAD * 2,
+            }}
+          />
+        </>
       )}
       <div className="absolute mx-auto max-w-md" style={cardStyle}>
         <div className="aqla-panel rounded-2xl p-5 shadow-2xl">

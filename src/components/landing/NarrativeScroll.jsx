@@ -8,31 +8,31 @@ import ProtocolPlaquards from "@/components/landing/ProtocolPlaquards";
 const SECTIONS = [
   {
     color: "hsl(8 70% 62%)",
-    eyebrow: "01 — The Unmanaged Mind",
+    eyebrow: "01. The Unmanaged Mind",
     title: "Your brain is the most powerful system you own.",
     subtitle: "Nobody ever gave you the manual.",
-    body: "It runs on an operating system shaped by evolution, stress, and habit — never deliberately configured. You feel the gaps every day: the afternoon crashes, the foggy mornings, the focus that won't hold. You've tried supplements, hacks, and routines. All guessing.",
+    body: "It runs on an operating system shaped by evolution, stress, and habit. Never deliberately configured. You feel the gaps every day: the afternoon crashes, the foggy mornings, the focus that won't hold. You've tried supplements, hacks, and routines. All guessing.",
   },
   {
     color: "hsl(75 82% 60%)",
-    eyebrow: "02 — The Signal",
+    eyebrow: "02. The Signal",
     title: "Stop guessing. Start measuring.",
     subtitle: "Seven cognitive dimensions. Measured, not assumed.",
-    body: "AQLA runs the same cognitive paradigms used in neuroscience laboratories — Digit Span, Psychomotor Vigilance, Sustained Attention — to quantify your attention, memory, reaction speed, and working memory. Combined with your sleep, stress, and lifestyle data, this produces a signal, not a hunch.",
+    body: "AQLA runs the same cognitive paradigms used in neuroscience laboratories (Digit Span, Psychomotor Vigilance, Sustained Attention) to quantify your attention, memory, reaction speed, and working memory. Combined with your sleep, stress, and lifestyle data, this produces a signal, not a hunch.",
   },
   {
     color: "hsl(224 90% 72%)",
-    eyebrow: "03 — The Synchronization",
+    eyebrow: "03. The Synchronization",
     title: "A system, not a supplement.",
     subtitle: "Your data becomes a protocol calibrated to your bottleneck.",
     body: "SPARK for energy. FLOW for focus. DRIVE for endurance. LEARN for memory. RESET for recovery. DIGITAL for screen hygiene. Six protocol families, each grounded in peer-reviewed evidence, each matched to your specific cognitive profile.",
   },
   {
     color: "hsl(190 75% 62%)",
-    eyebrow: "04 — The Standard",
+    eyebrow: "04. The Standard",
     title: "Every claim. Graded. Every ingredient. Transparent.",
     subtitle: "Evidence you can verify, not marketing you have to trust.",
-    body: "No stars. No fake percentages. Every recommendation carries a graded evidence record — study types, populations studied, realistic effect sizes, known limitations. You see exactly what the science supports, what it doesn't, and what might work for you.",
+    body: "No stars. No fake percentages. Every recommendation carries a graded evidence record: study types, populations studied, realistic effect sizes, known limitations. You see exactly what the science supports, what it doesn't, and what might work for you.",
   },
 ];
 

@@ -35,7 +35,7 @@ export default function LandingSections() {
             AQLA never assumes a recommendation works.
           </h2>
           <p className="mt-6 text-muted-foreground leading-relaxed">
-            Every intervention becomes a controlled personal experiment — baseline, intervention, and honest analysis
+            Every intervention becomes a controlled personal experiment. Baseline, intervention, and honest analysis
             of your own response. Correlation is never presented as fact.
           </p>
         </div>
@@ -63,11 +63,11 @@ export default function LandingSections() {
           <div className="flex-1">
             <p className="text-sm text-muted-foreground tracking-widest uppercase mb-3">Your day, on paper</p>
             <h2 className="text-xl sm:text-2xl md:text-3xl font-light text-foreground leading-tight">
-              Download a branded daily plan — refreshed every morning.
+              Download a branded daily plan, refreshed every morning.
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed max-w-xl">
               A clean, step-by-step PDF of today's protocol actions, readiness signals, and focus areas.
-              Print it, pin it, or keep it on your phone — your plan renews automatically as your data updates each day.
+              Print it, pin it, or keep it on your phone. Your plan renews automatically as your data updates each day.
             </p>
           </div>
         </div>

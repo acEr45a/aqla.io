@@ -10,6 +10,7 @@ import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { getPublicSettings } from "@/lib/captcha";
 import { getVisitMeta } from "@/lib/visitMeta";
 import { localDateKey } from "@/lib/dateKey";
 
@@ -35,11 +36,15 @@ const SECONDARY_NAV = NAV.filter((item) => !PRIMARY_ROUTES.includes(item.to)).ma
 
 export default function AppLayout() {
   const [role, setRole] = useState(null);
+  const [testMode, setTestMode] = useState(false);
   const { pathname } = useLocation();
   const onAdmin = pathname.startsWith("/admin");
   const onCoach = pathname === "/coach";
   useEffect(() => {
     base44.auth.me().then((user) => setRole(user.role || "user")).catch(() => setRole("user"));
+  }, []);
+  useEffect(() => {
+    getPublicSettings().then((s) => setTestMode(!!s.test_mode)).catch(() => {});
   }, []);
   useEffect(() => {
     base44.appLogs?.logUserInApp?.(pathname).catch(() => {});
@@ -85,6 +90,11 @@ export default function AppLayout() {
       </aside>
 
       <main className="md:pl-56 pb-24 md:pb-10">
+        {testMode && role === "admin" && (
+          <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 text-center text-xs text-amber-300">
+            Test Mode is ON. QA bypass features are active. Disable it in the admin console when not testing.
+          </div>
+        )}
         <Outlet />
       </main>
 

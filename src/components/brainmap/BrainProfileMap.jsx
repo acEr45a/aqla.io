@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { REGIONS } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
@@ -7,6 +7,17 @@ const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const [tooltip, setTooltip] = useState(null);
+  const svgRef = useRef(null);
+  const [svgWidth, setSvgWidth] = useState(660);
+  useEffect(() => {
+    const update = () => {
+      if (svgRef.current) setSvgWidth(svgRef.current.getBoundingClientRect().width);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    if (svgRef.current) ro.observe(svgRef.current);
+    return () => ro.disconnect();
+  }, []);
   const byKey = {};
   domains.forEach((d) => { byKey[d.key] = d; });
 
@@ -20,7 +31,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
   };
 
   return (
-    <svg viewBox="0 0 660 560" className="w-full h-full">
+    <svg ref={svgRef} viewBox="0 0 660 560" className="w-full h-full">
       <defs>
         <mask id="brain-model-mask" maskUnits="userSpaceOnUse" x="80" y="70" width="500" height="460" style={{ maskType: "luminance" }}>
           <image href={GLASS_BRAIN} x="80" y="70" width="500" height="460" preserveAspectRatio="xMidYMid slice" />
@@ -89,6 +100,7 @@ export default function BrainProfileMap({ domains = [], activeKey, onHover, onSe
         region={tooltip ? REGIONS.find((item) => item.key === tooltip.key) : null}
         x={tooltip?.x || 0}
         y={tooltip?.y || 0}
+        svgWidth={svgWidth}
       />
     </svg>
   );

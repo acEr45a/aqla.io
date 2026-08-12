@@ -22,6 +22,7 @@ import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
+import TestModeToggle from "@/components/admin/TestModeToggle";
 import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
 import UserComplaintsPanel from "@/components/admin/UserComplaintsPanel";
 
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
         {tab === "overview" &&
         <>
             <AppHealthPanel />
+            <TestModeToggle />
             <UserComplaintsPanel />
             <div className="grid gap-5 lg:grid-cols-2">
               <RegistrationChart data={data.days} />

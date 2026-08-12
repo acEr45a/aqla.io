@@ -21,7 +21,10 @@ export default function FirstCheckInWelcome({ open, firstName, onBegin, onDismis
       });
     burst(0.25, 60);
     burst(0.75, 120);
-    const t = setTimeout(() => burst(0.5, 90), 180);
+    const t = setTimeout(() => {
+      burst(0.5, 90);
+      window.dispatchEvent(new CustomEvent("first-checkin-ready"));
+    }, 180);
     return () => clearTimeout(t);
   }, [open]);
 

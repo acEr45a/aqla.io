@@ -46,11 +46,14 @@ export default function Today() {
   };
   useEffect(() => {
     load();
+    const handleFirstCheckIn = () => { setShowWelcome(false); setCheckInOpen(true); };
     window.addEventListener("aqla:check-in-saved", load);
     window.addEventListener("aqla:protocol-changed", load);
+    window.addEventListener("first-checkin-ready", handleFirstCheckIn);
     return () => {
       window.removeEventListener("aqla:check-in-saved", load);
       window.removeEventListener("aqla:protocol-changed", load);
+      window.removeEventListener("first-checkin-ready", handleFirstCheckIn);
     };
   }, []);
 

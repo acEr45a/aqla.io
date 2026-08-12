@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
+import { getPublicSettings, executeV3, renderV2, getV2Response, verifyCaptchaToken } from "@/lib/captcha";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +24,18 @@ export default function Login() {
   const raw = safeReturnTo();
   const returnTo = raw === "/" ? "/today" : raw;
 
+  const [settings, setSettings] = useState(null);
+  const [showV2, setShowV2] = useState(false);
+  const v2Ref = useRef(null);
+  const [v2WidgetId, setV2WidgetId] = useState(null);
+
+  useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
+  useEffect(() => {
+    if (showV2 && v2Ref.current && settings?.captcha?.v2_site_key) {
+      setV2WidgetId(renderV2(v2Ref.current, settings.captcha.v2_site_key));
+    }
+  }, [showV2, settings]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -30,6 +43,23 @@ export default function Login() {
     if (rememberEmail) localStorage.setItem("aqla_remembered_email", email);
     else localStorage.removeItem("aqla_remembered_email");
     try {
+      if (!settings?.test_mode && settings?.captcha) {
+        if (showV2 && v2WidgetId != null) {
+          const v2Token = getV2Response(v2WidgetId);
+          if (!v2Token) { setError("Please complete the reCAPTCHA."); setLoading(false); return; }
+          const verify = await verifyCaptchaToken(v2Token, "v2");
+          if (!verify.success) { setError("reCAPTCHA verification failed. Try again."); setLoading(false); return; }
+        } else {
+          const v3Token = await executeV3(settings.captcha.v3_site_key, "login");
+          const verify = await verifyCaptchaToken(v3Token, "v3");
+          if (!verify.success || (verify.score ?? 1) < (verify.threshold ?? 0.5)) {
+            setShowV2(true);
+            setError("Please complete the security check below.");
+            setLoading(false);
+            return;
+          }
+        }
+      }
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = returnTo;
     } catch (err) {
@@ -128,6 +158,12 @@ export default function Login() {
           <Label htmlFor="remember-email" className="text-sm font-normal text-muted-foreground">Remember my email on this device</Label>
         </div>
         <p className="text-xs text-muted-foreground">You stay signed in on this device until you sign out.</p>
+        {showV2 && (
+          <div className="space-y-2">
+            <Label>Security check</Label>
+            <div ref={v2Ref} className="min-h-[78px]" />
+          </div>
+        )}
         <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
           {loading ? (
             <>

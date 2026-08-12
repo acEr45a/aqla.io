@@ -1,20 +1,18 @@
 import React from "react";
 import { rankProgress } from "@/lib/ranks";
 
-export default function BrainRankTooltip({ domain, region, x, y }) {
+export default function BrainRankTooltip({ domain, region, x, y, svgWidth = 660 }) {
   if (!domain || !region) return null;
   const { rank, next, pct } = rankProgress(domain.score);
   const remaining = next ? Math.max(0, next.min - domain.score) : 0;
+  const tipW = svgWidth < 480 ? 340 : 238;
+  const tipH = svgWidth < 480 ? 200 : 162;
+  const clampedX = Math.max(8, Math.min(x + 14, 660 - tipW - 8));
+  const clampedY = Math.max(8, Math.min(y - tipH - 8, 560 - tipH - 8));
 
   return (
-    <foreignObject
-      x={Math.max(8, Math.min(x + 14, 660 - 246))}
-      y={Math.max(8, Math.min(y - 170, 560 - 170))}
-      width="238"
-      height="162"
-      pointerEvents="none"
-    >
-      <div className="rounded-xl border border-border/80 bg-background/95 p-3 shadow-2xl backdrop-blur-md">
+    <foreignObject x={clampedX} y={clampedY} width={tipW} height={tipH} pointerEvents="none">
+      <div className="rounded-xl border border-border/80 bg-background/95 p-3 shadow-2xl backdrop-blur-md h-full overflow-hidden">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-foreground">{domain.label}</p>

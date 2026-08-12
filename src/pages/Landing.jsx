@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { getPublicSettings } from "@/lib/captcha";
 import AqlaLogo from "@/components/AqlaLogo";
 import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import BrainHealthSummary from "@/components/brainmap/BrainHealthSummary";
@@ -18,7 +19,7 @@ import SignalPath from "@/components/landing/SignalPath";
 const SCROLL_SECTIONS = ["The Problem", "The Signal", "The Protocol", "The Evidence", "Begin"];
 
 const STEPS = [
-  ["01", "Try three preview tasks", "Start the seven-part cognitive baseline with three short tasks—no account needed."],
+  ["01", "Try three preview tasks", "Start the seven-part cognitive baseline with three short tasks. No account needed."],
   ["02", "Add your questionnaire", "Create an account, save those results, and capture your sleep, stress, rhythm, and habits."],
   ["03", "Complete your Brain Map", "Finish the four remaining measured tasks and combine them with your questionnaire."],
 ];
@@ -26,6 +27,12 @@ const STEPS = [
 export default function Landing() {
   const [activeSection, setActiveSection] = useState(0);
   const stepRef = useRef(null);
+  const [testMode, setTestMode] = useState(false);
+  useEffect(() => {
+    const urlTest = new URLSearchParams(window.location.search).get("test_mode") === "true";
+    if (urlTest) { setTestMode(true); return; }
+    getPublicSettings().then((s) => setTestMode(!!s.test_mode)).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
@@ -49,7 +56,7 @@ export default function Landing() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs">
             <Zap className="w-3.5 h-3.5" />
-            New here? Try the first three of seven baseline tasks — no account needed.
+            New here? Try the first three of seven baseline tasks. No account needed.
           </motion.div>
           <h1 className="mt-6 text-3xl sm:text-4xl md:text-6xl font-light leading-[1.12] md:leading-[1.08] text-foreground">
             {"Your brain is giving you signals.".split(" ").map((word, i) => (
@@ -88,7 +95,7 @@ export default function Landing() {
           <div className="mt-3">
             <BrainHealthSummary domains={DEMO_DOMAINS} compact />
           </div>
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">Example Brain Map — your questionnaire and seven measured tasks build your real profile.</p>
+          <p className="mt-2 text-center text-[11px] text-muted-foreground">Example Brain Map. Your questionnaire and seven measured tasks build your real profile.</p>
         </motion.div>
       </section>
 
@@ -104,6 +111,13 @@ export default function Landing() {
             </motion.div>
           ))}
         </div>
+        {testMode && (
+          <div className="mt-6 flex justify-center">
+            <Link to="/register" className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-6 py-3 text-sm text-primary hover:bg-primary/10 transition-colors">
+              Skip to registration <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </section>
 
       <LandingSections />
