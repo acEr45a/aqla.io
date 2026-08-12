@@ -24,6 +24,9 @@ import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
 import TestModeToggle from "@/components/admin/TestModeToggle";
 import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
+import AdminRoster from "@/components/superadmin/AdminRoster";
+import CaptchaEditor from "@/components/superadmin/CaptchaEditor";
+import SuperAdminLogs from "@/components/superadmin/SuperAdminLogs";
 import UserComplaintsPanel from "@/components/admin/UserComplaintsPanel";
 
 const TABS = [
@@ -40,11 +43,14 @@ const TABS = [
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [allowed, setAllowed] = useState(true);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [tab, setTab] = useState("overview");
 
   const load = React.useCallback(async () => {
     const user = await base44.auth.me();
     if (user.role !== "admin") return setAllowed(false);
+    base44.functions.invoke("superAdminOps", { action: "check" })
+      .then((r) => setIsSuperAdmin(!!r.data?.isSuperAdmin)).catch(() => {});
     const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
     setData(response.data);
   }, []);
@@ -81,6 +87,13 @@ export default function AdminDashboard() {
         className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors ${
         tab === item.id ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
             {item.label}
+          </button>
+        )}
+        {isSuperAdmin && (
+          <button onClick={() => setTab("superAdmin")}
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors ${
+            tab === "superAdmin" ? "bg-primary/15 text-primary" : "text-primary/70 hover:text-primary"}`}>
+            Super Admin
           </button>
         )}
       </div>
@@ -121,6 +134,13 @@ export default function AdminDashboard() {
         {tab === "ops" && <BackendOpsSummary />}
         {tab === "memberData" && <MemberDataPanel />}
         {tab === "development" && <DevelopmentPanel />}
+        {tab === "superAdmin" && isSuperAdmin &&
+        <>
+            <AdminRoster />
+            <CaptchaEditor />
+            <SuperAdminLogs />
+          </>
+        }
       </div>
 
       <OpsConsoleWidget />
