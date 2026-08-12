@@ -1,0 +1,48 @@
+{
+  "name": "SuperAdminLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "description": "What the Super Admin did (e.g. view, promote, demote, key_edit)"
+    },
+    "target_user_id": {
+      "type": "string",
+      "description": "User affected by the action, if any"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "action",
+    "timestamp"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "test_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, enables QA bypass features (CAPTCHA skip, Landing skip button) for thorough testing"
+    }
+  },
+  "required": [],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
