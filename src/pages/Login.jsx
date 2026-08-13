@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import { safeReturnTo } from "@/lib/authReturnTo";
+import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
 
 export default function Login() {
   const [email, setEmail] = useState(() => localStorage.getItem("aqla_remembered_email") || "");
@@ -22,7 +22,7 @@ export default function Login() {
   // safeReturnTo() falls back to "/" (the public landing page) — signed-in users
   // belong in the app, so default them to Today instead.
   const raw = safeReturnTo();
-  const returnTo = raw === "/" ? "/today" : raw;
+  const returnTo = raw === "/" ? dashboardDestination() : raw;
 
   const [settings, setSettings] = useState(null);
   const [showV2, setShowV2] = useState(false);

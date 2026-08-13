@@ -10,7 +10,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
-import { safeReturnTo } from "@/lib/authReturnTo";
+import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
 import SignupLegalNotice from "@/components/legal/SignupLegalNotice";
 
 export default function Register() {
@@ -100,7 +100,7 @@ export default function Register() {
 
   const handleGoogle = () => {
     const raw = safeReturnTo();
-    base44.auth.loginWithProvider("google", raw === "/" ? "/assessment" : raw);
+    base44.auth.loginWithProvider("google", raw === "/" ? dashboardDestination() : raw);
   };
 
   if (showOtp) {

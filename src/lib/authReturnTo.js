@@ -31,3 +31,16 @@ export function safeReturnTo() {
     return "/";
   }
 }
+
+// Post-auth dashboard destination. On the production custom domain (aqla.io)
+// we return an absolute URL so the OAuth callback — which runs on the Base44
+// platform host — redirects back to the custom domain instead of the default
+// platform domain. In preview/dev we stay same-origin with a relative path so
+// the session token set by the callback isn't lost.
+export function dashboardDestination() {
+  const host = window.location.hostname;
+  if (host === "aqla.io" || host.endsWith(".aqla.io")) {
+    return "https://aqla.io/dashboard";
+  }
+  return "/dashboard";
+}
