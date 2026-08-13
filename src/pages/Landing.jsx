@@ -76,8 +76,7 @@ export default function Landing() {
           </h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1 }}
             className="mt-5 text-muted-foreground text-base md:text-lg leading-relaxed max-w-lg">
-            AQLA analyzes your cognitive performance, lifestyle, sleep, stress, habits, and goals to create a
-            personalized brain-health protocol that continuously learns what works for you.
+            AQLA is a personalized mental performance platform that analyzes individual cognitive patterns and lifestyle habits to provide evidence-informed, actionable protocols for optimized daily function.
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }}
             className="mt-8 md:mt-10 flex flex-wrap gap-3 md:gap-4">
