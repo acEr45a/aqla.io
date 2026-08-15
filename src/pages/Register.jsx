@@ -62,7 +62,14 @@ export default function Register() {
       await base44.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
-      setError(err.message || "Registration failed");
+      // Collision guard: existing account (possibly created via Google) — send
+      // them to log in rather than leaving them stuck on "registration failed".
+      const msg = String(err?.message || "");
+      if (/already|exists|registered|in use/i.test(msg)) {
+        setError("An account with this email already exists. Log in instead — use “Continue with Google” if you signed up that way.");
+      } else {
+        setError(msg || "Registration failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -98,9 +105,14 @@ export default function Register() {
     }
   };
 
-  const handleGoogle = () => {
+  const handleGoogle = async () => {
+    setError("");
     const raw = safeReturnTo();
-    base44.auth.loginWithProvider("google", raw === "/" ? dashboardDestination() : raw);
+    try {
+      await base44.auth.loginWithProvider("google", raw === "/" ? dashboardDestination() : raw);
+    } catch (err) {
+      setError(err?.message || "Google sign-up could not start. Please try again.");
+    }
   };
 
   if (showOtp) {

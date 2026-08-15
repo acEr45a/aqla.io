@@ -29,13 +29,25 @@ export function loadRecaptchaV3(siteKey) {
   return v3Loaded;
 }
 
+// grecaptcha.execute is only safe inside grecaptcha.ready — the script's onload
+// fires before the API finishes initializing, so calling execute straight after
+// load intermittently throws. Wait for ready every time.
+function recaptchaReady() {
+  return new Promise((resolve) => {
+    if (window.grecaptcha?.ready) window.grecaptcha.ready(resolve);
+    else resolve();
+  });
+}
+
 export async function executeV3(siteKey, action = "login") {
   await loadRecaptchaV3(siteKey);
+  await recaptchaReady();
   return window.grecaptcha.execute(siteKey, { action });
 }
 
 export function renderV2(container, siteKey) {
-  if (!window.grecaptcha) return null;
+  if (!window.grecaptcha?.render) return null;
+  if (container.childElementCount > 0) return null; // already rendered
   try {
     return window.grecaptcha.render(container, { sitekey: siteKey });
   } catch (e) {

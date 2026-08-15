@@ -60,7 +60,14 @@ export default function Today() {
   const today = localDateKey();
   const checkedInToday = checkIns.some((c) => c.date === today && c.valid !== false);
   const latest = checkIns[0];
-  const readiness = latest ? Math.round(((latest.clarity + latest.energy + latest.sleep_quality + (10 - latest.stress)) / 40) * 100) : null;
+  // A brand-new member (or a partially saved check-in) can be missing any of
+  // these scores — only compute readiness when all four are present, so the
+  // dashboard shows "—" instead of NaN%.
+  const hasFullSignals = latest && ["clarity", "energy", "sleep_quality", "stress"]
+    .every((k) => typeof latest[k] === "number");
+  const readiness = hasFullSignals
+    ? Math.round(((latest.clarity + latest.energy + latest.sleep_quality + (10 - latest.stress)) / 40) * 100)
+    : null;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const firstName = user?.full_name?.split(" ")[0] || "there";
@@ -199,10 +206,11 @@ export default function Today() {
         </div>
       )}
 
-      <CheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} onSaved={load} />
+      {/* The tour owns the screen while it runs — nothing else may open over it. */}
+      <CheckInDialog open={checkInOpen && !tourOpen} onOpenChange={setCheckInOpen} onSaved={load} />
       <DashboardTour open={tourOpen} onClose={() => setTourOpen(false)} onFinished={() => setShowWelcome(true)} />
       <FirstCheckInWelcome
-        open={showWelcome}
+        open={showWelcome && !tourOpen}
         firstName={firstName}
         onBegin={() => { setShowWelcome(false); setCheckInOpen(true); }}
         onDismiss={() => setShowWelcome(false)}

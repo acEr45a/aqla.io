@@ -1,20 +1,31 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getPublicSettings } from "@/lib/captcha";
 import AqlaLogo from "@/components/AqlaLogo";
-import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import BrainHealthSummary from "@/components/brainmap/BrainHealthSummary";
 import { DOMAINS } from "@/lib/scoring";
 
+// The 3D brain and the long scroll narrative are the heaviest part of this page
+// (three.js + scene build). Split them out so the hero copy paints immediately
+// and they stream in behind a quiet placeholder.
+const NeuralBrainVisual = lazy(() => import("@/components/brainmap/NeuralBrainVisual"));
+
+function VisualFallback({ className = "aspect-square" }) {
+  return (
+    <div className={`${className} w-full animate-pulse rounded-2xl border border-border/40 bg-secondary/20`} />
+  );
+}
+
 const DEMO_SCORES = { focus: 28, memory: 43, mental_energy: 57, stress_regulation: 71, sleep_recovery: 85, cognitive_resilience: 96, lifestyle_protection: 67, learning_capacity: 82 };
 const DEMO_DOMAINS = DOMAINS.map((d) => ({ ...d, score: DEMO_SCORES[d.key] }));
-import NeuralField from "@/components/landing/NeuralField";
-import LandingSections from "@/components/landing/LandingSections";
 import ScrollIndicator from "@/components/landing/ScrollIndicator";
-import NarrativeScroll from "@/components/landing/NarrativeScroll";
 import { ArrowRight, Zap } from "lucide-react";
 import SignalPath from "@/components/landing/SignalPath";
+
+const NeuralField = lazy(() => import("@/components/landing/NeuralField"));
+const LandingSections = lazy(() => import("@/components/landing/LandingSections"));
+const NarrativeScroll = lazy(() => import("@/components/landing/NarrativeScroll"));
 
 const SCROLL_SECTIONS = ["The Problem", "The Signal", "The Protocol", "The Evidence", "Begin"];
 
@@ -38,7 +49,9 @@ export default function Landing() {
     <div className="min-h-screen bg-background aqla-glow relative aqla-grain">
       <SignalPath triggerRef={stepRef} />
       <ScrollIndicator sections={SCROLL_SECTIONS} activeIndex={activeSection} />
-      <NeuralField className="opacity-60 h-[110vh]" />
+      <Suspense fallback={null}>
+        <NeuralField className="opacity-60 h-[110vh]" />
+      </Suspense>
       <header className="relative max-w-6xl mx-auto px-4 md:px-6 py-5 md:py-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 sm:gap-3">
           <AqlaLogo className="text-foreground" />
@@ -90,7 +103,9 @@ export default function Landing() {
           </motion.div>
         </div>
         <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.2, delay: 0.4 }}>
-          <NeuralBrainVisual key="landing-neural-brain" domains={DEMO_DOMAINS} />
+          <Suspense fallback={<VisualFallback />}>
+            <NeuralBrainVisual key="landing-neural-brain" domains={DEMO_DOMAINS} />
+          </Suspense>
           <div className="mt-3">
             <BrainHealthSummary domains={DEMO_DOMAINS} compact />
           </div>
@@ -119,9 +134,13 @@ export default function Landing() {
         )}
       </section>
 
-      <LandingSections />
+      <Suspense fallback={<div className="mx-auto max-w-6xl px-4 md:px-6"><VisualFallback className="h-64" /></div>}>
+        <LandingSections />
+      </Suspense>
 
-      <NarrativeScroll onSectionEnter={setActiveSection} />
+      <Suspense fallback={null}>
+        <NarrativeScroll onSectionEnter={setActiveSection} />
+      </Suspense>
 
       <footer className="relative border-t border-border/70">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">

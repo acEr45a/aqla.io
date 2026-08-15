@@ -19,10 +19,12 @@ export default function History() {
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
-    base44.entities.PdfArchive.list("-date", 100).then(setArchives);
-    base44.entities.EmailDigest.list("-sent_date", 100).then(setDigests);
-    base44.entities.Protocol.list("-created_date").then(setProtocols);
-    base44.entities.BrainDomain.list("-updated_date").then(setDomains);
+    // Guard every list: a failed or malformed response must not blank the page.
+    const safeList = (p) => p.then((r) => (Array.isArray(r) ? r : [])).catch(() => []);
+    safeList(base44.entities.PdfArchive.list("-date", 100)).then(setArchives);
+    safeList(base44.entities.EmailDigest.list("-sent_date", 100)).then(setDigests);
+    safeList(base44.entities.Protocol.list("-created_date")).then(setProtocols);
+    safeList(base44.entities.BrainDomain.list("-updated_date")).then(setDomains);
   }, []);
 
   const fetchPeriodData = async () => {
@@ -75,8 +77,9 @@ export default function History() {
   };
 
   const reports = [
-    ...archives.map((a) => ({ sortDate: a.date, kind: a.kind, title: a.title, subtitle: `Generated ${a.date}`, onDownload: () => downloadDaily(a) })),
-    ...digests.map((d) => ({
+    // Only render records that carry the fields a row needs — skip partial data.
+    ...archives.filter((a) => a?.date && a?.title).map((a) => ({ sortDate: a.date, kind: a.kind, title: a.title, subtitle: `Generated ${a.date}`, onDownload: () => downloadDaily(a) })),
+    ...digests.filter((d) => d?.sent_date).map((d) => ({
       sortDate: d.sent_date?.slice(0, 10) || "",
       kind: d.kind === "weekly" ? "weekly" : "end_of_plan",
       title: d.subject || (d.kind === "weekly" ? "Weekly report" : "End-of-plan report"),

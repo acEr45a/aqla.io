@@ -63,14 +63,28 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      // Collision guard: an account created through Google has no password, so
+      // point the user at the right button instead of "invalid password".
+      const msg = String(err?.message || "");
+      if (/google|provider|no password|social/i.test(msg)) {
+        setError("This email is registered with Google. Use “Continue with Google” above.");
+      } else {
+        setError(msg || "Invalid email or password");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", returnTo);
+  const handleGoogle = async () => {
+    setError("");
+    try {
+      // Always hand the provider an explicit, validated destination so the
+      // platform callback returns to the right host (custom domain in prod).
+      await base44.auth.loginWithProvider("google", returnTo || dashboardDestination());
+    } catch (err) {
+      setError(err?.message || "Google sign-in could not start. Please try again.");
+    }
   };
 
   return (
