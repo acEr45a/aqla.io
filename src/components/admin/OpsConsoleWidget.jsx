@@ -345,16 +345,15 @@ export default function OpsConsoleWidget() {
                     </p>
                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       {cfg.prompts.map((prompt) => (
-                        <div
+                        <button
                           key={prompt}
-                          title="Coming soon"
-                          className="w-full sm:w-auto flex items-center justify-between gap-2 text-left rounded-full border border-border px-4 py-2.5 sm:px-3 sm:py-1.5 text-[11px] text-muted-foreground/60 pointer-events-none select-none"
+                          type="button"
+                          onClick={() => send(prompt)}
+                          disabled={sending}
+                          className="w-full sm:w-auto text-left rounded-full border border-border px-4 py-2.5 sm:px-3 sm:py-1.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
                         >
-                          <span>{prompt}</span>
-                          <span className="shrink-0 rounded-full bg-secondary border border-border px-2 py-0.5 text-[9px] uppercase tracking-widest text-muted-foreground">
-                            Soon
-                          </span>
-                        </div>
+                          {prompt}
+                        </button>
                       ))}
                     </div>
                   </div>

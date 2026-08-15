@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import HealthGauge from "@/components/admin/HealthGauge";
-import { Activity, CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw, Wrench, Copy, Check } from "lucide-react";
+import CopyButton from "@/components/ui/copy-button";
+import { Activity, CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw, Wrench } from "lucide-react";
 
 const STATUS_ICON = {
   pass: <CheckCircle2 className="h-4 w-4 text-[#7BC950]" />,
@@ -16,7 +17,6 @@ export default function AppHealthPanel() {
   const [resolving, setResolving] = useState(null);
   const [resolved, setResolved] = useState({});
   const [builderPrompt, setBuilderPrompt] = useState({});
-  const [copied, setCopied] = useState(null);
 
   const runTest = async () => {
     setRunning(true); setError("");
@@ -52,13 +52,6 @@ export default function AppHealthPanel() {
       setError(e.message);
     }
     setResolving(null);
-  };
-
-  const copyPrompt = (name, text) => {
-    navigator.clipboard?.writeText(text).then(() => {
-      setCopied(name);
-      setTimeout(() => setCopied(null), 1800);
-    });
   };
 
   useEffect(() => { runTest(); }, []);
@@ -117,13 +110,7 @@ export default function AppHealthPanel() {
                     <div className="mt-2 rounded-lg border border-primary/30 bg-primary/5 p-2.5">
                       <p className="text-[10px] uppercase tracking-widest text-primary">Builder prompt — paste into the builder</p>
                       <p className="mt-1.5 whitespace-pre-wrap text-[11px] leading-relaxed text-foreground/90">{builderPrompt[check.name]}</p>
-                      <button
-                        onClick={() => copyPrompt(check.name, builderPrompt[check.name])}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-[10px] font-medium text-primary-foreground"
-                      >
-                        {copied === check.name ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                        {copied === check.name ? "Copied" : "Copy prompt"}
-                      </button>
+                      <CopyButton value={builderPrompt[check.name]} label="Copy prompt" className="mt-2" />
                     </div>
                   )}
                 </div>

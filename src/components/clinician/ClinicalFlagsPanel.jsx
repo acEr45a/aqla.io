@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Flag, CheckCircle2, Loader2, Send, User } from "lucide-react";
+import { Flag, CheckCircle2, Loader2, Send, User, RotateCcw } from "lucide-react";
 import FollowUpComposer from "@/components/clinician/FollowUpComposer";
 import { notify } from "@/lib/clinicianToast";
 
@@ -40,11 +40,18 @@ export default function ClinicalFlagsPanel({ onOpenMember, onAction }) {
     [flags, tab, statusFilter]
   );
 
-  const markReviewed = async (f) => {
+  // Bidirectional: reviewed flags can be reopened back to pending.
+  const toggleReviewed = async (f) => {
     setUpdating(f.id);
+    const next = f.status === "reviewed" ? "pending" : "reviewed";
     try {
-      await base44.entities.ClinicalFlag.update(f.id, { status: "reviewed" });
-      notify("Flag reviewed", `Marked reviewed for ${f.user_name || "member"}.`);
+      await base44.entities.ClinicalFlag.update(f.id, { status: next });
+      notify(
+        next === "reviewed" ? "Flag reviewed" : "Flag reopened",
+        next === "reviewed"
+          ? `Marked reviewed for ${f.user_name || "member"}.`
+          : `Moved back to pending for ${f.user_name || "member"}.`
+      );
       load(); onAction?.();
     } catch { /* ignore */ }
     setUpdating(null);
@@ -114,9 +121,10 @@ export default function ClinicalFlagsPanel({ onOpenMember, onAction }) {
                       <Send className="h-3 w-3" /> Follow up
                     </button>
                   ) : (
-                    <button onClick={() => markReviewed(f)} disabled={updating === f.id || f.status === "reviewed"}
+                    <button onClick={() => toggleReviewed(f)} disabled={updating === f.id}
                       className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50">
-                      {updating === f.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />} {f.status === "reviewed" ? "Reviewed" : "Mark reviewed"}
+                      {updating === f.id ? <Loader2 className="h-3 w-3 animate-spin" /> : f.status === "reviewed" ? <RotateCcw className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                      {f.status === "reviewed" ? "Reopen" : "Mark reviewed"}
                     </button>
                   )}
                 </div>
