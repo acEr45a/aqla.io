@@ -14,8 +14,12 @@ export default function RecommendationModal() {
 
   const load = async () => {
     try {
+      // Scope to the signed-in member: clinicians/admins can read all
+      // recommendations, so an unscoped query would surface other members'.
+      const me = await base44.auth.me();
+      if (!me?.id) return;
       const list = await base44.entities.MemberRecommendation.filter(
-        { status: "active" },
+        { status: "active", user_id: me.id },
         "-created_date",
         1
       );

@@ -4,6 +4,7 @@ import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import ReassessmentPrompt from "@/components/ReassessmentPrompt";
 import DailyCheckInPrompt from "@/components/today/DailyCheckInPrompt";
+import RecommendationModal from "@/components/today/RecommendationModal";
 import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
@@ -67,6 +68,7 @@ export default function AppLayout() {
       {!onAdmin && !onCoach && <AqlaAssistant />}
       <ReassessmentPrompt />
       <DailyCheckInPrompt />
+      <RecommendationModal />
       <PlanReviewGate />
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
         <div className="px-6 py-7 flex items-center gap-2.5">
@@ -90,7 +92,7 @@ export default function AppLayout() {
       </aside>
 
       <main className="md:pl-56 pb-24 md:pb-10">
-        {testMode && role === "admin" && (
+        {testMode && (role === "admin" || role === "clinician") && (
           <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 text-center text-xs text-amber-300">
             Test Mode is ON. QA bypass features are active. Disable it in the admin console when not testing.
           </div>

@@ -366,7 +366,7 @@ function ActionsTab({ member, onChanged }) {
           <PenLine className="w-3 h-3" /> AI composer
         </p>
         <p className="text-xs text-muted-foreground">
-          Draft a member-facing message from this member's clinical data only — Backend Ops (Gemini) strips identifiers and admin-only data before drafting.
+          Draft a member-facing message from this member's clinical data only — AQLA Intelligence strips identifiers and admin-only data before drafting.
         </p>
         <button onClick={() => setShowComposer(true)}
           className="w-full rounded-full bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground">

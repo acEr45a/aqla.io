@@ -6,6 +6,7 @@ import SendToAdminCard from "@/components/clinician/SendToAdminCard";
 import ClinicalFlagsPanel from "@/components/clinician/ClinicalFlagsPanel";
 import ClinicianInbox from "@/components/clinician/ClinicianInbox";
 import MemberProfilePanel from "@/components/clinician/MemberProfilePanel";
+import ClinicianAlerts from "@/components/clinician/ClinicianAlerts";
 import { notify } from "@/lib/clinicianToast";
 import { Stethoscope, Search, ShieldAlert, ArrowUpDown, Clock, CheckCircle2, Users } from "lucide-react";
 
@@ -169,6 +170,7 @@ export default function Clinician() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-10">
+      <ClinicianAlerts onNew={loadAll} />
       <div className="flex items-center gap-3">
         <Stethoscope className="w-6 h-6 text-primary" strokeWidth={1.5} />
         <div>
