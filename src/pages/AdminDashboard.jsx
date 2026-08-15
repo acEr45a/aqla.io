@@ -23,6 +23,7 @@ import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
 import TestModeToggle from "@/components/admin/TestModeToggle";
+import ProtocolCleanupPanel from "@/components/admin/ProtocolCleanupPanel";
 import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
 import AdminRoster from "@/components/superadmin/AdminRoster";
 import CaptchaEditor from "@/components/superadmin/CaptchaEditor";
@@ -103,6 +104,7 @@ export default function AdminDashboard() {
         <>
             <AppHealthPanel />
             <TestModeToggle />
+            <ProtocolCleanupPanel />
             <UserComplaintsPanel />
             <div className="grid gap-5 lg:grid-cols-2">
               <RegistrationChart data={data.days} />

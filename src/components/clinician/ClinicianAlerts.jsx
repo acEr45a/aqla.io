@@ -2,16 +2,16 @@ import React, { useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { toast } from "@/components/ui/use-toast";
 
-// Surfaces in-dashboard pop-up alerts to the clinician when new items arrive:
-// clinical flags, pending reviews, and member-reported issues.
-// Fires on load for anything unseen since the clinician's last visit, then live
-// via realtime subscriptions while the dashboard is open.
+// Surfaces in-dashboard pop-up alerts to the clinician when new clinical flags
+// or pending reviews arrive. Fires on load for anything unseen since the
+// clinician's last visit, then live via realtime subscriptions while open.
+// Member-submitted reports (UserComplaint) are intentionally excluded — they
+// stay admin-only.
 const SEEN_KEY = "aqla_clinician_last_seen";
 
 const SOURCES = [
   { entity: "ClinicalFlag", label: "New clinical flag", describe: (r) => r.message_snippet?.slice(0, 90) || "Flagged content needs review." },
   { entity: "ClinicianReview", label: "New review awaiting decision", describe: (r) => r.recommendation?.slice(0, 90) || "AI recommendation awaiting decision." },
-  { entity: "UserComplaint", label: "New member report", describe: (r) => r.subject || r.detail?.slice(0, 90) || "A member submitted a report." },
 ];
 
 export default function ClinicianAlerts({ onNew }) {
