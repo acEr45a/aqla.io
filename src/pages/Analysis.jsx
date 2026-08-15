@@ -83,16 +83,19 @@ export default function Analysis() {
     <div className="min-h-screen bg-background aqla-glow flex items-center justify-center px-6">
       <div className="max-w-lg w-full text-center py-16">
         <RadialMap domains={domains.length ? domains : []} size={360} revealCount={done ? undefined : reveal} />
-        <div className="h-16 mt-6">
+        {/* No fixed height: the stage copy and the ready-state block vary in
+            length, and a hard h-16 made them overlap. Flex column + wrapping
+            lets the container grow with whatever it holds. */}
+        <div className="mt-6 flex flex-col gap-4">
           <AnimatePresence mode="wait">
             {!done ? (
               <motion.p key={stage} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                className="text-foreground font-display text-lg">
+                className="text-foreground font-display text-lg break-words whitespace-normal">
                 {STAGES[stage]}<span className="text-primary">…</span>
               </motion.p>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <p className="text-foreground font-display text-xl">Your questionnaire profile is ready.</p>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+                <p className="text-foreground font-display text-xl break-words whitespace-normal">Your questionnaire profile is ready.</p>
                 <RecommendedPlanStart family={recommendedFamily} />
               </motion.div>
             )}
