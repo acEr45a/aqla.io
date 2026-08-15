@@ -3,7 +3,7 @@ import { ChevronDown, FileDown } from "lucide-react";
 
 const FAMILY_COLORS = { SPARK: "#C9F24E", FLOW: "#5FD4E8", DRIVE: "#7B94FF", LEARN: "#E8A28F", RESET: "#8FE8C2", DIGITAL: "#B89CF6" };
 
-export default function PlanHistoryCard({ protocol, onDownload }) {
+export default function PlanHistoryCard({ protocol, onDownload, downloadDisabled, disabledReason }) {
   const [open, setOpen] = useState(false);
   const color = FAMILY_COLORS[protocol.family] || "#C9F24E";
 
@@ -36,10 +36,13 @@ export default function PlanHistoryCard({ protocol, onDownload }) {
               ))}
             </ul>
           )}
-          <button onClick={onDownload}
-            className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-xs text-foreground">
+          <button onClick={onDownload} disabled={downloadDisabled}
+            className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-xs text-foreground disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-border">
             <FileDown className="w-3.5 h-3.5" /> Download full cycle report (PDF)
           </button>
+          {downloadDisabled && disabledReason && (
+            <p className="mt-2 text-[11px] text-[#F2C04E]">⚠️ {disabledReason}</p>
+          )}
         </div>
       )}
     </div>

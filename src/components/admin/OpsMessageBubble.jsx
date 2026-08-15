@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ChevronDown, Check, Loader2, TriangleAlert, Flag } from "lucide-react";
+import CopyButton from "@/components/ui/copy-button";
 
 const parse = (value) => { try { return typeof value === "string" ? JSON.parse(value) : value; } catch { return value; } };
 
@@ -78,6 +79,11 @@ export default function OpsMessageBubble({ message, accent, onResolve, flaggable
               }}
             >{message.content}</ReactMarkdown></div>)}
         {message.tool_calls?.map((toolCall, index) => <ToolCall key={index} toolCall={toolCall} accent={accentColor} onResolve={onResolve} />)}
+        {!isUser && message.content && (
+          <div className="mt-2">
+            <CopyButton value={message.content} />
+          </div>
+        )}
         {!isUser && flaggable && (
           <button
             onClick={() => onFlag?.(message)}

@@ -3,7 +3,11 @@ import { base44 } from "@/api/base44Client";
 import { draftFollowUp } from "@/lib/clinicalFlag";
 import { X, Loader2, Send } from "lucide-react";
 
-export default function FollowUpComposer({ flag, onClose, onSent }) {
+// patientId comes from the selected member in the clinician UI and always wins
+// over the flag's own user_id — the recommendation must never be addressed to
+// the signed-in clinician.
+export default function FollowUpComposer({ flag, patientId, onClose, onSent }) {
+  const targetUserId = patientId || flag.user_id;
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -23,11 +27,12 @@ export default function FollowUpComposer({ flag, onClose, onSent }) {
 
   const send = async () => {
     if (!draft.trim() || sending) return;
+    if (!targetUserId) { setError("No member is attached to this flag — open it from the member's profile."); return; }
     setSending(true);
     setError("");
     try {
       await base44.functions.invoke("pushMemberRecommendation", {
-        user_id: flag.user_id,
+        user_id: targetUserId,
         title: "A follow-up from your AQLA clinician",
         message: draft.trim(),
         category: "follow_up",

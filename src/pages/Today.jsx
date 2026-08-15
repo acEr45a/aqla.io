@@ -12,6 +12,7 @@ import FormulaLogisticsCard from "@/components/today/FormulaLogisticsCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
 import RecommendationModal from "@/components/today/RecommendationModal";
+import StreakBadge from "@/components/today/StreakBadge";
 import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
 import { localDateKey } from "@/lib/dateKey";
 import { ChevronDown, MessageCircle, ClipboardList, Sparkles } from "lucide-react";
@@ -164,6 +165,7 @@ export default function Today() {
           className={`text-left rounded-2xl p-6 border transition-colors ${checkedInToday ? "border-border/50 bg-card/40" : "border-primary/30 bg-primary/5 hover:bg-primary/10"}`}>
           <p className="font-display text-foreground">{checkedInToday ? "Check-in complete" : "Daily check-in"}</p>
           <p className="mt-1 text-xs text-muted-foreground">{checkedInToday ? "AQLA has updated today's recommendations." : "Takes under 60 seconds. Updates today's protocol."}</p>
+          <StreakBadge refreshKey={checkIns.length} />
         </button>
         <Link data-tour="coach" to="/coach" className="rounded-2xl p-6 border border-border/60 bg-card/40 hover:border-border transition-colors">
           <p className="font-display text-foreground flex items-center gap-2"><MessageCircle className="w-4 h-4 text-primary" /> AQLA Intelligence</p>

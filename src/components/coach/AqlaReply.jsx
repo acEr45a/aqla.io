@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
+import CopyButton from "@/components/ui/copy-button";
 
 const FIELDS = [
   ["What AQLA observed", "observed"],
@@ -29,12 +30,19 @@ export default function AqlaReply({ message, compact = false, onSpeak, onConfirm
           </span>
         </>
       )}
-      {onSpeak && (
-        <button type="button" onClick={onSpeak}
-          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-          <Volume2 className="w-3.5 h-3.5" /> Listen
-        </button>
-      )}
+      <div className="flex items-center gap-3">
+        {onSpeak && (
+          <button type="button" onClick={onSpeak}
+            className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+            <Volume2 className="w-3.5 h-3.5" /> Listen
+          </button>
+        )}
+        <CopyButton
+          value={chat
+            ? message.chat_reply
+            : FIELDS.map(([label, key]) => `${label}: ${message[key]}`).join("\n\n")}
+        />
+      </div>
       {message.safety_note && (
         <p className="text-xs text-[#F2C04E] border-t border-border/40 pt-3">{message.safety_note}</p>
       )}

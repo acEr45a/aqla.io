@@ -16,6 +16,13 @@ export default function History() {
   const [digests, setDigests] = useState([]);
   const [protocols, setProtocols] = useState(undefined);
   const [domains, setDomains] = useState([]);
+  const [checkInCount, setCheckInCount] = useState(null);
+
+  // Weekly and cycle overviews are rebuilt from check-in data — below three
+  // valid check-ins there is nothing meaningful to plot, so we block them.
+  const MIN_CHECK_INS = 3;
+  const insufficient = checkInCount !== null && checkInCount < MIN_CHECK_INS;
+  const insufficientReason = `Insufficient data — needs at least ${MIN_CHECK_INS} check-ins (you have ${checkInCount ?? 0}).`;
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -25,6 +32,9 @@ export default function History() {
     safeList(base44.entities.EmailDigest.list("-sent_date", 100)).then(setDigests);
     safeList(base44.entities.Protocol.list("-created_date")).then(setProtocols);
     safeList(base44.entities.BrainDomain.list("-updated_date")).then(setDomains);
+    safeList(base44.entities.DailyCheckIn.list("-date", 400)).then((rows) =>
+      setCheckInCount(rows.filter((c) => c?.valid !== false).length)
+    );
   }, []);
 
   const fetchPeriodData = async () => {
@@ -102,7 +112,19 @@ export default function History() {
       <h2 className="mt-10 font-display text-lg text-foreground">Reports & PDFs</h2>
       {reports.length ? (
         <div className="mt-4 space-y-px rounded-2xl overflow-hidden border border-border/60">
-          {reports.map((r, i) => <ReportRow key={i} {...r} date={r.sortDate} />)}
+          {reports.map((r, i) => {
+            // Daily PDFs are a single-day snapshot and stay available.
+            const blocked = insufficient && r.kind !== "daily";
+            return (
+              <ReportRow
+                key={i}
+                {...r}
+                date={r.sortDate}
+                disabled={blocked}
+                disabledReason={blocked ? insufficientReason : undefined}
+              />
+            );
+          })}
         </div>
       ) : (
         <p className="mt-4 text-sm text-muted-foreground aqla-panel rounded-2xl p-6">
@@ -114,7 +136,13 @@ export default function History() {
       {protocols.length ? (
         <div className="mt-4 space-y-3">
           {protocols.map((p) => (
-            <PlanHistoryCard key={p.id} protocol={p} onDownload={() => downloadPlanReport(p)} />
+            <PlanHistoryCard
+              key={p.id}
+              protocol={p}
+              onDownload={() => downloadPlanReport(p)}
+              downloadDisabled={insufficient}
+              disabledReason={insufficient ? insufficientReason : undefined}
+            />
           ))}
         </div>
       ) : (

@@ -4,7 +4,7 @@ import { FileDown, Loader2 } from "lucide-react";
 const KIND_LABELS = { daily: "Daily plan", weekly: "Weekly report", end_of_plan: "Cycle report", plan: "Plan report" };
 const KIND_COLORS = { daily: "#C9F24E", weekly: "#5FD4E8", end_of_plan: "#7B94FF", plan: "#B89CF6" };
 
-export default function ReportRow({ kind, title, date, subtitle, onDownload }) {
+export default function ReportRow({ kind, title, date, subtitle, onDownload, disabled, disabledReason }) {
   const [loading, setLoading] = useState(false);
   const handleClick = async () => {
     setLoading(true);
@@ -26,8 +26,11 @@ export default function ReportRow({ kind, title, date, subtitle, onDownload }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground truncate">{title}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{subtitle || date}</p>
+        {disabled && disabledReason && (
+          <p className="mt-1 text-[11px] text-[#F2C04E]">⚠️ {disabledReason}</p>
+        )}
       </div>
-      <button onClick={handleClick} disabled={loading}
+      <button onClick={handleClick} disabled={loading || disabled}
         className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border hover:border-foreground/30 transition-colors text-xs text-foreground disabled:opacity-50 shrink-0">
         {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
         PDF
