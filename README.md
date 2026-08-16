@@ -1,77 +1,122 @@
-# Base44 Project
+# Aqla.io
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+A premium personal brain operating system that analyzes your unique cognitive patterns, lifestyle, and habits to build a data-driven, evidence-informed protocol for peak mental performance.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+---
 
-## Prerequisites
+## 📑 Table of Contents
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
+1. [Overview](https://www.google.com/search?q=%23overview)
+2. [Tech Stack & Infrastructure](https://www.google.com/search?q=%23tech-stack--infrastructure)
+3. [Project Structure](https://www.google.com/search?q=%23project-structure)
+4. [Development Workflow](https://www.google.com/search?q=%23development-workflow)
+5. [Environment Variables](https://www.google.com/search?q=%23environment-variables)
+6. [Getting Started Locally](https://www.google.com/search?q=%23getting-started-locally)
 
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
+---
 
-## Run Locally
+## 🔍 Overview
 
-Run the full local development environment from the project root:
+Aqla.io is a production-grade web application engineered to function as a personal brain operating system. It processes user cognitive patterns, lifestyle metrics, and daily habits to generate data-driven, evidence-informed performance protocols.
 
+---
+
+## 🚀 Tech Stack & Infrastructure
+
+* **Frontend Framework:** React / Vite styled with Tailwind CSS
+* **Hosting & CI/CD:** Vercel (Automatic continuous deployments tied to the `main` branch)
+* **Domain & DNS Management:** Cloudflare routing (`aqla.io`)
+* **Authentication:** Google OAuth client configuration
+* **UI & Component Generation:** v0 by Vercel (Isolated Pull Requests for visual updates)
+* **Backend & Logic Management:** Google Antigravity (Local desktop AI execution, database structuring, and API logic)
+* **Version Control:** GitHub
+
+---
+
+## 📁 Project Structure
+
+```text
+aqla.io/
+├── public/               # Static assets, logos, and favicons
+├── src/
+│   ├── components/       # Reusable UI components (v0 & manual edits)
+│   ├── pages/            # Main application views and routing
+│   ├── hooks/            # Custom application hooks
+│   ├── services/         # API integrations, Google OAuth, and core services
+│   ├── App.jsx           # Root application component
+│   └── main.jsx          # Application entry point
+├── .env.example          # Template for environment variables
+├── package.json          # Project dependencies and npm scripts
+└── README.md             # Project documentation
+
+```
+
+---
+
+## 🛠️ Development Workflow
+
+This project is powered by a decentralized multi-tool setup:
+
+1. **Frontend & Interface Updates (v0):**
+* Prompt v0 to construct or update UI features.
+* Review code changes inside automatically generated Pull Requests on GitHub before merging into `main`.
+
+
+2. **Backend, Database & Core Logic (Google Antigravity):**
+* Open the repository locally on your desktop via Google Antigravity.
+* Use desktop AI agents to manage database configurations, schema migrations, and backend functions.
+
+
+3. **Continuous Deployment (Vercel & Cloudflare):**
+* Every successful merge into the `main` branch instantly triggers a production build on Vercel, deploying updates live to `aqla.io`.
+
+
+
+---
+
+## 🔐 Environment Variables
+
+Ensure your local `.env` or `.env.local` file contains the appropriate configurations before running the app:
+
+```env
+VITE_API_URL=your_backend_api_url_here
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
+VITE_SUPABASE_URL=your_supabase_project_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+```
+
+---
+
+## 💻 Getting Started Locally
+
+To clone and run Aqla.io on your local machine using Google Antigravity or a terminal:
+
+1. **Clone the repository:**
 ```bash
-base44 dev
+git clone <your-repository-url>
+cd aqla-io
+
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
+2. **Install dependencies:**
+```bash
+npm install
 
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
 ```
 
-In a Base44 project this lives in `base44/config.jsonc`.
 
-## Run Only The Frontend
-
-If you only want to work on the frontend against the hosted Base44 backend, run:
-
+3. **Run the development server:**
 ```bash
 npm run dev
+
 ```
 
-Open the local URL printed by Vite.
 
-## Use The Hosted Backend
 
-For frontend-only development, create or update `.env.local` in the project root:
+---
 
-```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
-```
+## 📄 License
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
-
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
-
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
-
-## Publish Your Changes
-
-After pushing your changes to git, open the Base44 dashboard and publish the app:
-
-```bash
-base44 dashboard open
-```
-
-## Docs & Support
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Private project. All rights reserved.
