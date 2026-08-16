@@ -1,14 +1,7 @@
-import { createClient } from '@base44/sdk';
-import { appParams } from '@/lib/app-params';
+import { apiClient } from './apiClient';
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
-
-//Create a client with authentication required
-export const base44 = createClient({
-  appId,
-  token,
-  functionsVersion,
-  serverUrl: '',
-  requiresAuth: false,
-  appBaseUrl
-});
+// Alias apiClient for backwards compatibility across UI components
+export const base44 = apiClient;
+export const aqlaApi = apiClient;
+export { apiClient };
+export default apiClient;

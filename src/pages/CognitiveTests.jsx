@@ -11,8 +11,6 @@ import SpatialTest from "@/components/tests/SpatialTest";
 import VerbalFluencyTest from "@/components/tests/VerbalFluencyTest";
 import { Zap, Eye, Layers, Brain, Shuffle, Box, MessageSquareText, Check, X } from "lucide-react";
 
-import { QA_DEFAULTS, BLEND } from "../../base44/shared/cognitiveBaseline.js";
-
 const TESTS = [
   { type: "reaction_time", name: "Reaction time", desc: "Processing speed — respond the instant the signal appears.", icon: Zap, minutes: "~1 min", Component: ReactionTest },
   { type: "sustained_attention", name: "Sustained attention", desc: "SART — respond to every digit except the target.", icon: Eye, minutes: "~1 min", Component: AttentionTest },
