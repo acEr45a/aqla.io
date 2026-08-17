@@ -17,7 +17,7 @@ A premium personal brain operating system that analyzes your unique cognitive pa
 
 ## 🔍 Overview
 
-Aqla.io is a production-grade web application engineered to function as a personal brain operating system. It processes user cognitive patterns, lifestyle metrics, and daily habits to generate data-driven, evidence-informed performance protocols.
+Aqla.io is a production-grade web application engineered to function as a personal brain operating system. It processes user cognitive patterns, lifestyle metrics, and daily habits to generate data-driven, evidence-informed performance protocols. 
 
 ---
 
