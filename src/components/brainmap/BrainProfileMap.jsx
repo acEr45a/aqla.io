@@ -3,7 +3,7 @@ import { REGIONS } from "./brainShapes";
 import BrainRankTooltip from "./BrainRankTooltip";
 import { rankFor } from "@/lib/ranks";
 
-const GLASS_BRAIN = "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a452d7eb7_generated_image.png";
+const GLASS_BRAIN = "/images/brain/glass_brain.png";
 
 export default function BrainProfileMap({ domains = [], activeKey, onHover, onSelect }) {
   const [tooltip, setTooltip] = useState(null);

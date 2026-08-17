@@ -1,41 +1,44 @@
-const isNode = typeof window === 'undefined';
-const windowObj = isNode ? { localStorage: new Map() } : window;
-const storage = windowObj.localStorage;
+// app-params.js
+// Lightweight URL parameter utilities for AQLA.
+// Base44-specific bootstrap params (access_token, app_id, app_base_url,
+// functions_version, from_url) have been removed — Supabase manages sessions
+// natively via its own localStorage keys and OAuth callback handling.
 
-const getAppParamValue = (paramName, { defaultValue = undefined, removeFromUrl = false } = {}) => {
-  if (isNode) {
-    return defaultValue;
-  }
+const isNode = typeof window === 'undefined';
+
+/**
+ * Reads a parameter from the URL query string, persists it to localStorage,
+ * and optionally removes it from the browser URL to keep the address bar clean.
+ */
+export function getAppParamValue(paramName, { defaultValue = undefined, removeFromUrl = false } = {}) {
+  if (isNode) return defaultValue;
+
   const storageKey = `aqla_${paramName}`;
   const urlParams = new URLSearchParams(window.location.search);
   const searchParam = urlParams.get(paramName);
-  if (removeFromUrl) {
+
+  if (removeFromUrl && searchParam) {
     urlParams.delete(paramName);
-    const newUrl = `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ''}${window.location.hash}`;
+    const newUrl =
+      `${window.location.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ''}${window.location.hash}`;
     window.history.replaceState({}, document.title, newUrl);
   }
+
   if (searchParam) {
-    storage.setItem(storageKey, searchParam);
+    try { localStorage.setItem(storageKey, searchParam); } catch { /* quota */ }
     return searchParam;
   }
-  if (defaultValue) {
-    storage.setItem(storageKey, defaultValue);
+
+  if (defaultValue !== undefined) {
     return defaultValue;
   }
-  const storedValue = storage.getItem(storageKey);
-  if (storedValue) {
-    return storedValue;
+
+  try {
+    return localStorage.getItem(storageKey) || null;
+  } catch {
+    return null;
   }
-  return null;
-};
+}
 
-const getAppParams = () => {
-  return {
-    token: getAppParamValue("access_token", { removeFromUrl: true }),
-    fromUrl: getAppParamValue("from_url", { defaultValue: isNode ? '' : window.location.href }),
-  };
-};
-
-export const appParams = {
-  ...getAppParams()
-};
+// No Base44 token — kept for structural compat if any code still imports appParams.
+export const appParams = {};

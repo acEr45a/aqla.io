@@ -20,16 +20,10 @@ export default function OAuthConsent() {
     (async () => {
       let redirecting = false;
       try {
-        if (!ctx) {
-          setError("This authorization link is invalid or has expired.");
+        if (!ctx || !appParams?.appId) {
+          setError("OAuth consent is not active or this authorization link is invalid.");
           return;
         }
-        // Resolve the handle first: a dead handle must never render
-        // approve/deny, and the response carries the app's configured login
-        // route for the signed-out redirect below. Send the session (cookie +
-        // bearer token) so the server can list the granted tools for a
-        // signed-in user — the same auth the approve/deny call sends; without
-        // it the display request is anonymous and shows no tools.
         const infoHeaders = {};
         if (appParams.token) infoHeaders.Authorization = "Bearer " + appParams.token;
         const res = await fetch(

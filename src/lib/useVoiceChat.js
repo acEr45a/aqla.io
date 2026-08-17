@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 
-const Recognition = typeof window !== "undefined"
-  ? window.SpeechRecognition || window.webkitSpeechRecognition
-  : null;
+const win = typeof window !== "undefined" ? /** @type {any} */ (window) : null;
+const Recognition = win ? (win.SpeechRecognition || win.webkitSpeechRecognition || null) : null;
 
 export const speechSupported = typeof window !== "undefined" && "Audio" in window;
 export const micSupported = !!Recognition;
@@ -12,8 +11,12 @@ export const voiceSupported = speechSupported;
 
 export const VOICE_BY_MOOD = { calm: "river", neutral: "river", focused: "spark", warm: "honey" };
 
-// Browser speech recognition with high-quality generated speech for AQLA replies.
-export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
+/**
+ * Browser speech recognition with high-quality generated speech for AQLA replies.
+ * @param {{ onTranscript?: (text: string) => void, onSpeechEnd?: () => void }} [options]
+ */
+export default function useVoiceChat(options = {}) {
+  const { onTranscript, onSpeechEnd } = options;
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
@@ -106,17 +109,21 @@ export default function useVoiceChat({ onTranscript, onSpeechEnd } = {}) {
       return;
     }
 
-    // High-quality AI-generated speech (same warm voice used before).
-    const prefs = loadVoicePrefs();
-    base44.integrations.Core.GenerateSpeech({
-      text, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
-    }).then(({ url }) => {
-      const audio = new Audio(url);
-      audioRef.current = audio;
-      audio.onended = () => { setSpeaking(false); endCbRef.current?.(); };
-      audio.onerror = () => setSpeaking(false);
-      audio.play().catch(() => setSpeaking(false));
-    }).catch(() => setSpeaking(false));
+    // High-quality speech using browser SpeechSynthesis
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.onend = () => {
+        setSpeaking(false);
+        endCbRef.current?.();
+      };
+      utterance.onerror = () => setSpeaking(false);
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setSpeaking(false);
+    }
   }, [stopSpeaking]);
 
   return { listening, speaking, voiceMode, setVoiceMode, startListening, stopListening, speak, stopSpeaking };

@@ -8,7 +8,7 @@ const FALLBACK_IMAGE_URL =
 // Wix Media Platform hosts whose images support /v1/ transform URLs
 // (resize, focal-point crop, and format conversion via the OUTPUT FILENAME
 // EXTENSION — a .webp output re-encodes JPG/PNG uploads to WebP on the fly).
-const WIX_MEDIA_HOSTS = ["media.base44.com", "static.wixstatic.com"]
+const WIX_MEDIA_HOSTS = ["static.wixstatic.com"]
 // First-paint width before the container is measured.
 const DEFAULT_TRANSFORM_WIDTH = 1024
 const DEVICE_PIXEL_RATIOS = [1, 2, 3]

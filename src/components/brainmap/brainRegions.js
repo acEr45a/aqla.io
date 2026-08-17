@@ -2,8 +2,7 @@
 // brain render. x/y are the anatomical centers used by both the volumetric fill
 // and its label; size is the fill diameter as a percentage of the image width.
 // Sizes overlap generously so the fills together cover the whole brain.
-export const BRAIN_IMAGE =
-  "https://media.base44.com/images/public/6a670dff96c46b62aaca0b7d/a7e59034b_generated_image.png";
+export const BRAIN_IMAGE = "/images/brain/brain_profile.png";
 
 export const REGIONS = [
   { key: "focus", region: "Prefrontal cortex", role: "Executive control & attention", x: 17, y: 45, size: 44 },
