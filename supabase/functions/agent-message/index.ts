@@ -13,12 +13,12 @@ const corsHeaders = {
 };
 
 const AGENT_CONFIGS: Record<string, {
-  model: "gemini-2.5-flash" | "gemini-2.0-flash-lite";
+  model: "gemini-3.6-flash";
   thinkingBudget: "none" | "low" | "medium" | "high";
   systemPrompt: string;
 }> = {
   help_agent: {
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "medium",
     systemPrompt: `You are the AQLA Help Assistant inside the AQLA brain-performance platform.
 Your purpose is to answer member questions clearly, warmly, and accurately regarding:
@@ -33,7 +33,7 @@ STRICT BOUNDARIES:
   },
 
   backend_ops_operations: {
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "high",
     systemPrompt: `You are AQLA Backend Ops in OPERATIONS mode.
 You assist platform administrators and engineers with:
@@ -46,7 +46,7 @@ Be concise, technical, precise, and objective. Ground all suggestions in data.`,
   },
 
   backend_ops_architect: {
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "high",
     systemPrompt: `You are AQLA Backend Ops in ARCHITECT mode.
 You assist with:

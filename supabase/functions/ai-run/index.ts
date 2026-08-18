@@ -21,7 +21,7 @@ serve(async (req) => {
   const startTime = Date.now();
   let workerId = "unknown";
   let userId: string | null = null;
-  let modelName = "gemini-2.5-flash";
+  let modelName = "gemini-3.6-flash";
   const correlationId = crypto.randomUUID();
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
@@ -68,7 +68,7 @@ serve(async (req) => {
         workerId: "dynamic_worker",
         audience: "member",
         allowedRoles: ["user", "clinician", "admin"],
-        model: "gemini-2.5-flash",
+        model: "gemini-3.6-flash",
         thinkingBudget: "medium",
         systemPrompt: "",
         responseSchema: customSchema,
