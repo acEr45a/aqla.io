@@ -1,7 +1,7 @@
 # Aqla.io
 
 A premium personal brain operating system that analyzes your unique cognitive patterns, lifestyle, and habits to build a data-driven, evidence-informed protocol for peak mental performance.
-
+ 
 ---
 
 ## 📑 Table of Contents
