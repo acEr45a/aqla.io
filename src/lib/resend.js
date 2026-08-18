@@ -9,72 +9,93 @@ export const DEFAULT_FROM = 'AQLA <noreply@aqla.io>';
  * Builds HTML email template matching AQLA dark/clean aesthetic.
  */
 export function buildAqlaEmailHtml({ title, contentHtml, actionButton }) {
-  return `
-<!DOCTYPE html>
-<html lang="en">
+  const buttonHtml = actionButton
+    ? `
+      <table cellpadding="0" cellspacing="0" border="0" style="margin: 28px 0 12px 0;">
+        <tr>
+          <td align="center" style="background-color: #ffffff; border-radius: 9999px;">
+            <a href="${actionButton.url}" target="_blank" style="display: inline-block; padding: 12px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; color: #0c0d0e; text-decoration: none; border-radius: 9999px; letter-spacing: 0.02em;">
+              ${actionButton.label}
+            </a>
+          </td>
+        </tr>
+      </table>
+    `
+    : '';
+
+  return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${title || 'AQLA'}</title>
-  <style>
-    body { margin: 0; padding: 0; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f0f2f5; }
-    .container { max-width: 580px; margin: 0 auto; padding: 40px 24px; }
-    .card { background-color: #16181a; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 36px 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .logo { font-size: 20px; font-weight: 600; letter-spacing: 0.1em; color: #f0f2f5; margin-bottom: 24px; text-transform: uppercase; }
-    .title { font-size: 22px; font-weight: 400; color: #ffffff; margin: 0 0 16px; line-height: 1.3; }
-    .content { font-size: 14px; line-height: 1.65; color: #a1a7b0; margin-bottom: 28px; }
-    .content p { margin: 0 0 16px; }
-    .btn { display: inline-block; background-color: #ffffff; color: #0c0d0e; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-size: 13px; font-weight: 500; text-align: center; }
-    .footer { margin-top: 32px; text-align: center; font-size: 11px; color: #5a6069; }
-  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">AQLA</div>
-      <h1 class="title">${title}</h1>
-      <div class="content">
-        ${contentHtml}
-      </div>
-      ${actionButton ? `<a href="${actionButton.url}" class="btn">${actionButton.label}</a>` : ''}
-    </div>
-    <div class="footer">
-      &copy; ${new Date().getFullYear()} AQLA.io &middot; Personal Brain Operating System &middot; Sent from noreply@aqla.io
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table width="100%" bgcolor="#0c0d0e" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; width: 100% !important; background-color: #0c0d0e;">
+    <tr>
+      <td align="center" style="padding: 48px 16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; background-color: #141619; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);">
+          <tr>
+            <td height="3" style="background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); line-height: 3px; font-size: 3px;">&nbsp;</td>
+          </tr>
+          <tr>
+            <td style="padding: 36px 36px 32px 36px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" style="font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #ffffff; text-transform: uppercase; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
+                    AQLA
+                  </td>
+                </tr>
+              </table>
+
+              <h1 style="margin: 28px 0 16px 0; font-size: 21px; font-weight: 500; color: #ffffff; letter-spacing: -0.01em; line-height: 1.3;">
+                ${title}
+              </h1>
+
+              <div style="font-size: 14px; line-height: 1.65; color: #a1a7b0;">
+                ${contentHtml}
+              </div>
+
+              ${buttonHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color: #0f1113; border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 20px 36px; text-align: center;">
+              <p style="margin: 0; font-size: 11px; color: #4b5563; line-height: 1.5;">
+                &copy; ${new Date().getFullYear()} AQLA.io &middot; Advanced Cognitive Operating System
+              </p>
+              <p style="margin: 4px 0 0 0; font-size: 11px; color: #374151;">
+                Sent securely from <span style="color: #6b7280;">noreply@aqla.io</span>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
-</html>
-  `.trim();
+</html>`.trim();
 }
 
 /**
- * Sends an email using the Resend API.
- * @param {Object} params
- * @param {string|string[]} params.to - Recipient email(s)
- * @param {string} params.subject - Email subject line
- * @param {string} [params.html] - HTML body
- * @param {string} [params.text] - Plain text body
- * @param {string} [params.from] - Sender address (defaults to noreply@aqla.io)
- * @param {string} [params.replyTo] - Optional Reply-To address
- * @returns {Promise<{ success: boolean, id?: string, error?: string }>}
+ * Sends an email using the Resend API or Supabase send-email Edge Function.
  */
-export async function sendEmail({ to, subject, html, text, from = DEFAULT_FROM, replyTo }) {
+export async function sendEmail({ to, subject, html, text, from = DEFAULT_FROM, replyTo, actionButton }) {
   const apiKey =
     import.meta.env?.VITE_RESEND_API_KEY ||
     import.meta.env?.RESEND_API_KEY ||
     're_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC';
 
-  if (!apiKey) {
-    throw new Error('Resend API key is missing.');
-  }
-
   const recipients = Array.isArray(to) ? to : [to];
+  const finalHtml = html && html.includes('<!DOCTYPE')
+    ? html
+    : buildAqlaEmailHtml({ title: subject, contentHtml: html || `<p>${text || ''}</p>`, actionButton });
 
   const body = {
     from,
     to: recipients,
     subject,
-    ...(html ? { html } : {}),
+    html: finalHtml,
     ...(text ? { text } : {}),
     ...(replyTo ? { reply_to: replyTo } : {}),
   };
