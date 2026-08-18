@@ -48,12 +48,23 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState("overview");
 
   const load = React.useCallback(async () => {
-    const user = await base44.auth.me();
-    if (user.role !== "admin") return setAllowed(false);
-    base44.functions.invoke("superAdminOps", { action: "check" })
-      .then((r) => setIsSuperAdmin(!!r.data?.isSuperAdmin)).catch(() => {});
-    const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
-    setData(response.data);
+    try {
+      const user = await base44.auth.me();
+      if (!user || (user.role !== "admin" && user.role !== "clinician")) {
+        return setAllowed(false);
+      }
+      setAllowed(true);
+      base44.functions.invoke("superAdminOps", { action: "check" })
+        .then((r) => setIsSuperAdmin(!!r?.data?.isSuperAdmin || !!r?.data?.is_super_admin || !!r?.is_super_admin))
+        .catch(() => {});
+      const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
+      const metrics = response?.data || response;
+      if (metrics) {
+        setData(metrics);
+      }
+    } catch (err) {
+      console.warn('[AdminDashboard] Load error:', err);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
