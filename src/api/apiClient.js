@@ -190,9 +190,17 @@ export const auth = {
   },
 
   async loginWithProvider(provider, redirectTo) {
+    let targetUrl = redirectTo;
+    if (typeof window !== 'undefined') {
+      if (!targetUrl) {
+        targetUrl = `${window.location.origin}/dashboard`;
+      } else if (targetUrl.startsWith('/')) {
+        targetUrl = `${window.location.origin}${targetUrl}`;
+      }
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: { redirectTo: targetUrl },
     });
     if (error) throw error;
     return data;
