@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
 import { autoFlagResponse, CLINICAL_NOTE } from "@/lib/clinicalFlag";
@@ -34,7 +35,11 @@ export function useAqlaCoach() {
   const userRef = useRef(null);
 
   useEffect(() => {
-    base44.auth.me().then((u) => { userRef.current = u; }).catch(() => {});
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (profile) userRef.current = { id: session.user.id, email: session.user.email, ...profile };
+    }).catch(() => {});
     Promise.all([
       base44.entities.BrainDomain.list("-updated_date"),
       base44.entities.Protocol.list("-created_date"),

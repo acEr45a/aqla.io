@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import AdminMetricStrip from "@/components/admin/AdminMetricStrip";
@@ -29,6 +30,7 @@ import AdminRoster from "@/components/superadmin/AdminRoster";
 import CaptchaEditor from "@/components/superadmin/CaptchaEditor";
 import SuperAdminLogs from "@/components/superadmin/SuperAdminLogs";
 import UserComplaintsPanel from "@/components/admin/UserComplaintsPanel";
+import AdminInboxEmbed from "@/components/admin/AdminInboxEmbed";
 
 const TABS = [
 { id: "overview", label: "Overview" },
@@ -49,8 +51,11 @@ export default function AdminDashboard() {
 
   const load = React.useCallback(async () => {
     try {
-      const user = await base44.auth.me();
-      if (!user || (user.role !== "admin" && user.role !== "clinician")) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return setAllowed(false);
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+      const role = profile?.role || "user";
+      if (role !== "admin" && role !== "clinician") {
         return setAllowed(false);
       }
       setAllowed(true);
@@ -131,6 +136,7 @@ export default function AdminDashboard() {
         {tab === "analytics" && <AnalyticsPanel analytics={data.analytics} />}
         {tab === "emails" &&
         <>
+            <AdminInboxEmbed isSuperAdmin={isSuperAdmin} />
             <ManualEmailComposer users={data.allUsers} onSent={load} />
             <EmailLogPanel stats={data.emails.stats} log={data.emails.log} />
           </>

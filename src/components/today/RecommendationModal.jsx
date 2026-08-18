@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -16,8 +17,9 @@ export default function RecommendationModal() {
     try {
       // Scope to the signed-in member: clinicians/admins can read all
       // recommendations, so an unscoped query would surface other members'.
-      const me = await base44.auth.me();
-      if (!me?.id) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const me = { id: session.user.id };
       const list = await base44.entities.MemberRecommendation.filter(
         { status: "active", user_id: me.id },
         "-created_date",

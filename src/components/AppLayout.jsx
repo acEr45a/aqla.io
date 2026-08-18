@@ -9,7 +9,8 @@ import PlanReviewGate from "@/components/review/PlanReviewGate";
 import UserAccountBox from "@/components/UserAccountBox";
 import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
-import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History } from "lucide-react";
+import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History, Mail } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { getPublicSettings } from "@/lib/captcha";
 import { getVisitMeta } from "@/lib/visitMeta";
@@ -42,7 +43,14 @@ export default function AppLayout() {
   const onAdmin = pathname.startsWith("/admin");
   const onCoach = pathname === "/coach";
   useEffect(() => {
-    base44.auth.me().then((user) => setRole(user.role || "user")).catch(() => setRole("user"));
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) {
+        setRole("user");
+        return;
+      }
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+      setRole(profile?.role || "user");
+    }).catch(() => setRole("user"));
   }, []);
   useEffect(() => {
     getPublicSettings().then((s) => setTestMode(!!s.test_mode)).catch(() => {});
@@ -57,8 +65,13 @@ export default function AppLayout() {
     }).catch(() => {});
   }, [pathname]);
   const extraNav = [];
-  if (role === "admin") extraNav.push({ to: "/admin", label: "Admin", icon: ShieldCheck });
-  if (role === "clinician" || role === "admin") extraNav.push({ to: "/clinician", label: "Clinician", icon: Stethoscope });
+  if (role === "clinician" || role === "admin" || role === "super_admin") {
+    extraNav.push({ to: "/inbox", label: "Clinical Inbox", icon: Mail });
+    extraNav.push({ to: "/clinician", label: "Clinician", icon: Stethoscope });
+  }
+  if (role === "admin" || role === "super_admin") {
+    extraNav.push({ to: "/admin", label: "Admin", icon: ShieldCheck });
+  }
   const nav = [...NAV, ...extraNav];
   const primaryNav = nav.filter((item) => PRIMARY_ROUTES.includes(item.to)).map(mobileItem);
   const secondaryNav = nav.filter((item) => !PRIMARY_ROUTES.includes(item.to)).map(mobileItem);

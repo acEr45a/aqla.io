@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import ReviewCard from "@/components/clinician/ReviewCard";
 import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
@@ -8,7 +10,7 @@ import ClinicianInbox from "@/components/clinician/ClinicianInbox";
 import MemberProfilePanel from "@/components/clinician/MemberProfilePanel";
 import ClinicianAlerts from "@/components/clinician/ClinicianAlerts";
 import { notify } from "@/lib/clinicianToast";
-import { Stethoscope, Search, ShieldAlert, ArrowUpDown, Clock, CheckCircle2, Users } from "lucide-react";
+import { Stethoscope, Search, ShieldAlert, ArrowUpDown, Clock, CheckCircle2, Users, Mail, ArrowRight } from "lucide-react";
 
 const TABS = [
   { id: "inbox", label: "Inbox" },
@@ -77,9 +79,12 @@ export default function Clinician() {
   };
 
   useEffect(() => {
-    base44.auth.me()
-      .then((user) => {
-        const ok = user && (user.role === "clinician" || user.role === "admin");
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (!session?.user) return setAllowed(false);
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+        const role = profile?.role || "user";
+        const ok = role === "clinician" || role === "admin";
         setAllowed(ok);
         if (ok) loadAll();
       })
@@ -171,12 +176,20 @@ export default function Clinician() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-10">
       <ClinicianAlerts onNew={loadAll} />
-      <div className="flex items-center gap-3">
-        <Stethoscope className="w-6 h-6 text-primary" strokeWidth={1.5} />
-        <div>
-          <h1 className="text-2xl md:text-3xl font-light text-foreground">Clinician dashboard</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Triage-first clinical workspace</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Stethoscope className="w-6 h-6 text-primary" strokeWidth={1.5} />
+          <div>
+            <h1 className="text-2xl md:text-3xl font-light text-foreground">Clinician dashboard</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">Triage-first clinical workspace</p>
+          </div>
         </div>
+
+        <Link to="/inbox">
+          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#a3e635] text-black font-semibold text-xs hover:bg-[#bef264] transition-all shadow-md shadow-[#a3e635]/20">
+            <Mail className="w-3.5 h-3.5" /> Open Clinical Email Inbox <ArrowRight className="w-3 h-3" />
+          </button>
+        </Link>
       </div>
 
       {/* Sticky tab bar */}

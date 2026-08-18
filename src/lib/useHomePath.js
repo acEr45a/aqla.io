@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabase";
 
 // Registered users go back to their dashboard; guests go to the landing page.
 export default function useHomePath() {
   const [path, setPath] = useState("/");
   useEffect(() => {
-    base44.auth.isAuthenticated().then((authed) => setPath(authed ? "/dashboard" : "/"));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setPath(session?.user ? "/dashboard" : "/");
+    }).catch(() => setPath("/"));
   }, []);
   return path;
 }

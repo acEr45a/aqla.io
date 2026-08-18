@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabase";
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -38,17 +38,25 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then((u) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      const u = { id: session.user.id, email: session.user.email, ...profile };
       setUser(u);
       setPrefs({ ...DEFAULTS, ...(u.preferences || {}) });
-    });
+    }).catch(() => {});
   }, []);
 
   const update = async (patch) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
     setSaving(true);
-    await base44.auth.updateMe({ preferences: next });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from("profiles").update({ preferences: next }).eq("id", session.user.id);
+      }
+    } catch {}
     setSaving(false);
   };
 
@@ -150,7 +158,10 @@ export default function Settings() {
       </SettingsSection>
 
       <div className="mt-6 mb-10">
-        <Button variant="ghost" onClick={() => base44.auth.logout("/")}
+        <Button variant="ghost" onClick={async () => {
+          await supabase.auth.signOut();
+          window.location.href = "/";
+        }}
           className="gap-2 text-muted-foreground hover:text-foreground">
           <LogOut className="w-4 h-4" /> Sign out
         </Button>

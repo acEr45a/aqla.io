@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,9 +32,11 @@ export default function AdminSecurityGate({ children }) {
   useEffect(() => {
     const id = getDeviceId();
     setDeviceId(id);
-    base44.auth.me()
-      .then((u) => {
-        const trusted = Array.isArray(u?.admin_trusted_devices) && u.admin_trusted_devices.includes(id);
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (!session?.user) return;
+        const { data: profile } = await supabase.from("profiles").select("admin_trusted_devices").eq("id", session.user.id).maybeSingle();
+        const trusted = Array.isArray(profile?.admin_trusted_devices) && profile.admin_trusted_devices.includes(id);
         setIsTrusted(trusted);
       })
       .catch(() => {})

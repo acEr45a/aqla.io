@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { Link } from "react-router-dom";
 import {
@@ -20,8 +21,9 @@ export default function Trust() {
 
   const deleteAllData = async () => {
     setDeleting(true);
-    const me = await base44.auth.me();
-    const q = { created_by_id: me.id };
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return setDeleting(false);
+    const q = { created_by_id: session.user.id };
     await Promise.all([
       base44.entities.Assessment.deleteMany(q),
       base44.entities.CognitiveTest.deleteMany(q),

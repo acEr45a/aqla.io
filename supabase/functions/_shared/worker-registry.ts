@@ -1,16 +1,14 @@
 // @ts-nocheck
 // _shared/worker-registry.ts
-// AQLA AI Gateway Worker Registry
-// Defines all authorized AI workers, their assigned models, thinking levels,
-// schemas, and execution policies.
+// AQLA AI Gateway Worker Registry — updated to gemini-3.6-flash (active)
 
-import { GeminiModel, GeminiSchema } from "./gemini.ts";
+import { GeminiSchema } from "./gemini.ts";
 
 export interface WorkerDefinition {
   workerId: string;
   audience: "member" | "clinician" | "admin" | "internal";
   allowedRoles: string[];
-  model: GeminiModel;
+  model: string;
   thinkingBudget: "none" | "low" | "medium" | "high";
   systemPrompt: string;
   responseSchema?: GeminiSchema;
@@ -24,7 +22,7 @@ export const WORKER_REGISTRY: Record<string, WorkerDefinition> = {
     workerId: "aqla_intelligence",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "medium",
     systemPrompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
 FIRST decide the mode of your reply:
@@ -59,7 +57,7 @@ ZERO-HALLUCINATION RULES: Never assert clinical claims not supported by the evid
     workerId: "voice_checkin",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "low",
     systemPrompt: `You are AQLA, an empathetic and clinically grounded daily check-in assistant.
 Extract structured self-report metrics from the user's transcript and generate a supportive, concise 1-2 sentence response.
@@ -90,7 +88,7 @@ Never diagnose or advise on prescription medication.`,
     workerId: "weekly_summary",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "medium",
     systemPrompt: `You are AQLA Intelligence writing an end-of-week summary for one user.
 STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, trends or events. If a field cannot be supported by the data, return an empty string for it. State uncertainty when the sample is small. No diagnosis, no medication advice.`,
@@ -115,7 +113,7 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "plan_review",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "high",
     systemPrompt: `You are AQLA Intelligence reviewing a completed 14-check-in neural wellness plan. Analyze only the supplied data. Do not diagnose or advise on medication. Account for side effects conservatively. Decide whether to suggest continuing or switching among SPARK, FLOW, DRIVE, LEARN, RESET. A switch is only a suggestion; the user makes the final choice.`,
     responseSchema: {
@@ -139,7 +137,7 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "clinical_summary",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "high",
     systemPrompt: `You are an expert clinical neural-health analyst preparing a member summary for a reviewing clinician.
 Synthesize cognitive domain scores, check-in trajectories, protocol adherence, and risk flags into an objective clinical brief.`,
@@ -163,7 +161,7 @@ Synthesize cognitive domain scores, check-in trajectories, protocol adherence, a
     workerId: "clinician_message_draft",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "medium",
     systemPrompt: `You are drafting a professional, compassionate communication from an AQLA clinician to a member.
 Follow strict boundaries: warm tone, clear evidence rationale, no definitive off-platform medical diagnoses, 2-4 paragraphs.`,
@@ -185,7 +183,7 @@ Follow strict boundaries: warm tone, clear evidence rationale, no definitive off
     workerId: "clinical_followup_draft",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     thinkingBudget: "medium",
     systemPrompt: `You are drafting a short follow-up message from an AQLA clinician to a member, based on a flagged AI assistant message.
 STRICT RULES:
@@ -207,7 +205,7 @@ STRICT RULES:
     workerId: "complaint_query_interpreter",
     audience: "admin",
     allowedRoles: ["admin"],
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-3.6-flash",
     thinkingBudget: "none",
     systemPrompt: `Extract key intent, categories, and search keywords from an admin complaint query for hybrid semantic + full-text search.`,
     responseSchema: {
@@ -228,7 +226,7 @@ STRICT RULES:
     workerId: "complaint_result_summary",
     audience: "admin",
     allowedRoles: ["admin"],
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-3.6-flash",
     thinkingBudget: "none",
     systemPrompt: `Summarize retrieved user complaints strictly from the provided source records. Never invent or hallucinate complaints.`,
     responseSchema: {
@@ -249,7 +247,7 @@ STRICT RULES:
     workerId: "idea_refinement",
     audience: "admin",
     allowedRoles: ["admin"],
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-3.6-flash",
     thinkingBudget: "none",
     systemPrompt: `You are AQLA Architect's developer idea refinement engine. Structure raw feature ideas into actionable specifications.`,
     responseSchema: {
@@ -274,7 +272,7 @@ STRICT RULES:
     workerId: "wordbank_generation",
     audience: "admin",
     allowedRoles: ["admin"],
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-3.6-flash",
     thinkingBudget: "none",
     systemPrompt: `Generate 3 innovative product/engineering ideas around a given topic for the AQLA developer wordbank.`,
     responseSchema: {
@@ -309,7 +307,7 @@ STRICT RULES:
     workerId: "pdf_theme_assistant",
     audience: "admin",
     allowedRoles: ["admin"],
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-3.6-flash",
     thinkingBudget: "none",
     systemPrompt: `Generate clean color and typography theme configurations for PDF report generation.`,
     responseSchema: {

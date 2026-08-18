@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Settings, ShieldCheck, Stethoscope } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabase";
 
 const iconClass = ({ isActive }) => `shrink-0 rounded-lg p-1.5 transition-colors ${
   isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -11,7 +11,11 @@ export default function UserAccountBox() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
+    }).catch(() => {});
   }, []);
 
   const showClinician = user?.role === "clinician" || user?.role === "admin";

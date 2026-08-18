@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
 import OpsSidebar from "@/components/admin/OpsSidebar";
@@ -169,7 +170,13 @@ export default function OpsConsoleWidget() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, mode]);
 
-  useEffect(() => { base44.auth.me().then(setAdminUser).catch(() => {}); }, []);
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (profile) setAdminUser({ id: session.user.id, email: session.user.email, ...profile });
+    }).catch(() => {});
+  }, []);
 
   const handleFlag = async (message) => {
     if (!message?.content || flaggedContent.has(message.content)) return;

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import CheckInDialog from "@/components/today/CheckInDialog";
 import WeeklySummary from "@/components/today/WeeklySummary";
@@ -35,11 +36,45 @@ export default function Today() {
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  // Track whether we've already decided on the tour — prevents mid-session re-evaluation
+  const tourDecidedRef = useRef(false);
 
+  // ── Tour flag: snapshot ONCE on mount, never re-check. ──────────────────────
+  // Fires when: dashboard_tour_v2 IS NULL (new account) OR IS FALSE (ops reset).
+  // Only `base44.auth` replacement done here — profile read via Supabase directly.
+  useEffect(() => {
+    const initTour = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("dashboard_tour_v2")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        // null = brand new account, false = ops-reset. true = already done. Don't show.
+        const shouldShow = profile?.dashboard_tour_v2 === null || profile?.dashboard_tour_v2 === false;
+        if (shouldShow && !tourDecidedRef.current) {
+          tourDecidedRef.current = true;
+          setTourOpen(true);
+        }
+      } catch {
+        // Non-critical — if we can't read the flag, don't show the tour
+      }
+    };
+    initTour();
+  }, []);
+
+  // ── Recurring data loader — does NOT touch the tour flag ─────────────────────
   const load = () => {
-    base44.auth.me().then((u) => {
-      setUser(u);
-      if (!u.dashboard_tour_v2) setTourOpen(true);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
     }).catch(() => {});
     base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);

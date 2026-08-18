@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabase";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -44,17 +44,25 @@ export default function AccountManagement() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then((u) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      const u = { id: session.user.id, email: session.user.email, ...profile };
       setUser(u);
       setPrefs({ ...DEFAULTS, display_name: u.full_name || "", ...(u.preferences || {}) });
-    });
+    }).catch(() => {});
   }, []);
 
   const update = async (patch) => {
     const next = { ...prefs, ...patch };
     setPrefs(next);
     setSaving(true);
-    await base44.auth.updateMe({ preferences: next });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase.from("profiles").update({ preferences: next }).eq("id", session.user.id);
+      }
+    } catch {}
     setSaving(false);
   };
 

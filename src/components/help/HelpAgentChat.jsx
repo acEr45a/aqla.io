@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import { Send, Loader2, CircleHelp, Flag } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -17,7 +18,11 @@ export default function HelpAgentChat() {
   useEffect(() => {
     let unsub = () => {};
     (async () => {
-      base44.auth.me().then(setUser).catch(() => {});
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (!session?.user) return;
+        const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+        if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
+      }).catch(() => {});
       try {
         const existing = await base44.agents.listConversations({ agent_name: "help_agent" });
         let conv;

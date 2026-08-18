@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import ProtocolPlanCard from "@/components/protocols/ProtocolPlanCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
@@ -15,7 +16,11 @@ export default function ProtocolPage() {
 
   useEffect(() => {
     base44.entities.Protocol.list("-created_date").then(setProtocols);
-    base44.auth.me().then(setUser).catch(() => {});
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
+    }).catch(() => {});
     base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
     base44.entities.BrainDomain.list("-updated_date").then(setDomains);
   }, []);

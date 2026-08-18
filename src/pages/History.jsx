@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { base44 } from "@/api/base44Client";
 import ReportRow from "@/components/history/ReportRow";
 import PlanHistoryCard from "@/components/history/PlanHistoryCard";
@@ -25,7 +26,11 @@ export default function History() {
   const insufficientReason = `Insufficient data — needs at least ${MIN_CHECK_INS} check-ins (you have ${checkInCount ?? 0}).`;
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session?.user) return;
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+      if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
+    }).catch(() => {});
     // Guard every list: a failed or malformed response must not blank the page.
     const safeList = (p) => p.then((r) => (Array.isArray(r) ? r : [])).catch(() => []);
     safeList(base44.entities.PdfArchive.list("-date", 100)).then(setArchives);

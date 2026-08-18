@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -41,12 +41,20 @@ import TermsOfUse from '@/pages/TermsOfUse';
 import AdminDashboard from '@/pages/AdminDashboard';
 import CommunityInsights from '@/pages/CommunityInsights';
 import AdminSecurityGate from '@/components/admin/AdminSecurityGate';
+import ClinicalInboxPage from '@/pages/ClinicalInboxPage';
+
+// These routes must render immediately — no auth needed at all.
+const PUBLIC_ROUTES = ["/", "/start", "/privacy", "/terms"];
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, authError, navigateToLogin } = useAuth();
+  const location = useLocation();
 
-  // Show loading spinner while checking app public settings or auth
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  // Public routes (landing, start, legal) must render instantly — never gate them.
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
+
+  // Show loading spinner while resolving auth — but ONLY for non-public routes.
+  if (!isPublicRoute && isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -78,6 +86,8 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfUse />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route path="/inbox" element={<ClinicalInboxPage />} />
+        <Route path="/clinician/inbox" element={<ClinicalInboxPage />} />
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route element={<AppLayout />}>

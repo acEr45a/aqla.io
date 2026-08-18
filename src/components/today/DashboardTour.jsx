@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { base44 } from "@/api/base44Client";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { TOUR_STEPS } from "@/lib/tourSteps";
 
@@ -29,7 +29,15 @@ export default function DashboardTour({ open, onClose, onFinished }) {
 
   const finish = async () => {
     onClose();
-    await base44.auth.updateMe({ dashboard_tour_v2: true }).catch(() => {});
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await supabase
+          .from("profiles")
+          .update({ dashboard_tour_v2: true })
+          .eq("id", session.user.id);
+      }
+    } catch { /* non-critical */ }
     if (onFinished) onFinished();
   };
   const next = () => (index === TOUR_STEPS.length - 1 ? finish() : setIndex(index + 1));

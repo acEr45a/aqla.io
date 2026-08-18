@@ -238,7 +238,7 @@ export class Fable {
     this.y += 24;
   }
 
-  footersAndSave(generatedKey, filename) {
+  applyFooters(generatedKey) {
     const { doc, W, H, M, t } = this;
     const count = doc.internal.getNumberOfPages();
     for (let p = 1; p <= count; p++) {
@@ -256,6 +256,20 @@ export class Fable {
       doc.line(W - M - 90, fY, W - M - 60, fY);
       doc.text(`Page ${p} of ${count}`, W - M, fY + 12, { align: "right" });
     }
-    doc.save(filename);
+  }
+
+  footersAndSave(generatedKey, filename) {
+    this.applyFooters(generatedKey);
+    this.doc.save(filename);
+  }
+
+  footersAndDataUri(generatedKey) {
+    this.applyFooters(generatedKey);
+    return this.doc.output("datauristring");
+  }
+
+  footersAndBlob(generatedKey) {
+    this.applyFooters(generatedKey);
+    return this.doc.output("blob");
   }
 }
