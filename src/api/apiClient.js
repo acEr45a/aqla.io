@@ -552,6 +552,98 @@ export const functions = {
       return data || [];
     }
 
+    if (functionName === 'sendManualEmail' || functionName === 'sendEmail') {
+      const { subject, message, text, html, sendToAll, recipientIds, to } = payload;
+      const resendApiKey =
+        import.meta.env?.VITE_RESEND_API_KEY ||
+        import.meta.env?.RESEND_API_KEY ||
+        're_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC';
+
+      let targetEmails = [];
+      if (sendToAll) {
+        const { data: users } = await supabase.from('profiles').select('email');
+        targetEmails = (users || []).map((u) => u.email).filter(Boolean);
+      } else if (recipientIds?.length) {
+        const { data: users } = await supabase.from('profiles').select('email').in('id', recipientIds);
+        targetEmails = (users || []).map((u) => u.email).filter(Boolean);
+      } else if (to) {
+        targetEmails = Array.isArray(to) ? to : [to];
+      }
+
+      let sentCount = 0;
+      const emailBody = message || text || '';
+      const emailHtml =
+        html ||
+        `<div style="font-family:sans-serif; background:#0c0d0e; color:#f0f2f5; padding:32px;"><div style="max-width:540px; margin:0 auto; background:#16181a; padding:24px; border-radius:16px;"><h2 style="color:#ffffff;">${subject || 'AQLA'}</h2><p style="color:#a1a7b0; line-height:1.6;">${emailBody.replace(/\n/g, '<br/>')}</p><hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:20px 0;"/><p style="font-size:11px; color:#6b7280;">AQLA.io &middot; Sent from noreply@aqla.io</p></div></div>`;
+
+      for (const email of targetEmails) {
+        try {
+          const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'AQLA <noreply@aqla.io>',
+              to: [email],
+              subject: subject || 'AQLA Update',
+              html: emailHtml,
+              text: emailBody,
+            }),
+          });
+          if (res.ok) sentCount++;
+        } catch {
+          // Continue to next recipient
+        }
+      }
+
+      // Log in email_digests if applicable
+      try {
+        const { data: me } = await supabase.auth.getUser();
+        await supabase.from('email_digests').insert([
+          {
+            created_by_id: me?.user?.id || null,
+            kind: 'manual',
+            period_key: new Date().toISOString().split('T')[0],
+            sent_date: new Date().toISOString(),
+            subject: subject || 'Manual Email',
+            status: sentCount > 0 ? 'delivered' : 'failed',
+          },
+        ]);
+      } catch {
+        // Non-critical logging
+      }
+
+      return { data: { sent_count: sentCount, success: true } };
+    }
+
+    if (functionName === 'notifyClinician') {
+      const { user_id, subject, message } = payload;
+      const resendApiKey =
+        import.meta.env?.VITE_RESEND_API_KEY ||
+        import.meta.env?.RESEND_API_KEY ||
+        're_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC';
+
+      const { data: clinician } = await supabase.from('profiles').select('email').eq('id', user_id).single();
+      if (clinician?.email) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'AQLA Notifications <noreply@aqla.io>',
+            to: [clinician.email],
+            subject: subject || 'AQLA Clinician Alert',
+            html: `<p>${message || ''}</p>`,
+          }),
+        }).catch(() => {});
+      }
+      return { success: true };
+    }
+
     return { success: true };
   },
 };
