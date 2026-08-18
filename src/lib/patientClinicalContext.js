@@ -2,8 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { localDateKey } from "@/lib/dateKey";
 import { Fable, loadPdfTheme, readinessOf } from "@/lib/pdf/fableCore";
 import { DOMAINS } from "@/lib/scoring";
-import { PROTOCOL_FAMILIES } from "@/lib/protocols";
-import { periodData, adherenceDash, trendBlock, checkInTable, domainBlock, insightBullets } from "@/lib/pdf/fablePeriod";
+import { domainBlock } from "@/lib/pdf/fablePeriod";
 
 /**
  * Enterprise Patient Clinical Context & AQLA Data Attachment Generator

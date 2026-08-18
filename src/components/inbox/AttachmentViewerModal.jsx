@@ -185,9 +185,9 @@ export default function AttachmentViewerModal({ attachment, open, onClose }) {
             </div>
           ) : isPdf ? (
             <div className="w-full h-full flex flex-col items-center gap-4">
-              {attachment.url && !attachment.url.startsWith("blob:") ? (
+              {attachment.url ? (
                 <iframe
-                  src={`${attachment.url}#toolbar=0`}
+                  src={attachment.url}
                   title={attachment.name}
                   className="w-full h-[65vh] rounded-xl border border-border/60 bg-white"
                 />
