@@ -12,8 +12,10 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
 import SignupLegalNotice from "@/components/legal/SignupLegalNotice";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Register() {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,6 +27,13 @@ export default function Register() {
   const [showV2, setShowV2] = useState(false);
   const v2Ref = useRef(null);
   const [v2WidgetId, setV2WidgetId] = useState(null);
+
+  // If already authenticated, redirect to destination
+  useEffect(() => {
+    if (!isLoadingAuth && isAuthenticated) {
+      window.location.href = dashboardDestination();
+    }
+  }, [isAuthenticated, isLoadingAuth]);
 
   useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
   useEffect(() => {

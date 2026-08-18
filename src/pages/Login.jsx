@@ -9,18 +9,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { useAuth } from "@/lib/AuthContext";
 import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
 
 export default function Login() {
+  const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState(() => localStorage.getItem("aqla_remembered_email") || "");
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(() => !!localStorage.getItem("aqla_remembered_email"));
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Post-login destination (e.g. the MCP OAuth consent page sends users here
-  // with returnTo so the grant flow can resume). Same-origin paths only.
-  // safeReturnTo() falls back to "/" (the public landing page) — signed-in users
-  // belong in the app, so default them to Today instead.
   const raw = safeReturnTo();
   const returnTo = raw === "/" ? dashboardDestination() : raw;
 
@@ -28,6 +26,13 @@ export default function Login() {
   const [showV2, setShowV2] = useState(false);
   const v2Ref = useRef(null);
   const [v2WidgetId, setV2WidgetId] = useState(null);
+
+  // If already authenticated, redirect to destination
+  useEffect(() => {
+    if (!isLoadingAuth && isAuthenticated) {
+      window.location.href = returnTo;
+    }
+  }, [isAuthenticated, isLoadingAuth, returnTo]);
 
   useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
   useEffect(() => {

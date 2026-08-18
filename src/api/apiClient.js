@@ -135,7 +135,7 @@ export const auth = {
     if (authError || !authData?.user) return null;
     const user = authData.user;
 
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
 
     return {
       id: user.id,

@@ -10,32 +10,54 @@ export const AuthProvider = ({ children }) => {
   const [authChecked, setAuthChecked] = useState(false);
   const [authError, setAuthError] = useState(null);
 
-  // Load the full profile for a given auth.User and return the merged object.
+  // Load profile from public.profiles and auto-provision if missing
   const loadProfile = useCallback(async (authUser) => {
     if (!authUser) return null;
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
+
+      if (profile) {
+        return {
+          id: authUser.id,
+          email: authUser.email,
+          full_name: profile.full_name || authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
+          role: profile.role || 'user',
+          preferences: profile.preferences || {},
+          welcome_email_sent: profile.welcome_email_sent || false,
+          admin_trusted_devices: profile.admin_trusted_devices || [],
+          ...profile,
+        };
+      }
+
+      // Auto-provision profile record for new OAuth or email sign-ups
+      const newProfile = {
+        id: authUser.id,
+        full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
+        role: 'user',
+      };
+
+      await supabase.from('profiles').upsert(newProfile).catch(() => {});
 
       return {
         id: authUser.id,
         email: authUser.email,
-        full_name: profile?.full_name || authUser.user_metadata?.full_name || '',
-        role: profile?.role || 'user',
-        preferences: profile?.preferences || {},
-        welcome_email_sent: profile?.welcome_email_sent || false,
-        admin_trusted_devices: profile?.admin_trusted_devices || [],
-        ...profile,
+        full_name: newProfile.full_name,
+        role: 'user',
+        preferences: {},
+        welcome_email_sent: false,
+        admin_trusted_devices: [],
+        ...newProfile,
       };
-    } catch {
-      // Profile may not exist yet (trigger running) — return minimal object
+    } catch (err) {
+      console.warn('loadProfile error fallback:', err);
       return {
         id: authUser.id,
         email: authUser.email,
-        full_name: authUser.user_metadata?.full_name || '',
+        full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || '',
         role: 'user',
         preferences: {},
         welcome_email_sent: false,
@@ -44,10 +66,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Re-check auth from Supabase session (called by ProtectedRoute on mount)
+  // Re-check auth from Supabase session
   const checkUserAuth = useCallback(async () => {
     try {
-      setIsLoadingAuth(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const profile = await loadProfile(session.user);
@@ -73,7 +94,38 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Initial session load
+    // Detect if OAuth callback parameters are present in URL
+    const hasAuthParams =
+      typeof window !== 'undefined' &&
+      (window.location.hash.includes('access_token=') ||
+        window.location.hash.includes('error=') ||
+        window.location.search.includes('code='));
+
+    if (hasAuthParams) {
+      setIsLoadingAuth(true);
+    }
+
+    // Reactive listener for all auth state events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
+      if (session?.user) {
+        const profile = await loadProfile(session.user);
+        if (!mounted) return;
+        setUser(profile);
+        setIsAuthenticated(true);
+        setAuthError(null);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      } else if (event === 'SIGNED_OUT' || !hasAuthParams) {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      }
+    });
+
+    // Initial getSession check
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!mounted) return;
       if (session?.user) {
@@ -81,32 +133,13 @@ export const AuthProvider = ({ children }) => {
         if (!mounted) return;
         setUser(profile);
         setIsAuthenticated(true);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-      }
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
-    });
-
-    // Reactive listener for sign-in, sign-out, token refresh
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        if (session?.user) {
-          const profile = await loadProfile(session.user);
-          if (!mounted) return;
-          setUser(profile);
-          setIsAuthenticated(true);
-          setAuthError(null);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setIsAuthenticated(false);
         setAuthError(null);
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      } else if (!hasAuthParams) {
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
       }
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
     });
 
     return () => {
@@ -130,7 +163,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // Refresh the current user's profile in context (e.g. after profile update)
   const refreshUser = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
@@ -144,16 +176,13 @@ export const AuthProvider = ({ children }) => {
       user,
       isAuthenticated,
       isLoadingAuth,
-      // Keep isLoadingPublicSettings alias for legacy callers — same as isLoadingAuth
       isLoadingPublicSettings: isLoadingAuth,
       authError,
-      // appPublicSettings not needed with Supabase; kept as null for API compat
       appPublicSettings: null,
       authChecked,
       logout,
       navigateToLogin,
       checkUserAuth,
-      // Kept for API compat — same as checkUserAuth
       checkAppState: checkUserAuth,
       refreshUser,
     }}>
