@@ -652,6 +652,106 @@ export const functions = {
       return { success: true };
     }
 
+    if (functionName === 'sendAdminOtp') {
+      const resendApiKey =
+        import.meta.env?.VITE_RESEND_API_KEY ||
+        import.meta.env?.RESEND_API_KEY ||
+        're_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC';
+
+      const { data: authData } = await supabase.auth.getUser();
+      const me = authData?.user;
+      if (!me) {
+        return { data: { sent: false, error: 'User not authenticated' }, sent: false, error: 'User not authenticated' };
+      }
+
+      // Generate 6-digit verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+      // Store in admin_otps table
+      await supabase.from('admin_otps').insert([
+        {
+          code,
+          user_id: me.id,
+          created_by_id: me.id,
+          expires_at: expiresAt,
+          used: false,
+        },
+      ]);
+
+      // Send verification email via Resend
+      if (me.email) {
+        try {
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'AQLA Security <noreply@aqla.io>',
+              to: [me.email],
+              subject: 'AQLA Admin Console Verification Code',
+              html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background-color:#0c0d0e; color:#f0f2f5; padding:40px 20px;"><div style="max-width:540px; margin:0 auto; background-color:#16181a; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:32px;"><div style="font-size:18px; font-weight:700; letter-spacing:0.1em; color:#ffffff; margin-bottom:20px; text-transform:uppercase;">AQLA</div><h1 style="font-size:20px; font-weight:500; color:#ffffff; margin:0 0 16px;">Admin Verification Code</h1><p style="font-size:14px; color:#a1a7b0; line-height:1.6;">Use the verification code below to access the AQLA Admin Console on your device:</p><div style="font-size:32px; font-weight:700; letter-spacing:0.3em; color:#ffffff; background:#222529; padding:16px 24px; border-radius:12px; text-align:center; margin:24px 0;">${code}</div><p style="font-size:12px; color:#6b7280;">This code will expire in 10 minutes.</p><div style="margin-top:28px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.08); font-size:11px; color:#5a6069; text-align:center;">&copy; ${new Date().getFullYear()} AQLA.io &middot; Sent from noreply@aqla.io</div></div></div>`,
+              text: `Your AQLA Admin verification code is: ${code} (expires in 10 minutes).`,
+            }),
+          });
+        } catch (emailErr) {
+          console.warn('[sendAdminOtp] Email notice:', emailErr);
+        }
+      }
+
+      return { data: { sent: true }, sent: true };
+    }
+
+    if (functionName === 'verifyAdminAccess') {
+      const { device_id, otp, trust_device } = payload;
+      const { data: authData } = await supabase.auth.getUser();
+      const me = authData?.user;
+      if (!me) {
+        return { data: { verified: false, error: 'User not authenticated' }, verified: false, error: 'User not authenticated' };
+      }
+
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', me.id).maybeSingle();
+      const trustedDevices = Array.isArray(profile?.admin_trusted_devices) ? profile.admin_trusted_devices : [];
+
+      // If auto-verifying existing trusted device without OTP
+      if (!otp && device_id) {
+        const isTrusted = trustedDevices.includes(device_id);
+        return { data: { verified: isTrusted, error: isTrusted ? undefined : 'Device not trusted' }, verified: isTrusted };
+      }
+
+      // If verifying OTP
+      if (otp) {
+        const { data: validOtps } = await supabase
+          .from('admin_otps')
+          .select('*')
+          .eq('user_id', me.id)
+          .eq('code', String(otp).trim())
+          .eq('used', false)
+          .gte('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (!validOtps || validOtps.length === 0) {
+          return { data: { verified: false, error: 'Invalid or expired verification code.' }, verified: false, error: 'Invalid or expired verification code.' };
+        }
+
+        // Mark OTP as used
+        await supabase.from('admin_otps').update({ used: true }).eq('id', validOtps[0].id);
+
+        // If trust_device is checked, persist device_id in profiles.admin_trusted_devices
+        if (device_id && trust_device && !trustedDevices.includes(device_id)) {
+          const updatedDevices = [...trustedDevices, device_id];
+          await supabase.from('profiles').update({ admin_trusted_devices: updatedDevices }).eq('id', me.id);
+        }
+
+        return { data: { verified: true }, verified: true };
+      }
+
+      return { data: { verified: false, error: 'Verification code required.' }, verified: false, error: 'Verification code required.' };
+    }
+
     return { success: true };
   },
 };

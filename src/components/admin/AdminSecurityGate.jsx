@@ -49,13 +49,14 @@ export default function AdminSecurityGate({ children }) {
         const res = await base44.functions.invoke("verifyAdminAccess", {
           device_id: deviceId,
         });
-        if (res.data?.verified) {
+        const isVer = res?.data?.verified ?? res?.verified;
+        if (isVer) {
           markAdminVerified();
           setVerified(true);
         } else {
           // Device fell out of trust (admin removed it) — fall through to OTP flow.
           setIsTrusted(false);
-          setError(res.data?.error || "This device is no longer trusted.");
+          setError(res?.data?.error || res?.error || "This device is no longer trusted.");
         }
       } catch (e) {
         setError(e?.message || "Could not verify this device.");
@@ -72,8 +73,9 @@ export default function AdminSecurityGate({ children }) {
     setBusy(true); setError("");
     try {
       const res = await base44.functions.invoke("sendAdminOtp", {});
-      if (res.data?.sent) setOtpSent(true);
-      else setError(res.data?.error || "Could not send the code.");
+      const sent = res?.data?.sent ?? res?.sent;
+      if (sent) setOtpSent(true);
+      else setError(res?.data?.error || res?.error || "Could not send the code.");
     } catch (e) {
       setError(e?.message || "Could not send the code.");
     } finally {
@@ -89,11 +91,12 @@ export default function AdminSecurityGate({ children }) {
         otp: code,
         trust_device: trustDevice,
       });
-      if (res.data?.verified) {
+      const isVer = res?.data?.verified ?? res?.verified;
+      if (isVer) {
         markAdminVerified();
         setVerified(true);
       } else {
-        setError(res.data?.error || "Verification failed.");
+        setError(res?.data?.error || res?.error || "Verification failed.");
       }
     } catch (e) {
       setError(e?.message || "Verification failed.");
