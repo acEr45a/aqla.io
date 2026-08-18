@@ -1,0 +1,21 @@
+{
+  "short_name": "AQLA",
+  "name": "AQLA — Personal Brain Operating System",
+  "icons": [
+    {
+      "src": "/images/brain/glass_brain.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/brain/glass_brain.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/dashboard",
+  "background_color": "#0c0d0e",
+  "theme_color": "#0c0d0e",
+  "display": "standalone",
+  "orientation": "portrait"
+}
