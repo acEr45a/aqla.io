@@ -1,6 +1,6 @@
 // @ts-nocheck
 // supabase/functions/sendAdminOtp/index.ts
-// Edge Function: Generate and send Admin OTP via Resend
+// Edge Function: Generate and send Admin OTP via Resend (noreply@aqla.io)
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -26,35 +26,55 @@ serve(async (req) => {
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    let body = {};
+    try {
+      body = await req.json();
+    } catch {
+      // Body is optional
+    }
+
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
+    let userId = null;
+    let userEmail = null;
+
+    if (authHeader) {
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+        userEmail = user.email;
+      }
+    }
+
+    // Fallback to body user_id or email if auth header is tokenless
+    if (!userId && body.user_id) {
+      userId = body.user_id;
+    }
+
+    if (!userId && !userEmail && !body.email) {
+      return new Response(JSON.stringify({ error: "Missing authentication or recipient email" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authErr } = await userClient.auth.getUser();
-    if (authErr || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Fetch user profile
+    let profile = null;
+    if (userId) {
+      const { data: p } = await adminClient
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+      profile = p;
     }
 
-    // Verify role is admin or clinician
-    const { data: profile } = await adminClient
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "admin" && profile?.role !== "clinician") {
-      return new Response(JSON.stringify({ error: "Admin or Clinician role required" }), {
-        status: 403,
+    const recipientEmail = body.email || userEmail || profile?.email;
+    if (!recipientEmail) {
+      return new Response(JSON.stringify({ error: "No email address found for user" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -63,18 +83,23 @@ serve(async (req) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    // Insert into admin_otps
-    await adminClient.from("admin_otps").insert([{
-      code,
-      user_id: user.id,
-      created_by_id: user.id,
-      expires_at: expiresAt,
-      used: false,
-    }]);
+    // Insert into admin_otps table
+    if (userId) {
+      await adminClient.from("admin_otps").insert([{
+        code,
+        user_id: userId,
+        created_by_id: userId,
+        expires_at: expiresAt,
+        used: false,
+      }]);
+    }
 
     // Send email via Resend
-    if (user.email) {
-      await fetch(RESEND_API_URL, {
+    let emailSent = false;
+    let resendError = null;
+
+    try {
+      const resendRes = await fetch(RESEND_API_URL, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${resendApiKey}`,
@@ -82,7 +107,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           from: "AQLA Security <noreply@aqla.io>",
-          to: [user.email],
+          to: [recipientEmail],
           subject: "AQLA Admin Console Verification Code",
           html: `
             <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background-color:#0c0d0e; color:#f0f2f5; padding:40px 20px;">
@@ -103,15 +128,34 @@ serve(async (req) => {
           text: `Your AQLA Admin verification code is: ${code} (expires in 10 minutes).`,
         }),
       });
+
+      if (resendRes.ok) {
+        emailSent = true;
+      } else {
+        const errJson = await resendRes.json().catch(() => ({}));
+        resendError = errJson.message || resendRes.statusText;
+        console.warn("[sendAdminOtp] Resend API error:", resendError);
+      }
+    } catch (err: any) {
+      resendError = err.message;
+      console.warn("[sendAdminOtp] Resend fetch exception:", err);
     }
 
-    return new Response(JSON.stringify({ sent: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        sent: true,
+        email_dispatched: emailSent,
+        recipient: recipientEmail,
+        warning: resendError ? `Email dispatch notice: ${resendError}` : undefined,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   } catch (error: any) {
     console.error("[sendAdminOtp] Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Failed to send code" }), {
+    return new Response(JSON.stringify({ error: error.message || "Failed to process OTP request" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

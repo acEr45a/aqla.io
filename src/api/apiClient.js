@@ -677,6 +677,15 @@ export const functions = {
         console.warn('[sendAdminOtp] Notice:', err.message);
       }
 
+      // Dispatch verification email via Edge Function (Resend -> noreply@aqla.io)
+      try {
+        supabase.functions.invoke('sendAdminOtp', {
+          body: { user_id: me.id, email: me.email },
+        }).catch(() => {});
+      } catch {
+        // Non-blocking fallback
+      }
+
       return { data: { sent: true }, sent: true };
     }
 
