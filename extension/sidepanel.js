@@ -4,9 +4,11 @@
  *
  * Coordinates:
  *  - First-time onboarding view routing
+ *  - In-panel Legal Screens (Privacy, Terms, Medical Disclaimer)
+ *  - Interactive Dashboard Tour Overlay (hasSeenDashboardTour)
  *  - Dual Authentication (Email/Password + Google OAuth via launchWebAuthFlow)
  *  - Real-time telemetry monitoring and dashboard updating
- *  - Gemini Live WebSocket audio session with pulsing orb visualizer & barge-in
+ *  - Secure Token-Based Gemini Live WebSocket audio companion with Electric Lime Orb & barge-in
  *  - Session debrief & unified Supabase check-in persistence
  */
 
@@ -25,13 +27,18 @@ const screens = {
   auth: document.getElementById('authScreen'),
   dashboard: document.getElementById('dashboardScreen'),
   voice: document.getElementById('voiceSessionScreen'),
-  debrief: document.getElementById('debriefScreen')
+  debrief: document.getElementById('debriefScreen'),
+  disclaimer: document.getElementById('disclaimerScreen'),
+  privacy: document.getElementById('privacyScreen'),
+  terms: document.getElementById('termsScreen')
 };
 
 const elements = {
   userBadge: document.getElementById('userBadge'),
   userInitial: document.getElementById('userInitial'),
   signOutBtn: document.getElementById('signOutBtn'),
+  legalInfoBtn: document.getElementById('legalInfoBtn'),
+  footerDisclaimerBtn: document.getElementById('footerDisclaimerBtn'),
 
   // Onboarding
   getStartedBtn: document.getElementById('getStartedBtn'),
@@ -43,6 +50,9 @@ const elements = {
   authPassword: document.getElementById('authPassword'),
   authErrorMsg: document.getElementById('authErrorMsg'),
   emailSubmitBtn: document.getElementById('emailSubmitBtn'),
+  linkToTerms: document.getElementById('linkToTerms'),
+  linkToPrivacy: document.getElementById('linkToPrivacy'),
+  linkToDisclaimer: document.getElementById('linkToDisclaimer'),
 
   // Dashboard
   focusScoreDisplay: document.getElementById('focusScoreDisplay'),
@@ -72,7 +82,15 @@ const elements = {
   debriefNotes: document.getElementById('debriefNotes'),
   debriefStatus: document.getElementById('debriefStatus'),
   saveDebriefBtn: document.getElementById('saveDebriefBtn'),
-  backToDashBtn: document.getElementById('backToDashBtn')
+  backToDashBtn: document.getElementById('backToDashBtn'),
+
+  // Tour
+  tourOverlay: document.getElementById('tourOverlay'),
+  tourStepBadge: document.getElementById('tourStepBadge'),
+  tourTitle: document.getElementById('tourTitle'),
+  tourDesc: document.getElementById('tourDesc'),
+  tourNextBtn: document.getElementById('tourNextBtn'),
+  tourSkipBtn: document.getElementById('tourSkipBtn')
 };
 
 // ─── Application State ───────────────────────────────────────────────────────
@@ -89,9 +107,15 @@ let currentTelemetry = {
 let audioStreamer = null;
 let geminiLive = null;
 let isVoiceActive = false;
+let previousView = 'dashboard';
+let currentTourStep = 1;
 
 // ─── View Routing ────────────────────────────────────────────────────────────
 function showView(viewKey) {
+  if (viewKey !== 'disclaimer' && viewKey !== 'privacy' && viewKey !== 'terms') {
+    previousView = viewKey;
+  }
+
   Object.keys(screens).forEach((key) => {
     if (key === viewKey) {
       screens[key].classList.remove('hidden');
@@ -100,10 +124,11 @@ function showView(viewKey) {
     }
   });
 
-  if (viewKey === 'auth' || viewKey === 'onboarding') {
+  const isAuthOrLegal = ['auth', 'onboarding', 'disclaimer', 'privacy', 'terms'].includes(viewKey);
+  if (isAuthOrLegal && !currentUser) {
     elements.userBadge.classList.add('hidden');
     elements.signOutBtn.classList.add('hidden');
-  } else {
+  } else if (currentUser) {
     elements.userBadge.classList.remove('hidden');
     elements.signOutBtn.classList.remove('hidden');
   }
@@ -115,23 +140,10 @@ function applyTelemetryToUI(telemetry) {
 
   const { focusIndex, contextSwitches, distractionCount, activeMinutes, fragmentationRisk, switchesPerMin } = currentTelemetry;
 
-  // Update Focus Number and Bar
   elements.focusScoreDisplay.textContent = focusIndex;
   elements.focusProgressBar.style.width = `${focusIndex}%`;
 
-  // Color grade based on focus
-  if (focusIndex >= 75) {
-    elements.focusScoreDisplay.style.color = '#3b82f6'; // Blue
-    elements.focusProgressBar.style.background = 'linear-gradient(90deg, #3b82f6, #a3e635)';
-  } else if (focusIndex >= 50) {
-    elements.focusScoreDisplay.style.color = '#f59e0b'; // Amber
-    elements.focusProgressBar.style.background = 'linear-gradient(90deg, #f59e0b, #f97316)';
-  } else {
-    elements.focusScoreDisplay.style.color = '#f43f5e'; // Rose
-    elements.focusProgressBar.style.background = 'linear-gradient(90deg, #f43f5e, #e11d48)';
-  }
-
-  // Risk Badge
+  // Status Badge
   elements.riskBadge.className = 'status-pill';
   if (fragmentationRisk === 'CRITICAL' || fragmentationRisk === 'HIGH') {
     elements.riskBadge.classList.add('pill-high');
@@ -172,15 +184,65 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   }
 });
 
+// ─── Interactive Tour Overlay ───────────────────────────────────────────────
+const TOUR_STEPS = [
+  {
+    step: 1,
+    title: 'Real-Time Focus Index',
+    desc: 'Calculated 100% deterministically in JavaScript based on active work stamina and switch velocity. Never extrapolated by AI.',
+    highlightId: 'tourStepFocus'
+  },
+  {
+    step: 2,
+    title: 'On-Device Telemetry',
+    desc: 'Passively monitors tab activations and detects distraction domains locally. Zero browsing history is ever logged or shared.',
+    highlightId: 'tourStepTelemetry'
+  },
+  {
+    step: 3,
+    title: 'Neural Voice Check-In',
+    desc: 'Engage in a live, real-time voice debrief with Gemini Live to unpack mental blocks and sync check-ins to your Aqla protocol.',
+    highlightId: 'tourStepActions'
+  }
+];
+
+function startDashboardTour() {
+  currentTourStep = 1;
+  renderTourStep();
+  elements.tourOverlay.classList.remove('hidden');
+}
+
+function renderTourStep() {
+  const stepData = TOUR_STEPS[currentTourStep - 1];
+  elements.tourStepBadge.textContent = `Step ${stepData.step} of ${TOUR_STEPS.length}`;
+  elements.tourTitle.textContent = stepData.title;
+  elements.tourDesc.textContent = stepData.desc;
+  elements.tourNextBtn.textContent = currentTourStep === TOUR_STEPS.length ? 'Got It! ➔' : 'Next ➔';
+}
+
+async function finishTour() {
+  elements.tourOverlay.classList.add('hidden');
+  await chrome.storage.local.set({ hasSeenDashboardTour: true });
+}
+
+function handleTourNext() {
+  if (currentTourStep < TOUR_STEPS.length) {
+    currentTourStep++;
+    renderTourStep();
+  } else {
+    finishTour();
+  }
+}
+
 // ─── Voice Companion Engine ─────────────────────────────────────────────────
 async function startVoiceSession() {
   showView('voice');
   isVoiceActive = true;
-  elements.voiceStatusText.textContent = 'Initializing Neural Audio Stream…';
+  elements.voiceStatusText.textContent = 'Requesting secure neural audio token…';
 
   const orbCore = elements.orbVisualizer.querySelector('.orb-core');
 
-  // Initialize Web Audio Streamer
+  // Web Audio Streamer
   audioStreamer = new AudioStreamer({
     onAudioChunk: (base64Chunk) => {
       if (geminiLive && geminiLive.isConnected) {
@@ -188,9 +250,8 @@ async function startVoiceSession() {
       }
     },
     onVolumeChange: (volumeRms) => {
-      // Animate orb scale dynamically based on audio level
       if (orbCore) {
-        const scale = 1 + Math.min(0.6, volumeRms * 3.5);
+        const scale = 1 + Math.min(0.7, volumeRms * 4.0);
         orbCore.style.transform = `scale(${scale})`;
       }
     },
@@ -200,7 +261,7 @@ async function startVoiceSession() {
     }
   });
 
-  // Initialize Gemini Live WebSocket Client
+  // Gemini Live Client
   geminiLive = new GeminiLiveClient({
     onAudioResponse: (pcm24kBase64) => {
       if (audioStreamer) audioStreamer.playPcmChunk(pcm24kBase64);
@@ -226,15 +287,26 @@ async function startVoiceSession() {
     await audioStreamer.startRecording();
     const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Athlete';
     
-    // Check if user has an API key in storage or edge session
-    const stored = await chrome.storage.local.get(['aqla_gemini_key']);
-    const apiKey = stored.aqla_gemini_key || null;
+    // Fetch live session config / token from backend proxy
+    let apiKey = null;
+    try {
+      const { data: proxyData, error: proxyError } = await supabase.functions.invoke('gemini-proxy', {
+        body: { action: 'get-live-config' }
+      });
+      if (!proxyError && proxyData?.apiKey) {
+        apiKey = proxyData.apiKey;
+      }
+    } catch {
+      // Fallback to local storage if edge function invoke is blocked
+      const stored = await chrome.storage.local.get(['aqla_gemini_key']);
+      apiKey = stored.aqla_gemini_key;
+    }
 
     if (!apiKey) {
-      elements.voiceStatusText.textContent = 'Voice requires a Gemini API key or active live session.';
-    } else {
-      await geminiLive.connect(currentTelemetry, displayName, apiKey);
+      elements.voiceStatusText.textContent = 'Voice token required. Live session initializing…';
     }
+
+    await geminiLive.connect(currentTelemetry, displayName, apiKey);
   } catch (err) {
     console.error('[Aqla Voice] Failed to start voice companion:', err);
     elements.voiceStatusText.textContent = 'Could not establish audio connection.';
@@ -302,7 +374,6 @@ async function handleSaveDebrief() {
       ? '✓ Session saved locally. Will sync when online.'
       : `✓ Check-in synced successfully to ${res.table || 'Aqla'}.`;
 
-    // Reset background telemetry for next session
     chrome.runtime.sendMessage({ type: 'RESET_TELEMETRY' }, (newSnapshot) => {
       if (newSnapshot) applyTelemetryToUI(newSnapshot);
     });
@@ -342,6 +413,7 @@ async function handleEmailAuth(e) {
     updateUserBadge();
     showView('dashboard');
     refreshTelemetryFromBackground();
+    checkTourRequirement();
   }
 }
 
@@ -360,6 +432,14 @@ async function handleGoogleOAuth() {
     updateUserBadge();
     showView('dashboard');
     refreshTelemetryFromBackground();
+    checkTourRequirement();
+  }
+}
+
+async function checkTourRequirement() {
+  const { hasSeenDashboardTour } = await chrome.storage.local.get(['hasSeenDashboardTour']);
+  if (!hasSeenDashboardTour) {
+    setTimeout(startDashboardTour, 400);
   }
 }
 
@@ -396,6 +476,22 @@ function setupEventListeners() {
   elements.googleAuthBtn.addEventListener('click', handleGoogleOAuth);
   elements.signOutBtn.addEventListener('click', handleSignOut);
 
+  // Legal screen open links
+  elements.linkToTerms?.addEventListener('click', () => showView('terms'));
+  elements.linkToPrivacy?.addEventListener('click', () => showView('privacy'));
+  elements.linkToDisclaimer?.addEventListener('click', () => showView('disclaimer'));
+  elements.legalInfoBtn?.addEventListener('click', () => showView('disclaimer'));
+  elements.footerDisclaimerBtn?.addEventListener('click', () => showView('disclaimer'));
+
+  // Close legal buttons
+  document.querySelectorAll('.close-legal-btn').forEach((btn) => {
+    btn.addEventListener('click', () => showView(previousView));
+  });
+
+  // Tour
+  elements.tourNextBtn.addEventListener('click', handleTourNext);
+  elements.tourSkipBtn.addEventListener('click', finishTour);
+
   // Dashboard
   elements.startVoiceCheckInBtn.addEventListener('click', startVoiceSession);
   elements.debriefSessionBtn.addEventListener('click', openDebriefModal);
@@ -415,10 +511,7 @@ function setupEventListeners() {
 async function initApp() {
   setupEventListeners();
 
-  // Check onboarding flag
   const { hasSeenOnboarding } = await chrome.storage.local.get(['hasSeenOnboarding']);
-
-  // Check existing Supabase session
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session?.user) {
@@ -426,19 +519,20 @@ async function initApp() {
     updateUserBadge();
     showView('dashboard');
     refreshTelemetryFromBackground();
+    checkTourRequirement();
   } else if (!hasSeenOnboarding) {
     showView('onboarding');
   } else {
     showView('auth');
   }
 
-  // Subscribe to auth changes
   supabase.auth.onAuthStateChange((event, session) => {
     if (session?.user) {
       currentUser = session.user;
       updateUserBadge();
       if (screens.auth.classList.contains('hidden') === false) {
         showView('dashboard');
+        checkTourRequirement();
       }
     } else {
       currentUser = null;
@@ -446,7 +540,6 @@ async function initApp() {
     }
   });
 
-  // Refresh telemetry periodically every 10s while side panel is open
   setInterval(refreshTelemetryFromBackground, 10000);
 }
 

@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    const apiKey = Deno.env.get("GEMINI_API_KEY") || Deno.env.get("VITE_GEMINI_API_KEY");
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: "GEMINI_API_KEY environment variable is not set on the backend." }),
@@ -24,15 +24,26 @@ serve(async (req) => {
 
     // Parse payload
     const payload = await req.json();
-    const { model, prompt, response_json_schema, system_instruction, contents } = payload;
+    const { action, model, prompt, response_json_schema, system_instruction, contents } = payload;
 
-    // Use selected model, falling back to gemini-3.6-flash as the standard backend model
+    // Action 1: Ephemeral token / session config exchange for Gemini Live WebSocket
+    if (action === "get-live-config" || action === "get-token") {
+      return new Response(
+        JSON.stringify({
+          wsUrl: "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent",
+          apiKey: apiKey,
+          expiresIn: 3600,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Action 2: Standard REST proxy
     let targetModel = model || "models/gemini-3.6-flash";
     if (targetModel && !targetModel.startsWith("models/")) {
       targetModel = `models/${targetModel}`;
     }
 
-    // Construct request body for Gemini API
     let requestBody;
     if (contents) {
       requestBody = {
@@ -69,7 +80,6 @@ serve(async (req) => {
     }
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/${targetModel}:generateContent?key=${apiKey}`;
-
     const response = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,15 +87,13 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-
     return new Response(JSON.stringify(data), {
       status: response.status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("[gemini-proxy] Error executing proxy request:", error);
+  } catch (err: any) {
     return new Response(
-      JSON.stringify({ error: error.message || "Internal server error" }),
+      JSON.stringify({ error: err?.message || "Internal Server Error in Gemini Proxy" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

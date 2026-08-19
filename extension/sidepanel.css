@@ -1,5 +1,5 @@
 /* extension/sidepanel.css */
-/* Aqla Neurological Companion — High-Contrast Dark-Mode Design System */
+/* Aqla Neurological Companion — Electric Lime & Dark Obsidian Design System */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -8,20 +8,25 @@
 }
 
 :root {
-  --bg: #0f172a;           /* Slate 900 */
-  --bg-subtle: #1e293b;    /* Slate 800 */
-  --card: #141f32;         /* Deep Slate */
+  --bg: #090d16;           /* Deep Obsidian */
+  --bg-subtle: #121926;    /* Slate 900 */
+  --card: #151e30;         /* Surface Card */
   --border: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(59, 130, 246, 0.4);
+  --border-active: rgba(198, 255, 0, 0.5);
+  
   --text: #f8fafc;
   --text-muted: #94a3b8;
   
-  --primary: #3b82f6;      /* Electric Blue */
-  --primary-glow: rgba(59, 130, 246, 0.25);
+  /* Aqla Signature Electric Lime Brand Accent */
+  --lime: #C6FF00;
+  --lime-hover: #b4ea00;
+  --lime-glow: rgba(198, 255, 0, 0.35);
+  --lime-fg: #090d16;
+
+  --primary: #3b82f6;      /* Secondary Blue */
   --success: #10b981;      /* Emerald */
   --warning: #f59e0b;      /* Amber */
-  --danger: #f43f5e;       /* Rose */
-  --chartreuse: #a3e635;   /* Aqla Accent */
+  --danger: #f43f5e;       /* Rose Red */
 
   --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
   --radius: 12px;
@@ -31,7 +36,7 @@ body {
   background-color: var(--bg);
   color: var(--text);
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.5;
   min-height: 100vh;
   margin: 0;
@@ -45,6 +50,7 @@ body {
   height: 100vh;
   padding: 16px;
   box-sizing: border-box;
+  position: relative;
 }
 
 /* ─── Header ──────────────────────────────────────────────────────────────── */
@@ -54,7 +60,7 @@ body {
   justify-content: space-between;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .logo-cluster {
@@ -66,8 +72,8 @@ body {
 .logo-mark {
   width: 30px;
   height: 30px;
-  background: linear-gradient(135deg, var(--primary), var(--chartreuse));
-  color: #0c0d0e;
+  background: var(--lime);
+  color: var(--lime-fg);
   font-weight: 900;
   font-size: 13px;
   border-radius: 8px;
@@ -75,21 +81,43 @@ body {
   align-items: center;
   justify-content: center;
   letter-spacing: -0.5px;
-  box-shadow: 0 0 12px var(--primary-glow);
+  box-shadow: 0 0 16px var(--lime-glow);
 }
 
 .brand-title {
   font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-weight: 800;
+  letter-spacing: 0.06em;
 }
 
 .companion-tag {
-  font-size: 10px;
-  color: var(--text-muted);
+  font-size: 9.5px;
+  color: var(--lime);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  font-weight: 700;
   display: block;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.icon-btn:hover {
+  border-color: var(--lime);
 }
 
 .user-pill {
@@ -107,8 +135,25 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--primary);
+  font-weight: 700;
+  color: var(--lime);
+}
+
+/* ─── Medical Banner ──────────────────────────────────────────────────────── */
+.medical-banner {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: #93c5fd;
+}
+
+.med-icon {
+  font-size: 12px;
 }
 
 /* ─── Views & Panels ──────────────────────────────────────────────────────── */
@@ -122,7 +167,7 @@ body {
 .view-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   animation: fadeIn 0.25s ease-out forwards;
 }
 
@@ -145,13 +190,13 @@ body {
   width: 54px;
   height: 54px;
   margin: 0 auto 12px;
-  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--lime) 0%, transparent 70%);
   border-radius: 50%;
   animation: pulseGlow 3s infinite ease-in-out;
 }
 
 .hero-subtitle {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--text-muted);
   margin-top: 4px;
 }
@@ -176,8 +221,8 @@ body {
 }
 
 .step-info h3 {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 700;
   margin-bottom: 2px;
 }
 
@@ -190,12 +235,12 @@ body {
 .auth-box {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .auth-header h2 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .auth-header p {
@@ -250,7 +295,7 @@ body {
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .form-group {
@@ -260,8 +305,8 @@ body {
 }
 
 .form-group label {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -271,7 +316,7 @@ body {
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   color: var(--text);
   font-size: 13px;
   font-family: var(--font);
@@ -280,14 +325,33 @@ body {
 }
 
 .form-input:focus, .form-textarea:focus {
-  border-color: var(--primary);
+  border-color: var(--lime);
+}
+
+.auth-legal-links {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+.text-link {
+  background: transparent;
+  border: none;
+  color: var(--lime);
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 2px;
+  text-decoration: underline;
 }
 
 .error-banner {
   background: rgba(244, 63, 94, 0.12);
   border: 1px solid rgba(244, 63, 94, 0.3);
   color: var(--danger);
-  font-size: 12px;
+  font-size: 11.5px;
   padding: 8px 12px;
   border-radius: 8px;
 }
@@ -297,7 +361,7 @@ body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 13px 15px;
 }
 
 .metric-card {
@@ -314,14 +378,14 @@ body {
 
 .card-eyebrow {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .status-pill {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 99px;
@@ -330,8 +394,8 @@ body {
 }
 
 .pill-low {
-  background: rgba(16, 185, 129, 0.15);
-  color: var(--success);
+  background: rgba(198, 255, 0, 0.12);
+  color: var(--lime);
 }
 
 .pill-moderate {
@@ -351,14 +415,15 @@ body {
 }
 
 .gauge-number {
-  font-size: 38px;
-  font-weight: 800;
+  font-size: 36px;
+  font-weight: 900;
   line-height: 1;
-  color: var(--primary);
+  color: var(--lime);
+  text-shadow: 0 0 16px var(--lime-glow);
 }
 
 .gauge-sub {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -373,7 +438,8 @@ body {
 .progress-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, var(--primary), var(--chartreuse));
+  background: var(--lime);
+  box-shadow: 0 0 10px var(--lime-glow);
   transition: width 0.6s ease;
 }
 
@@ -384,7 +450,7 @@ body {
 }
 
 .stat-card {
-  padding: 10px;
+  padding: 9px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -392,19 +458,19 @@ body {
 
 .stat-label {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .stat-val {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--text);
 }
 
 .stat-meta {
-  font-size: 9px;
+  font-size: 8.5px;
   color: var(--text-muted);
 }
 
@@ -431,24 +497,25 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 11px 16px;
+  padding: 10px 16px;
   border-radius: 10px;
   font-family: var(--font);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   border: none;
   transition: all 0.15s ease;
 }
 
-.btn-primary {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 0 16px var(--primary-glow);
+.btn-lime {
+  background: var(--lime);
+  color: var(--lime-fg);
+  box-shadow: 0 0 18px var(--lime-glow);
 }
 
-.btn-primary:hover {
-  background: #2563eb;
+.btn-lime:hover {
+  background: var(--lime-hover);
+  box-shadow: 0 0 24px var(--lime-glow);
 }
 
 .btn-secondary {
@@ -458,20 +525,26 @@ body {
 }
 
 .btn-secondary:hover {
-  border-color: var(--border-active);
+  border-color: var(--lime);
 }
 
 .btn-voice {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  color: #ffffff;
-  box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, #162032, #101726);
+  color: var(--lime);
+  border: 1px solid var(--border-active);
+  box-shadow: 0 0 16px var(--lime-glow);
+}
+
+.btn-voice:hover {
+  border-color: var(--lime);
 }
 
 .voice-pulse-dot {
   width: 8px;
   height: 8px;
-  background: var(--chartreuse);
+  background: var(--lime);
   border-radius: 50%;
+  box-shadow: 0 0 8px var(--lime);
   animation: pulseDot 1.5s infinite;
 }
 
@@ -491,47 +564,48 @@ body {
   color: var(--text-muted);
 }
 
-.w-full {
-  width: 100%;
+.btn-ghost:hover {
+  color: var(--text);
 }
 
+.w-full { width: 100%; }
 .mt-2 { margin-top: 8px; }
 .mt-4 { margin-top: 16px; }
 
-/* ─── Voice Session View & Orb Visualizer ─────────────────────────────────── */
+/* ─── Voice Session View & Electric Lime Orb Visualizer ───────────────────── */
 .voice-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 0;
+  padding: 14px 0;
   gap: 12px;
 }
 
 .neural-orb-wrap {
   position: relative;
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .orb-core {
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle at 30% 30%, #60a5fa, #2563eb);
+  width: 64px;
+  height: 64px;
+  background: radial-gradient(circle at 30% 30%, #e2ff66, var(--lime));
   border-radius: 50%;
   position: relative;
   z-index: 2;
-  box-shadow: 0 0 24px var(--primary);
+  box-shadow: 0 0 30px var(--lime);
   transition: transform 0.08s ease-out;
 }
 
 .orb-glow {
   position: absolute;
-  width: 90px;
-  height: 90px;
-  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, var(--lime-glow) 0%, transparent 70%);
   border-radius: 50%;
   animation: pulseGlow 2.5s infinite ease-in-out;
 }
@@ -539,18 +613,18 @@ body {
 .orb-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(96, 165, 250, 0.3);
+  border: 1px solid rgba(198, 255, 0, 0.3);
 }
 
 .ring-1 {
-  width: 80px;
-  height: 80px;
+  width: 88px;
+  height: 88px;
   animation: spinRing 8s linear infinite;
 }
 
 .ring-2 {
-  width: 96px;
-  height: 96px;
+  width: 104px;
+  height: 104px;
   border-style: dashed;
   animation: spinRing 12s linear infinite reverse;
 }
@@ -565,17 +639,17 @@ body {
 }
 
 .voice-status {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--lime);
 }
 
 .voice-telemetry-badge {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 9.5px;
+  font-weight: 700;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 99px;
   color: var(--text-muted);
 }
@@ -588,15 +662,15 @@ body {
   padding: 12px;
   display: flex;
   flex-direction: column;
-  max-height: 200px;
+  max-height: 180px;
 }
 
 .transcript-header {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .transcript-scroll {
@@ -608,27 +682,132 @@ body {
 }
 
 .transcript-entry {
-  font-size: 12px;
+  font-size: 11.5px;
   line-height: 1.4;
 }
 
 .transcript-entry .speaker-tag {
   font-size: 9px;
-  font-weight: 700;
-  color: var(--primary);
+  font-weight: 800;
+  color: var(--lime);
   margin-right: 4px;
+}
+
+/* ─── Legal Panels ────────────────────────────────────────────────────────── */
+.legal-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  gap: 12px;
+}
+
+.legal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legal-header h2 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--lime);
+}
+
+.close-legal-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.legal-body {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  line-height: 1.5;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.legal-alert-box {
+  background: rgba(198, 255, 0, 0.06);
+  border: 1px solid rgba(198, 255, 0, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+  color: var(--text);
+}
+
+.legal-alert-box strong {
+  color: var(--lime);
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ─── Interactive Tour Overlay ────────────────────────────────────────────── */
+.tour-backdrop {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(9, 13, 22, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.tour-card {
+  background: var(--card);
+  border: 1px solid var(--lime);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 0 30px var(--lime-glow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 280px;
+}
+
+.tour-step-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.tour-card h3 {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.tour-card p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
 }
 
 /* ─── Debrief Screen ──────────────────────────────────────────────────────── */
 .debrief-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .debrief-header h2 {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .debrief-header p {
@@ -652,11 +831,11 @@ body {
 }
 
 .debrief-row strong {
-  color: var(--primary);
+  color: var(--lime);
 }
 
 .debrief-status {
-  font-size: 12px;
+  font-size: 11.5px;
   padding: 8px 10px;
   border-radius: 6px;
   background: rgba(16, 185, 129, 0.12);
@@ -665,7 +844,7 @@ body {
 
 /* ─── Footer ──────────────────────────────────────────────────────────────── */
 .app-footer {
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
   margin-top: auto;
   display: flex;
@@ -673,15 +852,40 @@ body {
   justify-content: space-between;
 }
 
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .footer-link {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--primary);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--lime);
   text-decoration: none;
 }
 
+.footer-dot {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.footer-sublink {
+  background: transparent;
+  border: none;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-sublink:hover {
+  color: var(--lime);
+  text-decoration: underline;
+}
+
 .footer-action {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-muted);
   background: transparent;
   border: none;

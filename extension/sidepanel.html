@@ -17,8 +17,11 @@
           <span class="companion-tag">Neurological Companion</span>
         </div>
       </div>
-      <div id="userBadge" class="user-pill hidden">
-        <span id="userInitial" class="user-avatar">A</span>
+      <div class="header-actions">
+        <button id="legalInfoBtn" class="icon-btn" title="Medical & Legal Disclaimers">⚖️</button>
+        <div id="userBadge" class="user-pill hidden">
+          <span id="userInitial" class="user-avatar">A</span>
+        </div>
       </div>
     </header>
 
@@ -57,7 +60,7 @@
           </div>
         </div>
 
-        <button id="getStartedBtn" class="btn btn-primary w-full mt-4">
+        <button id="getStartedBtn" class="btn btn-lime w-full mt-4">
           Get Started
         </button>
       </section>
@@ -93,17 +96,30 @@
               <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required />
             </div>
             <div id="authErrorMsg" class="error-banner hidden"></div>
-            <button type="submit" id="emailSubmitBtn" class="btn btn-primary w-full">
+            <button type="submit" id="emailSubmitBtn" class="btn btn-lime w-full">
               Sign In with Email
             </button>
           </form>
+
+          <div class="auth-legal-links">
+            By signing in, you accept our 
+            <button class="text-link" id="linkToTerms">Terms</button>, 
+            <button class="text-link" id="linkToPrivacy">Privacy</button>, and 
+            <button class="text-link" id="linkToDisclaimer">Medical Disclaimer</button>.
+          </div>
         </div>
       </section>
 
       <!-- 3. Dashboard Screen -->
       <section id="dashboardScreen" class="view-panel hidden">
+        <!-- Medical Banner -->
+        <div class="medical-banner">
+          <span class="med-icon">ℹ️</span>
+          <span>Investigational tool — not a medical device.</span>
+        </div>
+
         <!-- Live Focus Gauge Card -->
-        <div class="card metric-card">
+        <div id="tourStepFocus" class="card metric-card">
           <div class="card-head">
             <span class="card-eyebrow">Real-Time Focus Index</span>
             <span id="riskBadge" class="status-pill pill-low">Low Fragmentation</span>
@@ -118,7 +134,7 @@
         </div>
 
         <!-- Telemetry Stats Grid -->
-        <div class="stats-grid">
+        <div id="tourStepTelemetry" class="stats-grid">
           <div class="card stat-card">
             <span class="stat-label">Context Switches</span>
             <span id="contextSwitchesCount" class="stat-val">0</span>
@@ -130,14 +146,14 @@
             <span class="stat-meta">Local match</span>
           </div>
           <div class="card stat-card">
-            <span class="stat-label">Session Duration</span>
+            <span class="stat-label">Active Time</span>
             <span id="sessionDurationDisplay" class="stat-val">0m</span>
-            <span class="stat-meta">Active telemetry</span>
+            <span class="stat-meta">On-device</span>
           </div>
         </div>
 
         <!-- Primary Action Triggers -->
-        <div class="action-stack">
+        <div id="tourStepActions" class="action-stack">
           <button id="startVoiceCheckInBtn" class="btn btn-voice w-full">
             <div class="voice-pulse-dot"></div>
             Start Voice Check-In
@@ -158,7 +174,7 @@
       <!-- 4. Real-Time Gemini Live Voice Companion Screen -->
       <section id="voiceSessionScreen" class="view-panel hidden">
         <div class="voice-hero">
-          <!-- Interactive Glowing Pulsing Orb Visualizer -->
+          <!-- Interactive Glowing Pulsing Lime Orb Visualizer -->
           <div id="orbVisualizer" class="neural-orb-wrap">
             <div class="orb-core"></div>
             <div class="orb-glow"></div>
@@ -177,7 +193,7 @@
           <div class="transcript-header">Live Conversation</div>
           <div id="transcriptLog" class="transcript-scroll">
             <div class="transcript-entry agent">
-              <span class="speaker-tag">AQLA</span>
+              <span class="speaker-tag">AQLA:</span>
               <p>I'm listening. How is your mental clarity and stress feeling right now?</p>
             </div>
           </div>
@@ -225,7 +241,7 @@
 
           <div id="debriefStatus" class="debrief-status hidden"></div>
 
-          <button id="saveDebriefBtn" class="btn btn-primary w-full">
+          <button id="saveDebriefBtn" class="btn btn-lime w-full">
             Save to Aqla Protocol
           </button>
           <button id="backToDashBtn" class="btn btn-ghost w-full mt-2">
@@ -234,11 +250,84 @@
         </div>
       </section>
 
+      <!-- 6. Legal Screen: Medical Disclaimer -->
+      <section id="disclaimerScreen" class="view-panel hidden legal-panel">
+        <div class="legal-header">
+          <h2>Medical Disclaimer</h2>
+          <button class="close-legal-btn">✕</button>
+        </div>
+        <div class="legal-body">
+          <div class="legal-alert-box">
+            <strong>Non-Medical Device Notice:</strong>
+            <p>AQLA is an investigational performance optimization and cognitive readiness companion. It is <strong>NOT</strong> a medical device and does <strong>NOT</strong> provide medical advice, diagnosis, or clinical treatment.</p>
+          </div>
+          <p>The metrics, focus indices, and voice companion responses generated by AQLA are intended solely for cognitive fitness tracking and daily productivity self-regulation.</p>
+          <p>If you are experiencing symptoms of neurological distress, chronic insomnia, clinical anxiety, depression, or burnout, consult a licensed healthcare professional or physician immediately.</p>
+        </div>
+        <button class="btn btn-secondary w-full close-legal-btn">Understood & Return</button>
+      </section>
+
+      <!-- 7. Legal Screen: Privacy Policy -->
+      <section id="privacyScreen" class="view-panel hidden legal-panel">
+        <div class="legal-header">
+          <h2>Privacy Policy</h2>
+          <button class="close-legal-btn">✕</button>
+        </div>
+        <div class="legal-body">
+          <div class="legal-alert-box">
+            <strong>Zero Data-Broker Policy:</strong>
+            <p>AQLA Companion operates on a strict zero-data-broker policy. Telemetry is evaluated 100% on-device.</p>
+          </div>
+          <h3>What We Check:</h3>
+          <p>The extension listens locally for tab switch events and compares domain hostnames in volatile memory against a public distraction list (e.g., social media).</p>
+          <h3>What We NEVER Do:</h3>
+          <p>• We NEVER read, inspect, or log your page text, inputs, or private tab contents.<br/>
+             • We NEVER store or export your browsing history.<br/>
+             • We NEVER sell or share your telemetry with advertisers or third parties.</p>
+        </div>
+        <button class="btn btn-secondary w-full close-legal-btn">Return</button>
+      </section>
+
+      <!-- 8. Legal Screen: Terms of Use -->
+      <section id="termsScreen" class="view-panel hidden legal-panel">
+        <div class="legal-header">
+          <h2>Terms of Use</h2>
+          <button class="close-legal-btn">✕</button>
+        </div>
+        <div class="legal-body">
+          <div class="legal-alert-box">
+            <strong>User Data Ownership:</strong>
+            <p>You retain full, exclusive ownership of your cognitive data, check-ins, and session transcripts.</p>
+          </div>
+          <h3>Companion Scope:</h3>
+          <p>By using AQLA Companion, you agree to utilize its real-time telemetry and voice tools for personal productivity and cognitive wellness enhancement.</p>
+          <p>All check-in snapshots synced to your Supabase account are protected by row-level security (RLS) accessible only to you.</p>
+        </div>
+        <button class="btn btn-secondary w-full close-legal-btn">Return</button>
+      </section>
+
     </main>
+
+    <!-- Interactive Dashboard Tour Overlay -->
+    <div id="tourOverlay" class="tour-backdrop hidden">
+      <div class="tour-card">
+        <div class="tour-step-badge" id="tourStepBadge">Step 1 of 3</div>
+        <h3 id="tourTitle">Focus Index Gauge</h3>
+        <p id="tourDesc">This deterministic score reflects your active focus stamina, dropping gently when context-switching velocity spikes.</p>
+        <div class="tour-actions">
+          <button id="tourSkipBtn" class="btn btn-ghost">Skip Tour</button>
+          <button id="tourNextBtn" class="btn btn-lime">Next ➔</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="app-footer">
-      <a href="https://aqla.io" target="_blank" class="footer-link">aqla.io ↗</a>
+      <div class="footer-links">
+        <a href="https://aqla.io" target="_blank" class="footer-link">aqla.io ↗</a>
+        <span class="footer-dot">•</span>
+        <button id="footerDisclaimerBtn" class="footer-sublink">Disclaimer</button>
+      </div>
       <button id="signOutBtn" class="footer-action hidden">Sign Out</button>
     </footer>
   </div>
