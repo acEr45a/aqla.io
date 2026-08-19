@@ -105,19 +105,34 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
     }
 
+    // Safety timeout: Never let auth loading hang for more than 3.5s under any circumstance
+    const safetyTimer = setTimeout(() => {
+      if (mounted) {
+        setIsLoadingAuth(false);
+        setAuthChecked(true);
+      }
+    }, 3500);
+
     // Reactive listener for all auth state events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
-        const profile = await loadProfile(session.user);
-        if (!mounted) return;
-        setUser(profile);
-        setIsAuthenticated(true);
-        setAuthError(null);
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
-      } else if (event === 'SIGNED_OUT' || !hasAuthParams) {
+        try {
+          const profile = await loadProfile(session.user);
+          if (!mounted) return;
+          setUser(profile);
+          setIsAuthenticated(true);
+          setAuthError(null);
+        } catch (err) {
+          console.warn('[AuthContext] loadProfile error:', err);
+        } finally {
+          if (mounted) {
+            setIsLoadingAuth(false);
+            setAuthChecked(true);
+          }
+        }
+      } else {
         setUser(null);
         setIsAuthenticated(false);
         setIsLoadingAuth(false);
@@ -126,17 +141,34 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Initial getSession check
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (!mounted) return;
+      if (error) {
+        console.warn('[AuthContext] getSession error:', error);
+      }
       if (session?.user) {
-        const profile = await loadProfile(session.user);
-        if (!mounted) return;
-        setUser(profile);
-        setIsAuthenticated(true);
-        setAuthError(null);
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
-      } else if (!hasAuthParams) {
+        try {
+          const profile = await loadProfile(session.user);
+          if (!mounted) return;
+          setUser(profile);
+          setIsAuthenticated(true);
+          setAuthError(null);
+        } catch (err) {
+          console.warn('[AuthContext] loadProfile error on getSession:', err);
+        } finally {
+          if (mounted) {
+            setIsLoadingAuth(false);
+            setAuthChecked(true);
+          }
+        }
+      } else {
+        if (mounted) {
+          setIsLoadingAuth(false);
+          setAuthChecked(true);
+        }
+      }
+    }).catch(() => {
+      if (mounted) {
         setIsLoadingAuth(false);
         setAuthChecked(true);
       }
@@ -144,6 +176,7 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, [loadProfile]);

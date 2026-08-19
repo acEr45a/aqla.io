@@ -43,21 +43,36 @@ import CommunityInsights from '@/pages/CommunityInsights';
 import AdminSecurityGate from '@/components/admin/AdminSecurityGate';
 import ClinicalInboxPage from '@/pages/ClinicalInboxPage';
 
-// These routes must render immediately — no auth needed at all.
-const PUBLIC_ROUTES = ["/", "/start", "/privacy", "/terms"];
+// These routes must render immediately — never block them with global full-screen spinners.
+const PUBLIC_ROUTES = [
+  "/",
+  "/start",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/oauth/consent",
+  "/privacy",
+  "/terms",
+  "/science",
+  "/trust",
+  "/safety-screening",
+  "/help",
+  "/evidence",
+];
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, authError, navigateToLogin } = useAuth();
   const location = useLocation();
 
-  // Public routes (landing, start, legal) must render instantly — never gate them.
+  // Public & Auth routes (landing, login, register, legal) must render instantly — never gate them.
   const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
 
-  // Show loading spinner while resolving auth — but ONLY for non-public routes.
+  // Show loading spinner while resolving auth — but ONLY for protected/dashboard routes.
   if (!isPublicRoute && isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
