@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Aqla Neurological Companion",
+  "short_name": "Aqla Companion",
+  "version": "1.0.0",
+  "description": "Precision cognitive readiness, background focus telemetry, and real-time voice neuro-performance companion.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open Aqla Neurological Companion",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "sidePanel",
+    "storage",
+    "activeTab",
+    "tabs",
+    "identity",
+    "audioCapture",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://*.supabase.co/*",
+    "https://generativelanguage.googleapis.com/*",
+    "wss://generativelanguage.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://*.supabase.co wss://generativelanguage.googleapis.com https://generativelanguage.googleapis.com;"
+  }
+}

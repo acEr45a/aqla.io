@@ -26,8 +26,8 @@ serve(async (req) => {
     const payload = await req.json();
     const { model, prompt, response_json_schema, system_instruction, contents } = payload;
 
-    // Use selected model, falling back to gemini-2.5-flash as the standard backend fallback
-    let targetModel = model || "models/gemini-2.5-flash";
+    // Use selected model, falling back to gemini-3.6-flash as the standard backend model
+    let targetModel = model || "models/gemini-3.6-flash";
     if (targetModel && !targetModel.startsWith("models/")) {
       targetModel = `models/${targetModel}`;
     }
