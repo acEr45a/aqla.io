@@ -283,79 +283,42 @@ export const auth = {
   },
 };
 
-// Direct client Gemini caller for reliable inference
+// Direct client Gemini caller securely proxied through Supabase Edge Function
 export async function directGeminiInvoke({
   prompt,
   response_json_schema,
   system_instruction,
-  model = 'models/gemini-3.6-flash',
+  model = 'models/gemini-2.5-flash',
 }) {
-  const apiKey =
-    import.meta.env?.VITE_GEMINI_API_KEY ||
-    import.meta.env?.GEMINI_API_KEY ||
-    'AQ.Ab8RN6KgIs6VjN0ZUW4-ptFBgEODTQ4FOAcNEX7jCn9hSO-big';
+  try {
+    const { data, error } = await supabase.functions.invoke('gemini-proxy', {
+      body: {
+        prompt,
+        response_json_schema,
+        system_instruction,
+        model,
+      },
+    });
 
-  const modelsToTry = [
-    model.startsWith('models/') ? model : `models/${model}`,
-    'models/gemini-3.6-flash',
-    'models/gemini-flash-latest',
-    'models/gemini-3.7-flash',
-    'models/gemini-2.5-flash-lite',
-  ];
-
-  let lastError = null;
-
-  for (const m of Array.from(new Set(modelsToTry))) {
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/${m}:generateContent?key=${apiKey}`;
-      const body = {
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-          ...(response_json_schema
-            ? {
-                responseMimeType: 'application/json',
-                responseSchema: response_json_schema,
-              }
-            : {}),
-        },
-      };
-
-      if (system_instruction) {
-        body.systemInstruction = { parts: [{ text: system_instruction }] };
-      }
-
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => res.statusText);
-        throw new Error(`Gemini ${m} failed (${res.status}): ${errText}`);
-      }
-
-      const data = await res.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-      if (response_json_schema) {
-        try {
-          const parsed = JSON.parse(text);
-          return { ...parsed, text, data: parsed };
-        } catch {
-          return { text, data: { text } };
-        }
-      }
-      return { text, data: text };
-    } catch (err) {
-      lastError = err;
-      console.warn(`[directGeminiInvoke] Model ${m} attempt failed, trying next fallback:`, err.message);
+    if (error) {
+      throw new Error(`Edge function invocation failed: ${error.message || error}`);
     }
-  }
 
-  throw lastError || new Error('All Gemini models failed');
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    if (response_json_schema) {
+      try {
+        const parsed = JSON.parse(text);
+        return { ...parsed, text, data: parsed };
+      } catch {
+        return { text, data: { text } };
+      }
+    }
+    return { text, data: text };
+  } catch (err) {
+    console.error('[directGeminiInvoke] Secure proxy invocation failed:', err);
+    throw err;
+  }
 }
 
 // AQLA AI Gateway Integration layer (replaces Core.InvokeLLM & GenerateSpeech)
