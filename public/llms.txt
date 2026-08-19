@@ -1,0 +1,25 @@
+# AQLA Cognitive Health & Precision Neuroplasticity Platform (aqla.io)
+> Evidence-based precision cognitive health, neuroplasticity protocols, gamified assessment batteries, and clinical intelligence.
+
+AQLA (aqla.io) is an advanced web-based cognitive optimization and clinical intelligence platform engineered for continuous neuro-performance monitoring, adaptive lifestyle protocol delivery, dynamic brain mapping, and secure clinician-patient communication.
+
+## Core Capabilities & Features
+- **5-Domain Cognitive Architecture**: Real-time evaluation of Focus Depth, Working Memory, Executive Control, Processing Speed, and Cognitive Resilience.
+- **Adaptive Clinical Protocols**: Personalized 7-day and 14-day neuroplasticity regimens (SPARK, RESTORE, HYPERFOCUS, NEUROSHIELD, FLOW) calibrated to daily readiness.
+- **Gamified Cognitive Assessment Battery**: Standardized psychometric paradigms including Reaction Time, N-Back, Stroop Interference, Trail Making, and Corsi Block Tapping.
+- **Dynamic 3D Brain Mapping**: Interactive Three.js/WebGL neural topography visualizing domain balance, bottlenecks, and longitudinal trends.
+- **Clinical Email Suite**: High-contrast, dark-mode clinical messaging workspace with Supabase Realtime synchronization, Gemini AI intelligence assist, and in-app multi-format record viewers.
+- **Automated Clinical Reporting (Fable Engine)**: Client-side vector PDF generation producing clinical Daily Action Plans and 7-Day Cognitive Readiness Reports.
+- **Safety Screening & Clinical Triage**: Multi-tier safety screening algorithms with automated contraindication detection and crisis resource routing.
+
+## Public Sitemap & Documentation Links
+- [AQLA Homepage](https://aqla.io/): Platform overview, scientific foundations, and dynamic neural visualizer.
+- [Evidence & Science Library](https://aqla.io/science): Peer-reviewed research backing cognitive paradigms, biomarker integrations, and neuroplasticity interventions.
+- [Safety & Screening Guidelines](https://aqla.io/safety-screening): Clinical risk classification, contraindication criteria, and protocol suitability checks.
+- [Trust & Data Privacy](https://aqla.io/trust): Security architecture, data privacy standards, and end-to-end user data sovereignty.
+- [Full LLM Specification](https://aqla.io/llms-full.txt): Comprehensive deep-dive document covering clinical math, domain models, protocol progressions, and technical design patterns.
+
+## Target User Roles
+- **Patient / Individual**: Daily readiness tracking, gamified cognitive testing, protocol adherence, AI health coach conversations, and self-advocacy report downloads.
+- **Clinician / Neuro-Specialist**: Patient cohort triage, protocol prescription, longitudinal domain trend review, and secure clinical messaging.
+- **Super Administrator / Operations**: Platform governance, audit telemetry inspection, and data retention oversight.
