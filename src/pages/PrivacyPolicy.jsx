@@ -3,12 +3,122 @@ import LegalPage from "@/components/legal/LegalPage";
 
 export default function PrivacyPolicy() {
   return (
-    <LegalPage title="Privacy Policy" updated="August 4, 2026">
-      <section><h2 className="text-xl text-foreground">What we collect</h2><p className="mt-3">AQLA stores the account details you provide, assessment responses, cognitive-task results, daily check-ins, protocol history, experiment outcomes, and conversations with the in-app Help Assistant. We use this information to provide your personalised neural-wellness experience.</p></section>
-      <section><h2 className="text-xl text-foreground">How we use your data</h2><p className="mt-3">Your information is used to generate Brain Map insights, personalise protocols, match you to Cognitive Toolkit formulas, track progress, and provide AQLA Intelligence responses. The in-app Help Assistant can read your cognitive test results, check-ins, protocols, assessments, brain domains, experiments, and health profile to answer your questions with personalised context. The Help Assistant retains conversation memory across sessions so it can provide more relevant guidance over time. AQLA does not sell personal data. Aggregated and anonymised information may be used to improve the product only when you enable research contribution in Settings.</p></section>
-      <section><h2 className="text-xl text-foreground">Sharing and safety</h2><p className="mt-3">We limit access to your data to what is needed to operate AQLA. A reviewing clinician may only access relevant information when you enable clinician sharing or where a safety review requires it. AQLA is a neural-wellness platform and not a medical provider.</p></section>
-      <section><h2 className="text-xl text-foreground">Your choices</h2><p className="mt-3">You can adjust preferences in Settings, download an export of your AQLA records, and delete your assessment, test, Brain Map, protocol, experiment, and check-in data from the Trust &amp; Data area. Help Assistant conversations are stored to maintain continuity; you can request deletion of conversation history at any time. Deletion is permanent.</p></section>
-      <section><h2 className="text-xl text-foreground">Security and changes</h2><p className="mt-3">We use reasonable safeguards to protect your information. No online service can guarantee absolute security. We may update this policy as AQLA evolves; the date above will show when it was last revised.</p></section>
+    <LegalPage title="Privacy Policy" updated="August 20, 2026">
+      <section>
+        <h2 className="text-xl text-foreground font-medium">1. Overview & Commitment</h2>
+        <p className="mt-3">
+          AQLA ("we", "us", or "our") is dedicated to protecting your privacy and personal cognitive telemetry. This Privacy Policy governs your use of the AQLA web platform (<a href="https://aqla.io" className="text-primary underline">aqla.io</a>), our backend infrastructure, and the AQLA Neurological Companion Chrome Extension.
+        </p>
+        <p className="mt-2">
+          We operate under a strict <strong>Zero Data-Broker Policy</strong>: we never sell, rent, monetize, or distribute your personal data, cognitive metrics, or browsing telemetry to third-party advertisers or data brokers.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="text-xl text-foreground font-medium">2. Information We Collect</h2>
+        <p className="mt-3">
+          To provide precision neuro-performance tracking, personalized protocols, and live companion coaching, AQLA collects and processes the following categories of information:
+        </p>
+        
+        <div className="mt-4 space-y-4">
+          <div className="rounded-lg border border-border/60 bg-card/50 p-4">
+            <h3 className="text-base text-foreground font-medium">A. Account & Profile Information</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your name, email address, password hash, authentication identifiers (including Google OAuth tokens via Supabase Auth), and communication preferences.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/50 p-4">
+            <h3 className="text-base text-foreground font-medium">B. Cognitive Assessments & Brain Map Data</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Questionnaire responses across core cognitive domains (Focus, Processing Speed, Memory, Cognitive Fatigue, Stress Resilience), reaction time logs, task accuracy, baseline benchmark scores, and active protocol assignments.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/50 p-4">
+            <h3 className="text-base text-foreground font-medium">C. Daily Check-Ins & Lifestyle Signals</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Self-reported numerical ratings (1–10) for mental clarity, physical energy, acute stress, and restorative sleep quality; caffeine intake amounts and timestamps; daily demand reflections; and subjective journal reflections.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/50 p-4">
+            <h3 className="text-base text-foreground font-medium">D. Companion Extension Telemetry (On-Device & Passive)</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              The AQLA Neurological Companion Chrome Extension measures work stamina and context-switching patterns using a privacy-first, on-device architecture:
+            </p>
+            <ul className="mt-2 list-disc list-inside space-y-1 text-xs text-muted-foreground">
+              <li><strong>Tab Switching Velocity:</strong> Frequency of active tab transitions per minute to compute cognitive fragmentation risk levels.</li>
+              <li><strong>Local Distraction Detection:</strong> Active hostnames are checked in volatile memory against a local distraction blocklist (e.g., social media domains).</li>
+              <li><strong>Zero Browsing History Logging:</strong> We <strong>NEVER</strong> record, inspect, log, or transmit your full URLs, browsing history, keystrokes, form inputs, or page contents.</li>
+              <li><strong>Computed Focus Index:</strong> Final deterministic scores ($15–100$) and session durations are synced to your database only when you explicitly save a session debrief.</li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-card/50 p-4">
+            <h3 className="text-base text-foreground font-medium">E. Voice Companion & Microphone Data</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              When you initiate an optional, user-authorized Live Voice Check-In via the companion extension or web app, 16kHz PCM audio is captured through the Web Audio API and securely streamed in real time to our neural model pipeline. Audio streams are utilized strictly to facilitate the immediate conversation and are never stored as raw audio files. Voice transcripts and debrief summaries are stored with row-level security in your personal account.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-xl text-foreground font-medium">3. How We Use Your Data</h2>
+        <p className="mt-3">
+          Your information is used solely to power and refine your personal cognitive readiness experience:
+        </p>
+        <ul className="mt-2 list-disc list-inside space-y-1">
+          <li>Calculating and rendering your dynamic Brain Map visualizations.</li>
+          <li>Recommending targeted protocol families (e.g., SPARK, FLOW, DRIVE, LEARN, RESET).</li>
+          <li>Grounding AI Assistant and Voice Companion feedback with strict zero-hallucination guardrails.</li>
+          <li>Tracking 14-day protocol cycles, recovery trajectories, and longitudinal habit progress.</li>
+          <li>Maintaining encrypted session memory so your AI coach retains continuity across check-ins.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-xl text-foreground font-medium">4. Data Sharing & Security Architecture</h2>
+        <p className="mt-3">
+          We implement rigorous technical safeguards including encrypted database connections (PostgreSQL over TLS), Row-Level Security (RLS) policies isolating user records, and server-side secret management via edge proxies.
+        </p>
+        <p className="mt-2">
+          We do not disclose your data except in the following limited situations:
+        </p>
+        <ul className="mt-2 list-disc list-inside space-y-1">
+          <li><strong>Clinician Sharing:</strong> Only if you explicitly opt-in and designate a clinical supervisor or coach.</li>
+          <li><strong>Infrastructure Service Providers:</strong> Trusted cloud infrastructure vendors (Supabase for authentication/database, Google Cloud for low-latency neural speech inference) operating under strict data processing agreements.</li>
+          <li><strong>Legal Compliance:</strong> Where required by valid subpoena, court order, or applicable regulatory mandate.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-xl text-foreground font-medium">5. Your Rights, Data Export & Deletion</h2>
+        <p className="mt-3">
+          You maintain full sovereignty over your data:
+        </p>
+        <ul className="mt-2 list-disc list-inside space-y-1">
+          <li><strong>Data Export:</strong> Download a full JSON/CSV archive of your check-in history, Brain Map scores, and protocol records at any time via Account Settings.</li>
+          <li><strong>Permanent Deletion:</strong> You can permanently erase your assessments, check-ins, telemetry logs, and account profile directly from the Trust &amp; Data dashboard. Deletion is irreversible.</li>
+          <li><strong>Conversation Purge:</strong> You may wipe AI coach memory and chat history independently without deleting your benchmark scores.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-xl text-foreground font-medium">6. Developer & Privacy Inquiries</h2>
+        <p className="mt-3">
+          For technical inquiries, bug disclosures, API verification, or data privacy requests, contact our engineering and privacy team directly:
+        </p>
+        <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-foreground">
+          <p className="font-mono text-sm">
+            <strong>Developer Contact:</strong> <a href="mailto:developer@aqla.io" className="text-primary underline">developer@aqla.io</a>
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            AQLA Engineering &amp; Data Governance Team
+          </p>
+        </div>
+      </section>
     </LegalPage>
   );
 }
