@@ -1,9 +1,51 @@
-#env
+# ==============================================================================
+# ENVIRONMENT FILES & SECRETS (Never commit local credentials)
+# ==============================================================================
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+secrets.json
 
-# Logs
-/logs
+# ==============================================================================
+# LOCAL SUPABASE STATE & CLI ARTIFACTS
+# ==============================================================================
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# ==============================================================================
+# DEPENDENCIES & PACKAGE MANAGERS
+# ==============================================================================
+node_modules/
+.pnp
+.pnp.js
+
+# ==============================================================================
+# BUILD OUTPUTS & CACHES
+# ==============================================================================
+dist/
+dist-ssr/
+build/
+out/
+.next/
+.vite/
+.cache/
+*.tsbuildinfo
+
+# ==============================================================================
+# LOGS & DIAGNOSTICS
+# ==============================================================================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -11,21 +53,35 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# ==============================================================================
+# IDE & EDITOR DIRECTORIES
+# ==============================================================================
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+!.vscode/settings.json
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swo
+*.sublime-project
+*.sublime-workspace
 
-.env
-.vite
+# ==============================================================================
+# OS METADATA & SYSTEM FILES
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# ==============================================================================
+# LOCAL TESTING & TEMPORARY SCRIPTS
+# ==============================================================================
+*.local
