@@ -21,7 +21,7 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "re_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC";
+  const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
 
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 

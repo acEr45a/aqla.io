@@ -84,7 +84,7 @@ export async function sendEmail({ to, subject, html, text, from = DEFAULT_FROM, 
   const apiKey =
     import.meta.env?.VITE_RESEND_API_KEY ||
     import.meta.env?.RESEND_API_KEY ||
-    're_DLtwmBvZ_Ei6N6fwtcrzC3QYweYUtv4jC';
+    '';
 
   const recipients = Array.isArray(to) ? to : [to];
   const finalHtml = html && html.includes('<!DOCTYPE')
