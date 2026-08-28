@@ -70,9 +70,8 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`relative flex flex-col border-r border-border/60 bg-card/40 backdrop-blur-md transition-all duration-300 z-30 select-none ${
-        collapsed ? "w-[68px]" : "w-[240px]"
-      }`}
+      className={`relative flex flex-col border-r border-border/60 bg-card/40 backdrop-blur-md transition-all duration-300 z-30 select-none ${collapsed ? "w-[68px]" : "w-[240px]"
+        }`}
     >
       {/* Top Header / Compose CTA */}
       <div className="p-3 border-b border-border/40 flex flex-col gap-2">
@@ -99,9 +98,8 @@ export default function Sidebar({
         {/* Lime Green Compose Button */}
         <Button
           onClick={onCompose}
-          className={`relative group bg-[#a3e635] text-black font-semibold hover:bg-[#bef264] transition-all shadow-lg shadow-[#a3e635]/20 rounded-xl h-11 flex items-center justify-center gap-2 ${
-            collapsed ? "w-full px-0" : "w-full"
-          }`}
+          className={`relative group bg-[#a3e635] text-black font-semibold hover:bg-[#bef264] transition-all shadow-lg shadow-[#a3e635]/20 rounded-xl h-11 flex items-center justify-center gap-2 ${collapsed ? "w-full px-0" : "w-full"
+            }`}
           title="Compose message (Press 'c')"
         >
           <Plus className="h-5 w-5 stroke-[2.5]" />
@@ -121,11 +119,10 @@ export default function Sidebar({
         <div className="px-3 pt-2">
           <button
             onClick={() => setGlobalAuditMode(!globalAuditMode)}
-            className={`w-full flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-colors border ${
-              globalAuditMode
+            className={`w-full flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs transition-colors border ${globalAuditMode
                 ? "border-amber-500/50 bg-amber-500/15 text-amber-300 font-medium"
                 : "border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
             title="Super Admin: Toggle organization-wide audit stream"
           >
             <ShieldAlert className={`h-4 w-4 ${globalAuditMode ? "text-amber-400 animate-pulse" : ""}`} />
@@ -153,11 +150,10 @@ export default function Sidebar({
                   setActiveTag(null);
                   if (globalAuditMode) setGlobalAuditMode(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-colors group ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-colors group ${isActive
                     ? "bg-[#a3e635]/15 text-[#a3e635] font-semibold"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-                }`}
+                  }`}
                 title={f.label}
               >
                 <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-[#a3e635]" : ""}`} />
@@ -166,11 +162,10 @@ export default function Sidebar({
                     <span className="truncate flex-1 text-left">{f.label}</span>
                     {f.count > 0 && (
                       <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full tabular-nums font-mono ${
-                          isActive
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full tabular-nums font-mono ${isActive
                             ? "bg-[#a3e635] text-black font-bold"
                             : "bg-secondary/80 text-muted-foreground group-hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         {f.count}
                       </span>
@@ -203,11 +198,10 @@ export default function Sidebar({
                   setActiveTag(null);
                   if (globalAuditMode) setGlobalAuditMode(false);
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs transition-colors ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-xl text-xs transition-colors ${isActive
                     ? "bg-secondary text-foreground font-medium"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
-                }`}
+                  }`}
                 title={c.label}
               >
                 <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: c.color || "inherit" }} />
@@ -259,11 +253,10 @@ export default function Sidebar({
                   setActiveTag(isActive ? null : tag);
                   if (globalAuditMode) setGlobalAuditMode(false);
                 }}
-                className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs transition-colors ${
-                  isActive
+                className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs transition-colors ${isActive
                     ? "bg-primary/10 text-primary font-medium border border-primary/20"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/30"
-                }`}
+                  }`}
                 title={tag}
               >
                 <Tag className={`h-3 w-3 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
 import { LIFESTYLE_EVIDENCE } from "@/lib/lifestyleEvidence";
 import { COGNITIVE_TEST_EVIDENCE } from "@/lib/cognitiveTestEvidence";
@@ -10,7 +10,7 @@ export default function EvidenceLibrary() {
   const [ingredients, setIngredients] = useState(null);
   const [open, setOpen] = useState(null);
 
-  useEffect(() => { base44.entities.Ingredient.list("name", 100).then(setIngredients); }, []);
+  useEffect(() => { apiClient.entities.Ingredient.list("name", 100).then(setIngredients); }, []);
 
   const categories = view === "ingredients"
     ? PROTOCOL_FAMILIES.map((family) => ({

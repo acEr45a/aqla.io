@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { MessageSquare, Terminal, Code2 } from "lucide-react";
 
 const modeOf = (conv) => {
@@ -14,7 +14,7 @@ export default function OpsAgentActivity() {
   const [conversations, setConversations] = useState([]);
 
   useEffect(() => {
-    base44.agents.listConversations({ agent_name: "backend_ops" })
+    apiClient.agents.listConversations({ agent_name: "backend_ops" })
       .then((all) => setConversations(
         (Array.isArray(all) ? all : []).sort(
           (a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0)

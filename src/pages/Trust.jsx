@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Link } from "react-router-dom";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -25,13 +25,13 @@ export default function Trust() {
     if (!session?.user) return setDeleting(false);
     const q = { created_by_id: session.user.id };
     await Promise.all([
-      base44.entities.Assessment.deleteMany(q),
-      base44.entities.CognitiveTest.deleteMany(q),
-      base44.entities.Protocol.deleteMany(q),
-      base44.entities.Experiment.deleteMany(q),
-      base44.entities.DailyCheckIn.deleteMany(q),
-      base44.entities.BrainDomain.deleteMany(q),
-      base44.entities.HealthProfile.deleteMany(q),
+      apiClient.entities.Assessment.deleteMany(q),
+      apiClient.entities.CognitiveTest.deleteMany(q),
+      apiClient.entities.Protocol.deleteMany(q),
+      apiClient.entities.Experiment.deleteMany(q),
+      apiClient.entities.DailyCheckIn.deleteMany(q),
+      apiClient.entities.BrainDomain.deleteMany(q),
+      apiClient.entities.HealthProfile.deleteMany(q),
     ]);
     setDeleting(false);
     window.location.href = "/";
@@ -40,9 +40,9 @@ export default function Trust() {
   const exportData = async () => {
     setExporting(true);
     const [assessments, tests, protocols, experiments, checkins, domains] = await Promise.all([
-      base44.entities.Assessment.list(), base44.entities.CognitiveTest.list(),
-      base44.entities.Protocol.list(), base44.entities.Experiment.list(),
-      base44.entities.DailyCheckIn.list(), base44.entities.BrainDomain.list(),
+      apiClient.entities.Assessment.list(), apiClient.entities.CognitiveTest.list(),
+      apiClient.entities.Protocol.list(), apiClient.entities.Experiment.list(),
+      apiClient.entities.DailyCheckIn.list(), apiClient.entities.BrainDomain.list(),
     ]);
     const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), assessments, cognitive_tests: tests, protocols, experiments, daily_checkins: checkins, brain_domains: domains }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");

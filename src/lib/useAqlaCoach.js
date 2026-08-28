@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
 import { autoFlagResponse, CLINICAL_NOTE } from "@/lib/clinicalFlag";
 
@@ -41,10 +41,10 @@ export function useAqlaCoach() {
       if (profile) userRef.current = { id: session.user.id, email: session.user.email, ...profile };
     }).catch(() => {});
     Promise.all([
-      base44.entities.BrainDomain.list("-updated_date"),
-      base44.entities.Protocol.list("-created_date"),
-      base44.entities.DailyCheckIn.list("-date", 14),
-      base44.entities.Experiment.list("-created_date", 3),
+      apiClient.entities.BrainDomain.list("-updated_date"),
+      apiClient.entities.Protocol.list("-created_date"),
+      apiClient.entities.DailyCheckIn.list("-date", 14),
+      apiClient.entities.Experiment.list("-created_date", 3),
     ]).then(([domains, protocols, checkIns, experiments]) => {
       setContext({ domains, protocol: protocols.find((item) => item.status === "active"), protocols, checkIns, experiments });
     });
@@ -78,7 +78,7 @@ export function useAqlaCoach() {
     setLoading(true);
     bumpTurns();
 
-    const res = await base44.integrations.Core.InvokeLLM({
+    const res = await apiClient.integrations.Core.InvokeLLM({
       prompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
 FIRST decide the mode of your reply:
 - mode "chat" — greetings, small talk, thanks, jokes, "how are you", personal chit-chat, general-knowledge questions, definitions, "what is X", simple how/why questions, or anything not specifically about the user's own brain data. Reply warmly and helpfully (1-4 sentences) in chat_reply, like a friendly, knowledgeable colleague. Answer general questions directly and accurately — don't deflect to the app or redirect to brain data. Use the user's name or their data only if it fits naturally. Do NOT fill the analysis fields with placeholders; leave them as empty strings. Never force an analysis on casual or general questions, though you may gently invite a question about their focus, sleep or protocol when it fits.

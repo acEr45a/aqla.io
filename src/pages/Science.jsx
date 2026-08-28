@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
 import EvidencePassport, { GradeBadge } from "@/components/science/EvidencePassport";
 import { ChevronDown } from "lucide-react";
@@ -10,7 +10,7 @@ export default function Science() {
   const [open, setOpen] = useState(null);
 
   useEffect(() => {
-    base44.entities.Ingredient.list("name", 100).then(setIngredients);
+    apiClient.entities.Ingredient.list("name", 100).then(setIngredients);
   }, []);
 
   return (

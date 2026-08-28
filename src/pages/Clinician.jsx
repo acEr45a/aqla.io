@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import ReviewCard from "@/components/clinician/ReviewCard";
 import PlanDecisionCard from "@/components/clinician/PlanDecisionCard";
 import SendToAdminCard from "@/components/clinician/SendToAdminCard";
@@ -53,7 +53,7 @@ export default function Clinician() {
 
   const loadMemberData = async () => {
     try {
-      const res = await base44.functions.invoke("getMemberData", {});
+      const res = await apiClient.functions.invoke("getMemberData", {});
       const d = res.data || {};
       setMembers(d.members || []);
       setCheckIns(d.checkIns || []);
@@ -65,10 +65,10 @@ export default function Clinician() {
     }
   };
 
-  const loadFlags = () => base44.entities.ClinicalFlag.list("-created_date", 200).then(setFlags).catch(() => setFlags([]));
-  const loadReviews = () => base44.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
-  const loadPlans = () => base44.entities.PlanReview.list("-completed_date", 100).then(setPlans).catch(() => setPlans([]));
-  const loadRecs = () => base44.entities.MemberRecommendation.list("-created_date", 200).then(setRecommendations).catch(() => setRecommendations([]));
+  const loadFlags = () => apiClient.entities.ClinicalFlag.list("-created_date", 200).then(setFlags).catch(() => setFlags([]));
+  const loadReviews = () => apiClient.entities.ClinicianReview.list("-created_date", 50).then(setReviews);
+  const loadPlans = () => apiClient.entities.PlanReview.list("-completed_date", 100).then(setPlans).catch(() => setPlans([]));
+  const loadRecs = () => apiClient.entities.MemberRecommendation.list("-created_date", 200).then(setRecommendations).catch(() => setRecommendations([]));
 
   const loadAll = () => {
     loadMemberData();
@@ -105,7 +105,7 @@ export default function Clinician() {
     setRevertError(null);
     setRevertedId(null);
     try {
-      const res = await base44.functions.invoke("revertPlanChange", { plan_review_id: review.id });
+      const res = await apiClient.functions.invoke("revertPlanChange", { plan_review_id: review.id });
       if (res.data?.ok) {
         setRevertedId(review.id);
         notify("Plan reverted", `Reverted the plan decision for this member.`);

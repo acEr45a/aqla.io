@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { ShieldCheck, Crown, Loader2, UserMinus, UserPlus } from "lucide-react";
 import PromoteModal from "./PromoteModal";
 
@@ -10,14 +10,14 @@ export default function AdminRoster() {
 
   const load = async () => {
     setLoading(true);
-    const res = await base44.functions.invoke("superAdminOps", { action: "listAdmins" });
+    const res = await apiClient.functions.invoke("superAdminOps", { action: "listAdmins" });
     setAdmins(res.data?.admins || []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
 
   const demote = async (id) => {
-    await base44.functions.invoke("superAdminOps", { action: "demote", target_user_id: id });
+    await apiClient.functions.invoke("superAdminOps", { action: "demote", target_user_id: id });
     load();
   };
 

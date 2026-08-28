@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { ShieldAlert, Check, Pencil, HelpCircle, X, User } from "lucide-react";
 import { notify } from "@/lib/clinicianToast";
 
@@ -24,7 +24,7 @@ export default function ReviewCard({ review, onUpdate, onOpenMember }) {
   const decide = async (status) => {
     setSaving(true);
     try {
-      await base44.entities.ClinicianReview.update(review.id, {
+      await apiClient.entities.ClinicianReview.update(review.id, {
         status, decided_date: new Date().toISOString(),
       });
       notify("Review decided", `${review.user_name}: ${status.replace("_", " ")}.`);

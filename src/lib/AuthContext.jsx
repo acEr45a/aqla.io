@@ -135,8 +135,11 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setIsAuthenticated(false);
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
+        // Only mark unauthenticated loading done if we aren't awaiting an OAuth code/hash exchange
+        if (!hasAuthParams || event === 'SIGNED_OUT') {
+          setIsLoadingAuth(false);
+          setAuthChecked(true);
+        }
       }
     });
 
@@ -163,14 +166,18 @@ export const AuthProvider = ({ children }) => {
         }
       } else {
         if (mounted) {
-          setIsLoadingAuth(false);
-          setAuthChecked(true);
+          if (!hasAuthParams) {
+            setIsLoadingAuth(false);
+            setAuthChecked(true);
+          }
         }
       }
     }).catch(() => {
       if (mounted) {
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
+        if (!hasAuthParams) {
+          setIsLoadingAuth(false);
+          setAuthChecked(true);
+        }
       }
     });
 

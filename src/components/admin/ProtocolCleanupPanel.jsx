@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Trash2, Loader2, RefreshCw, CheckCircle2 } from "lucide-react";
 
 // Admin housekeeping: scan for stale/unused protocols across all members and
@@ -15,7 +15,7 @@ export default function ProtocolCleanupPanel() {
   const runScan = async () => {
     setLoading(true); setError(""); setDone(null);
     try {
-      const res = await base44.functions.invoke("cleanupProtocols", { mode: "scan" });
+      const res = await apiClient.functions.invoke("cleanupProtocols", { mode: "scan" });
       if (res.data?.error) throw new Error(res.data.error);
       setScan(res.data);
       setPicked([]);
@@ -30,7 +30,7 @@ export default function ProtocolCleanupPanel() {
     if (!window.confirm(`Permanently delete ${count} protocol record(s)? Active plans are not affected.`)) return;
     setDeleting(true); setError("");
     try {
-      const res = await base44.functions.invoke("cleanupProtocols", { mode: "delete", ...payload });
+      const res = await apiClient.functions.invoke("cleanupProtocols", { mode: "delete", ...payload });
       if (res.data?.error) throw new Error(res.data.error);
       setDone(res.data.deleted_count);
       await runScan();

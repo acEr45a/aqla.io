@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 // Inline note appended to flagged user-facing agent messages.
 export const CLINICAL_NOTE = "Clinically noted — a clinician may review and follow up.";
@@ -30,7 +30,7 @@ export function snippet(text, n = 300) {
 export async function autoFlagResponse({ sourceAgent, message, user }) {
   if (!detectClinicalContent(message)) return false;
   try {
-    await base44.entities.ClinicalFlag.create({
+    await apiClient.entities.ClinicalFlag.create({
       flag_type: "auto",
       source_agent: sourceAgent,
       message_snippet: snippet(message),
@@ -40,7 +40,7 @@ export async function autoFlagResponse({ sourceAgent, message, user }) {
       admin_name: null,
       status: "pending",
     });
-    base44.functions
+    apiClient.functions
       .invoke("notifyCliniciansOfFlag", {
         source_agent: sourceAgent,
         message_snippet: snippet(message),
@@ -56,7 +56,7 @@ export async function autoFlagResponse({ sourceAgent, message, user }) {
 // Manual flag raised by an admin from the Architect widget.
 export async function manualFlagResponse({ message, admin }) {
   try {
-    await base44.entities.ClinicalFlag.create({
+    await apiClient.entities.ClinicalFlag.create({
       flag_type: "manual",
       source_agent: "architect",
       message_snippet: snippet(message),
@@ -76,7 +76,7 @@ export async function manualFlagResponse({ message, admin }) {
 // summarise what the assistant said and ask one clarifying question — no new
 // clinical claims, dosing, or diagnoses.
 export async function draftFollowUp({ messageSnippet, userName }) {
-  const res = await base44.integrations.Core.InvokeLLM({
+  const res = await apiClient.integrations.Core.InvokeLLM({
     prompt: `You are drafting a short follow-up message from an AQLA clinician to a member, based on a flagged AI assistant message.
 
 STRICT RULES:

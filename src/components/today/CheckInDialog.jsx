@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { localDateKey } from "@/lib/dateKey";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
@@ -31,7 +31,7 @@ export default function CheckInDialog({ open, onOpenChange, onSaved }) {
     setSaving(true);
     setError("");
     try {
-      await base44.entities.DailyCheckIn.create({
+      await apiClient.entities.DailyCheckIn.create({
         date: localDateKey(),
         clarity: 5, energy: 5, stress: 5, sleep_quality: 5,
         caffeine_drinks: "", caffeine_last_time: "", demand: "", note: "",

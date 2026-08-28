@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 let v3Loaded = null;
 let settingsCache = null;
@@ -6,7 +6,7 @@ let settingsCache = null;
 export async function getPublicSettings() {
   if (settingsCache) return settingsCache;
   try {
-    const res = await base44.functions.invoke("getAppSettings", {});
+    const res = await apiClient.functions.invoke("getAppSettings", {});
     // Handle both { data: {...} } and direct {...} shapes
     settingsCache = res?.data ?? res ?? { test_mode: false };
     return settingsCache;
@@ -71,7 +71,7 @@ export function getV2Response(widgetId) {
 
 export async function verifyCaptchaToken(token, version) {
   try {
-    const res = await base44.functions.invoke("verifyCaptcha", { token, version });
+    const res = await apiClient.functions.invoke("verifyCaptcha", { token, version });
     return res?.data ?? res ?? { success: true, score: 0.9 };
   } catch {
     return { success: true, score: 0.9 };

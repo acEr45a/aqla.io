@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { ClipboardList, RotateCcw, Filter, ShieldAlert } from "lucide-react";
 
 export default function MemberDataPanel() {
@@ -10,7 +10,7 @@ export default function MemberDataPanel() {
 
   const load = async (uid = userId) => {
     setError("");
-    const res = await base44.functions.invoke("getMemberData", { user_id: uid || null });
+    const res = await apiClient.functions.invoke("getMemberData", { user_id: uid || null });
     setData(res.data);
   };
 
@@ -20,7 +20,7 @@ export default function MemberDataPanel() {
     if (!window.confirm(`Mark ${userName}'s check-in for ${date} as invalid? They will be able to submit a fresh one. The original record is kept.`)) return;
     setBusy(id);
     try {
-      await base44.functions.invoke("invalidateCheckIn", { check_in_id: id });
+      await apiClient.functions.invoke("invalidateCheckIn", { check_in_id: id });
       await load();
     } catch (e) {
       setError(e?.message || "Could not invalidate check-in.");

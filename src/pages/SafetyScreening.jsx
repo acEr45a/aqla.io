@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { SCREENING_QUESTIONS, STATUS_META, evaluateEligibility } from "@/lib/safety";
 import { Shield, ArrowRight, ArrowLeft } from "lucide-react";
 
@@ -20,7 +20,7 @@ export default function SafetyScreening() {
     } else {
       setSaving(true);
       const evald = evaluateEligibility(next);
-      await base44.entities.HealthProfile.create({
+      await apiClient.entities.HealthProfile.create({
         responses: next,
         eligibility_status: evald.status,
         flags: evald.flags,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
 import OpsSidebar from "@/components/admin/OpsSidebar";
 import { manualFlagResponse } from "@/lib/clinicalFlag";
@@ -73,7 +73,7 @@ export default function OpsConsoleWidget() {
 
   const loadConversations = async (m) => {
     try {
-      const all = await base44.agents.getConversations({ agent_name: "backend_ops" });
+      const all = await apiClient.agents.getConversations({ agent_name: "backend_ops" });
       const list = (Array.isArray(all) ? all : [])
         .filter((c) => convMode(c) === m)
         .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
@@ -87,7 +87,7 @@ export default function OpsConsoleWidget() {
   const openConversation = async (conv, m) => {
     setActiveIdByMode((prev) => ({ ...prev, [m]: conv.id }));
     try {
-      const full = await base44.agents.getConversation(conv.id);
+      const full = await apiClient.agents.getConversation(conv.id);
       setMessagesByMode((prev) => ({ ...prev, [m]: full.messages || [] }));
     } catch {
       setMessagesByMode((prev) => ({ ...prev, [m]: conv.messages || [] }));
@@ -96,7 +96,7 @@ export default function OpsConsoleWidget() {
 
   const deleteChat = async (conv, m) => {
     try {
-      await base44.agents.deleteConversation(conv.id);
+      await apiClient.agents.deleteConversation(conv.id);
     } catch {
       /* ignore */
     }
@@ -119,7 +119,7 @@ export default function OpsConsoleWidget() {
     if (creatingPromiseRef.current[m]) return creatingPromiseRef.current[m];
     creatingPromiseRef.current[m] = (async () => {
       try {
-        const created = await base44.agents.createConversation({
+        const created = await apiClient.agents.createConversation({
           agent_name: "backend_ops",
           metadata: { name: "New chat", mode: m },
         });
@@ -158,7 +158,7 @@ export default function OpsConsoleWidget() {
   useEffect(() => {
     const id = activeIdByMode[mode];
     if (!id) return;
-    const unsubscribe = base44.agents.subscribeToConversation(id, (data) =>
+    const unsubscribe = apiClient.agents.subscribeToConversation(id, (data) =>
       setMessagesByMode((prev) => ({ ...prev, [mode]: data.messages || [] }))
     );
     return () => unsubscribe();
@@ -197,7 +197,7 @@ export default function OpsConsoleWidget() {
     } else {
       // Always pass a full conversation object to addMessage (the SDK requires it).
       try {
-        conv = await base44.agents.getConversation(activeId);
+        conv = await apiClient.agents.getConversation(activeId);
         setConversationsByMode((prev) => (prev[mode].some((c) => c.id === activeId) ? prev : { ...prev, [mode]: [conv, ...prev[mode]] }));
       } catch {
         conv = { id: activeId, agent_name: "backend_ops" };
@@ -215,7 +215,7 @@ export default function OpsConsoleWidget() {
       }));
     }
     try {
-      await base44.agents.addMessage(conv, { role: "user", content: framed });
+      await apiClient.agents.addMessage(conv, { role: "user", content: framed });
     } catch {
       /* surfaced via subscription state */
     } finally {
@@ -233,7 +233,7 @@ export default function OpsConsoleWidget() {
       activeId = conv.id;
     } else {
       try {
-        conv = await base44.agents.getConversation(activeId);
+        conv = await apiClient.agents.getConversation(activeId);
       } catch {
         conv = { id: activeId, agent_name: "backend_ops" };
       }
@@ -249,7 +249,7 @@ export default function OpsConsoleWidget() {
     const framed = `${MODE_TAG[mode]}\n\n${detail}`;
     setSending(true);
     try {
-      await base44.agents.addMessage(conv, { role: "user", content: framed });
+      await apiClient.agents.addMessage(conv, { role: "user", content: framed });
     } catch {
       /* surfaced via subscription state */
     } finally {

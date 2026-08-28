@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { DOMAINS, primaryBottleneck } from "@/lib/scoring";
 import { PROTOCOL_FAMILIES, protocolFit } from "@/lib/protocols";
 import EligibilityGate from "@/components/protocols/EligibilityGate";
@@ -15,7 +15,7 @@ export default function Protocols() {
   const [bottleneck, setBottleneck] = useState(null);
 
   useEffect(() => {
-    base44.entities.BrainDomain.list("-updated_date").then((rows) => {
+    apiClient.entities.BrainDomain.list("-updated_date").then((rows) => {
       if (!rows.length) return;
       const latest = {};
       rows.forEach((r) => { if (!latest[r.domain_key]) latest[r.domain_key] = r; });

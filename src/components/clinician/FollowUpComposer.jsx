@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { draftFollowUp } from "@/lib/clinicalFlag";
 import { X, Loader2, Send } from "lucide-react";
 
@@ -31,13 +31,13 @@ export default function FollowUpComposer({ flag, patientId, onClose, onSent }) {
     setSending(true);
     setError("");
     try {
-      await base44.functions.invoke("pushMemberRecommendation", {
+      await apiClient.functions.invoke("pushMemberRecommendation", {
         user_id: targetUserId,
         title: "A follow-up from your AQLA clinician",
         message: draft.trim(),
         category: "follow_up",
       });
-      await base44.entities.ClinicalFlag.update(flag.id, { status: "actioned", clinician_note: draft.trim() });
+      await apiClient.entities.ClinicalFlag.update(flag.id, { status: "actioned", clinician_note: draft.trim() });
       onSent();
     } catch (e) {
       setError(e.message || "Could not send");

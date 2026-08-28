@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { ScrollText, Loader2 } from "lucide-react";
 
 export default function SuperAdminLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const load = async () => {
-    const res = await base44.functions.invoke("superAdminOps", { action: "logs" });
+    const res = await apiClient.functions.invoke("superAdminOps", { action: "logs" });
     setLogs(res.data?.logs || []);
     setLoading(false);
   };

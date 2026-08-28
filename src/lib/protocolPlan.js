@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { localDateKey } from "@/lib/dateKey";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
 import { PROTOCOL_DETAILS } from "@/lib/protocolDetails";
@@ -10,12 +10,12 @@ export function planReviewDate() {
 }
 
 export async function activateProtocolFamily(family, replacedStatus = "paused") {
-  const protocols = await base44.entities.Protocol.list("-created_date");
+  const protocols = await apiClient.entities.Protocol.list("-created_date");
   let target = protocols.find((plan) => plan.family === family);
   if (!target) {
     const catalog = PROTOCOL_FAMILIES.find((plan) => plan.key === family);
     const details = PROTOCOL_DETAILS[family];
-    target = await base44.entities.Protocol.create({
+    target = await apiClient.entities.Protocol.create({
       name: `${catalog.name} 14-Day Plan`, family, objective: catalog.purpose,
       why_selected: "Selected from your completed assessment or your confirmed choice.",
       status: "paused", start_date: localDateKey(), review_date: planReviewDate(), duration_days: 14,
@@ -33,7 +33,7 @@ export async function activateProtocolFamily(family, replacedStatus = "paused") 
     review_date: planReviewDate(),
     duration_days: 14,
   });
-  await base44.entities.Protocol.bulkUpdate(updates);
+  await apiClient.entities.Protocol.bulkUpdate(updates);
   window.dispatchEvent(new Event("aqla:protocol-changed"));
   return { ...target, ...updates[updates.length - 1] };
 }

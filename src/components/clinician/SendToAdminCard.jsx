@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Send, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 
 const CATEGORIES = [
@@ -24,7 +24,7 @@ export default function SendToAdminCard() {
     if (!detail.trim() || sending) return;
     setSending(true); setError(""); setResult(null);
     try {
-      const res = await base44.functions.invoke("sendClinicianAlert", { category, subject: subject || "Clinician note", detail });
+      const res = await apiClient.functions.invoke("sendClinicianAlert", { category, subject: subject || "Clinician note", detail });
       if (res.data?.delivered !== undefined) setResult(res.data);
       else setError(res.data?.error || "Could not send the alert.");
     } catch (e) {

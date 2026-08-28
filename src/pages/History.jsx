@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import ReportRow from "@/components/history/ReportRow";
 import PlanHistoryCard from "@/components/history/PlanHistoryCard";
 import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
@@ -33,20 +33,20 @@ export default function History() {
     }).catch(() => {});
     // Guard every list: a failed or malformed response must not blank the page.
     const safeList = (p) => p.then((r) => (Array.isArray(r) ? r : [])).catch(() => []);
-    safeList(base44.entities.PdfArchive.list("-date", 100)).then(setArchives);
-    safeList(base44.entities.EmailDigest.list("-sent_date", 100)).then(setDigests);
-    safeList(base44.entities.Protocol.list("-created_date")).then(setProtocols);
-    safeList(base44.entities.BrainDomain.list("-updated_date")).then(setDomains);
-    safeList(base44.entities.DailyCheckIn.list("-date", 400)).then((rows) =>
+    safeList(apiClient.entities.PdfArchive.list("-date", 100)).then(setArchives);
+    safeList(apiClient.entities.EmailDigest.list("-sent_date", 100)).then(setDigests);
+    safeList(apiClient.entities.Protocol.list("-created_date")).then(setProtocols);
+    safeList(apiClient.entities.BrainDomain.list("-updated_date")).then(setDomains);
+    safeList(apiClient.entities.DailyCheckIn.list("-date", 400)).then((rows) =>
       setCheckInCount(rows.filter((c) => c?.valid !== false).length)
     );
   }, []);
 
   const fetchPeriodData = async () => {
     const [checkIns, sessions, tests] = await Promise.all([
-      base44.entities.DailyCheckIn.list("-date", 100),
-      base44.entities.GameSession.list("-completed_date", 100),
-      base44.entities.CognitiveTest.list("-completed_date", 50),
+      apiClient.entities.DailyCheckIn.list("-date", 100),
+      apiClient.entities.GameSession.list("-completed_date", 100),
+      apiClient.entities.CognitiveTest.list("-completed_date", 50),
     ]);
     return { checkIns, sessions, cognitiveTests: tests };
   };
@@ -54,9 +54,9 @@ export default function History() {
   const downloadDaily = async (archive) => {
     const protocol = protocols?.find((p) => p.id === archive.protocol_id) || protocols?.find((p) => p.status === "active") || null;
     const [profiles, tests, checkIns, theme] = await Promise.all([
-      base44.entities.HealthProfile.list("-completed_date", 1),
-      base44.entities.CognitiveTest.list("-completed_date", 10),
-      base44.entities.DailyCheckIn.list("-date", 60),
+      apiClient.entities.HealthProfile.list("-completed_date", 1),
+      apiClient.entities.CognitiveTest.list("-completed_date", 10),
+      apiClient.entities.DailyCheckIn.list("-date", 60),
       loadPdfTheme(),
     ]);
     generateFableDailyPdf({

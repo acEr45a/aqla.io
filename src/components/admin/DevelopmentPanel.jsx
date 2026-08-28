@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Sparkles, Loader2, Wand2 } from "lucide-react";
 import ChecklistRow from "@/components/admin/dev/ChecklistRow";
 import WordbankCard from "@/components/admin/dev/WordbankCard";
@@ -16,8 +16,8 @@ export default function DevelopmentPanel() {
   const [error, setError] = useState("");
 
   const load = () => {
-    base44.entities.DevIdea.list("-created_date", 100).then(setIdeas);
-    base44.entities.DevWordbankIdea.list("-created_date", 100).then(setBank);
+    apiClient.entities.DevIdea.list("-created_date", 100).then(setIdeas);
+    apiClient.entities.DevWordbankIdea.list("-created_date", 100).then(setBank);
   };
   useEffect(load, []);
 
@@ -26,7 +26,7 @@ export default function DevelopmentPanel() {
     if (!raw.trim()) return;
     setRefining(true);
     setError("");
-    const res = await base44.functions.invoke("backendOpsAi", { task: "refineIdea", raw, source: "chat" });
+    const res = await apiClient.functions.invoke("backendOpsAi", { task: "refineIdea", raw, source: "chat" });
     if (res.data?.error) setError(res.data.error);
     else setRaw("");
     setRefining(false);
@@ -36,7 +36,7 @@ export default function DevelopmentPanel() {
   const generateBank = async () => {
     setGenerating(true);
     setError("");
-    const res = await base44.functions.invoke("backendOpsAi", { task: "wordbank", focus });
+    const res = await apiClient.functions.invoke("backendOpsAi", { task: "wordbank", focus });
     if (res.data?.error) setError(res.data.error);
     setGenerating(false);
     load();
@@ -44,7 +44,7 @@ export default function DevelopmentPanel() {
 
   const addFromBank = async (idea) => {
     setAddingId(idea.id);
-    await base44.entities.DevIdea.create({
+    await apiClient.entities.DevIdea.create({
       title: idea.title,
       summary: idea.summary,
       detail: idea.summary,
@@ -55,17 +55,17 @@ export default function DevelopmentPanel() {
       status: "open",
       source: "wordbank",
     });
-    await base44.entities.DevWordbankIdea.update(idea.id, { used: true });
+    await apiClient.entities.DevWordbankIdea.update(idea.id, { used: true });
     setAddingId(null);
     load();
   };
 
   const cycleStatus = async (idea, status) => {
-    await base44.entities.DevIdea.update(idea.id, { status });
+    await apiClient.entities.DevIdea.update(idea.id, { status });
     load();
   };
-  const removeIdea = async (idea) => { await base44.entities.DevIdea.delete(idea.id); load(); };
-  const removeBank = async (idea) => { await base44.entities.DevWordbankIdea.delete(idea.id); load(); };
+  const removeIdea = async (idea) => { await apiClient.entities.DevIdea.delete(idea.id); load(); };
+  const removeBank = async (idea) => { await apiClient.entities.DevWordbankIdea.delete(idea.id); load(); };
 
   const sorted = [...ideas].sort(byTier);
   const openCount = ideas.filter((i) => i.status !== "done").length;

@@ -32,10 +32,7 @@ export default function DashboardTour({ open, onClose, onFinished }) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        await supabase
-          .from("profiles")
-          .update({ dashboard_tour_v2: true })
-          .eq("id", session.user.id);
+        localStorage.setItem(`aqla_tour_done_${session.user.id}`, "true");
       }
     } catch { /* non-critical */ }
     if (onFinished) onFinished();

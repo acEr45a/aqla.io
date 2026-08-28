@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 
 const win = typeof window !== "undefined" ? /** @type {any} */ (window) : null;

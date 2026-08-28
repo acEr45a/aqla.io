@@ -1,7 +1,7 @@
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 export function analyzePlanReview(protocol, checkIns, responses) {
-  return base44.integrations.Core.InvokeLLM({
+  return apiClient.integrations.Core.InvokeLLM({
     prompt: `You are AQLA Intelligence reviewing a completed 14-check-in neural wellness plan. Analyze only the supplied data. Do not diagnose or advise on medication. Account for side effects conservatively. Decide whether to suggest continuing or switching among SPARK, FLOW, DRIVE, LEARN, RESET. A switch is only a suggestion; the user makes the final choice.\n\nCurrent plan: ${JSON.stringify({ family: protocol.family, objective: protocol.objective })}\nDaily check-ins: ${JSON.stringify(checkIns.map((item) => ({ clarity: item.clarity, energy: item.energy, stress: item.stress, sleep: item.sleep_quality, note: item.note })))}\nUser review: ${JSON.stringify(responses)}`,
     response_json_schema: {
       type: "object",

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -20,7 +20,7 @@ export default function RecommendationModal() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
       const me = { id: session.user.id };
-      const list = await base44.entities.MemberRecommendation.filter(
+      const list = await apiClient.entities.MemberRecommendation.filter(
         { status: "active", user_id: me.id },
         "-created_date",
         1
@@ -42,7 +42,7 @@ export default function RecommendationModal() {
     if (!rec || acting) return;
     setActing(true);
     try {
-      await base44.entities.MemberRecommendation.update(rec.id, { status });
+      await apiClient.entities.MemberRecommendation.update(rec.id, { status });
       setRec(null);
       setOpen(false);
     } catch {

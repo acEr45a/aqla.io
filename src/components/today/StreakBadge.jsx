@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { localDateKey } from "@/lib/dateKey";
 import { Flame } from "lucide-react";
 
@@ -9,7 +9,7 @@ export default function StreakBadge({ refreshKey }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    base44.functions
+    apiClient.functions
       .invoke("getStreak", { today: localDateKey() })
       .then((res) => setData(res.data?.error ? null : res.data))
       .catch(() => setData(null));

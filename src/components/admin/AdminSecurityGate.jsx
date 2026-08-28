@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShieldCheck, Mail, Loader2, Fingerprint } from "lucide-react";
@@ -49,7 +49,7 @@ export default function AdminSecurityGate({ children }) {
     const autoVerify = async () => {
       setBusy(true);
       try {
-        const res = await base44.functions.invoke("verifyAdminAccess", {
+        const res = await apiClient.functions.invoke("verifyAdminAccess", {
           device_id: deviceId,
         });
         const isVer = res?.data?.verified ?? res?.verified;
@@ -75,7 +75,7 @@ export default function AdminSecurityGate({ children }) {
   const sendOtp = async () => {
     setBusy(true); setError("");
     try {
-      const res = await base44.functions.invoke("sendAdminOtp", {});
+      const res = await apiClient.functions.invoke("sendAdminOtp", {});
       const sent = res?.data?.sent ?? res?.sent;
       if (sent) setOtpSent(true);
       else setError(res?.data?.error || res?.error || "Could not send the code.");
@@ -89,7 +89,7 @@ export default function AdminSecurityGate({ children }) {
   const verifyOtp = async () => {
     setBusy(true); setError("");
     try {
-      const res = await base44.functions.invoke("verifyAdminAccess", {
+      const res = await apiClient.functions.invoke("verifyAdminAccess", {
         device_id: deviceId,
         otp: code,
         trust_device: trustDevice,

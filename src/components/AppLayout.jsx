@@ -11,7 +11,7 @@ import MobileNav from "@/components/nav/MobileNav";
 import AqlaLogo from "@/components/AqlaLogo";
 import { Sun, Radar, ClipboardList, FlaskConical, TrendingUp, MessageCircle, Gamepad2, Settings, ShieldCheck, Stethoscope, History, Mail } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { getPublicSettings } from "@/lib/captcha";
 import { getVisitMeta } from "@/lib/visitMeta";
 import { localDateKey } from "@/lib/dateKey";
@@ -56,9 +56,9 @@ export default function AppLayout() {
     getPublicSettings().then((s) => setTestMode(!!s.test_mode)).catch(() => {});
   }, []);
   useEffect(() => {
-    base44.appLogs?.logUserInApp?.(pathname).catch(() => {});
+    apiClient.appLogs?.logUserInApp?.(pathname).catch(() => {});
     const meta = getVisitMeta();
-    base44.entities.SiteVisit.create({
+    apiClient.entities.SiteVisit.create({
       path: pathname,
       date: localDateKey(),
       ...meta,

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import CheckInDialog from "@/components/today/CheckInDialog";
 import WeeklySummary from "@/components/today/WeeklySummary";
 import AddToCalendarCard from "@/components/today/AddToCalendarCard";
@@ -40,21 +40,13 @@ export default function Today() {
   const tourDecidedRef = useRef(false);
 
   // ── Tour flag: snapshot ONCE on mount, never re-check. ──────────────────────
-  // Fires when: dashboard_tour_v2 IS NULL (new account) OR IS FALSE (ops reset).
-  // Only `base44.auth` replacement done here — profile read via Supabase directly.
   useEffect(() => {
     const initTour = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user) return;
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("dashboard_tour_v2")
-          .eq("id", session.user.id)
-          .maybeSingle();
-        // null = brand new account, false = ops-reset. true = already done. Don't show.
-        const shouldShow = profile?.dashboard_tour_v2 === null || profile?.dashboard_tour_v2 === false;
-        if (shouldShow && !tourDecidedRef.current) {
+        const done = localStorage.getItem(`aqla_tour_done_${session.user.id}`);
+        if (!done && !tourDecidedRef.current) {
           tourDecidedRef.current = true;
           setTourOpen(true);
         }
@@ -76,9 +68,9 @@ export default function Today() {
         .maybeSingle();
       if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
     }).catch(() => {});
-    base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
-    base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
-    base44.entities.BrainDomain.list("-updated_date").then(setDomains);
+    apiClient.entities.Protocol.filter({ status: "active" }, "-created_date", 1).then((p) => setProtocol(p[0] || null));
+    apiClient.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
+    apiClient.entities.BrainDomain.list("-updated_date").then(setDomains);
   };
   useEffect(() => {
     load();

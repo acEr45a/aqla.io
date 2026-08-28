@@ -166,7 +166,7 @@ const ResponsiveImage = React.forwardRef(
 ResponsiveImage.displayName = "ResponsiveImage"
 
 /**
- * Image with built-in Wix Media Platform support: URLs on media.base44.com /
+ * Image with built-in Wix Media Platform support: URLs on media.apiClient.com /
  * static.wixstatic.com are served resized to the rendered container (per
  * device pixel ratio) and re-encoded to WebP; `fittingType="fill"` crops
  * server-side, optionally anchored at a focal point. Other URLs render as a

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { Link, useNavigate } from "react-router-dom";
+import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +10,12 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
-import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
+import { safeReturnTo } from "@/lib/authReturnTo";
 import SignupLegalNotice from "@/components/legal/SignupLegalNotice";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Register() {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,9 +32,9 @@ export default function Register() {
   // If already authenticated, redirect to destination
   useEffect(() => {
     if (!isLoadingAuth && isAuthenticated) {
-      window.location.href = dashboardDestination();
+      navigate("/dashboard", { replace: true });
     }
-  }, [isAuthenticated, isLoadingAuth]);
+  }, [isAuthenticated, isLoadingAuth, navigate]);
 
   useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function Register() {
           }
         }
       }
-      await base44.auth.register({ email, password });
+      await apiClient.auth.register({ email, password });
       setShowOtp(true);
     } catch (err) {
       // Collision guard: existing account (possibly created via Google) — send
@@ -88,12 +89,12 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
+      const result = await apiClient.auth.verifyOtp({ email, token: otpCode, type: "signup" });
       if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+        apiClient.auth.setToken(result.access_token);
       }
       const raw = safeReturnTo();
-      window.location.href = raw === "/" ? "/assessment" : raw;
+      navigate(raw === "/" ? "/assessment" : raw, { replace: true });
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -104,7 +105,7 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await base44.auth.resendOtp(email);
+      await apiClient.auth.resendOtp(email);
       toast({
         title: "Code sent",
         description: "Check your email for the new code.",
@@ -118,7 +119,7 @@ export default function Register() {
     setError("");
     const raw = safeReturnTo();
     try {
-      await base44.auth.loginWithProvider("google", raw === "/" ? dashboardDestination() : raw);
+      await apiClient.auth.loginWithProvider("google", raw === "/" ? dashboardDestination() : raw);
     } catch (err) {
       setError(err?.message || "Google sign-up could not start. Please try again.");
     }

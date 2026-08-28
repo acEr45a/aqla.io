@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { FlaskConical } from "lucide-react";
 
 const CONF = {
@@ -14,7 +14,7 @@ export default function Experiments() {
   const [experiments, setExperiments] = useState(null);
 
   useEffect(() => {
-    base44.entities.Experiment.list("-created_date").then(setExperiments);
+    apiClient.entities.Experiment.list("-created_date").then(setExperiments);
   }, []);
 
   if (!experiments) return <div className="p-10 text-sm text-muted-foreground">Loading experiments…</div>;

@@ -1,4 +1,4 @@
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { localDateKey } from "@/lib/dateKey";
 
 // Sunday-anchored key for the current week, e.g. "week-2026-07-26"
@@ -23,10 +23,10 @@ export function withinLastDays(dateStr, days) {
 
 export async function generateWeeklySummary() {
   const [checkIns, sessions, domains, protocols] = await Promise.all([
-    base44.entities.DailyCheckIn.list("-date", 14),
-    base44.entities.GameSession.list("-completed_date", 30),
-    base44.entities.BrainDomain.list("-updated_date"),
-    base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1),
+    apiClient.entities.DailyCheckIn.list("-date", 14),
+    apiClient.entities.GameSession.list("-completed_date", 30),
+    apiClient.entities.BrainDomain.list("-updated_date"),
+    apiClient.entities.Protocol.filter({ status: "active" }, "-created_date", 1),
   ]);
 
   const weekCheckIns = checkIns.filter((c) => withinLastDays(c.date, 7));
@@ -35,7 +35,7 @@ export async function generateWeeklySummary() {
   // No fabricated output: require real signals from this week.
   if (weekCheckIns.length < 3) return null;
 
-  const res = await base44.integrations.Core.InvokeLLM({
+  const res = await apiClient.integrations.Core.InvokeLLM({
     prompt: `You are AQLA Intelligence writing an end-of-week summary for one user.
 STRICT RULES: use ONLY the data below. Never invent numbers, times, windows, trends or events. If a field cannot be supported by the data, return an empty string for it. State uncertainty when the sample is small. No diagnosis, no medication advice.
 

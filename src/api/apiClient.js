@@ -346,7 +346,7 @@ const localAgentState = {
   subscribers: {},
 };
 
-// Agent Runtime client (replaces base44.agents)
+// Agent Runtime client (replaces apiClient.agents)
 export const agents = {
   async listConversations({ agent_name } = {}) {
     try {
@@ -704,89 +704,37 @@ export const functions = {
     }
 
     if (functionName === 'sendAdminOtp') {
-      const { data: authData } = await supabase.auth.getUser();
-      const me = authData?.user;
-      if (!me) {
-        return { data: { sent: false, error: 'User not authenticated' }, sent: false, error: 'User not authenticated' };
-      }
-
-      // Generate 6-digit verification code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-      // Store in admin_otps table
       try {
-        await supabase.from('admin_otps').insert([
-          {
-            code,
-            user_id: me.id,
-            created_by_id: me.id,
-            expires_at: expiresAt,
-            used: false,
-          },
-        ]);
-      } catch (err) {
-        console.warn('[sendAdminOtp] Notice:', err.message);
-      }
+        const { data: authData } = await supabase.auth.getUser();
+        const me = authData?.user;
+        if (!me) {
+          return { data: { sent: false, error: 'User not authenticated' }, sent: false, error: 'User not authenticated' };
+        }
 
-      // Dispatch verification email via Edge Function (Resend -> noreply@aqla.io)
-      try {
-        supabase.functions.invoke('sendAdminOtp', {
+        const res = await supabase.functions.invoke('sendAdminOtp', {
           body: { user_id: me.id, email: me.email },
-        }).catch(() => {});
-      } catch {
-        // Non-blocking fallback
-      }
+        });
 
-      return { data: { sent: true }, sent: true };
+        if (res.error) throw res.error;
+        return res.data || { sent: true };
+      } catch (err) {
+        console.error('[sendAdminOtp] Error:', err);
+        return { data: { sent: false, error: err.message || 'Could not send verification code.' }, sent: false, error: err.message || 'Could not send verification code.' };
+      }
     }
 
     if (functionName === 'verifyAdminAccess') {
-      const { device_id, otp, trust_device } = payload;
-      const { data: authData } = await supabase.auth.getUser();
-      const me = authData?.user;
-      if (!me) {
-        return { data: { verified: false, error: 'User not authenticated' }, verified: false, error: 'User not authenticated' };
+      try {
+        const res = await supabase.functions.invoke('verifyAdminAccess', {
+          body: payload,
+        });
+
+        if (res.error) throw res.error;
+        return res.data || { verified: false, error: 'Verification failed.' };
+      } catch (err) {
+        console.error('[verifyAdminAccess] Error:', err);
+        return { data: { verified: false, error: err.message || 'Verification failed.' }, verified: false, error: err.message || 'Verification failed.' };
       }
-
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', me.id).maybeSingle();
-      const trustedDevices = Array.isArray(profile?.admin_trusted_devices) ? profile.admin_trusted_devices : [];
-
-      // If auto-verifying existing trusted device without OTP
-      if (!otp && device_id) {
-        const isTrusted = trustedDevices.includes(device_id);
-        return { data: { verified: isTrusted, error: isTrusted ? undefined : 'Device not trusted' }, verified: isTrusted };
-      }
-
-      // If verifying OTP
-      if (otp) {
-        const { data: validOtps } = await supabase
-          .from('admin_otps')
-          .select('*')
-          .eq('user_id', me.id)
-          .eq('code', String(otp).trim())
-          .eq('used', false)
-          .gte('expires_at', new Date().toISOString())
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (!validOtps || validOtps.length === 0) {
-          return { data: { verified: false, error: 'Invalid or expired verification code.' }, verified: false, error: 'Invalid or expired verification code.' };
-        }
-
-        // Mark OTP as used
-        await supabase.from('admin_otps').update({ used: true }).eq('id', validOtps[0].id);
-
-        // If trust_device is checked, persist device_id in profiles.admin_trusted_devices
-        if (device_id && trust_device && !trustedDevices.includes(device_id)) {
-          const updatedDevices = [...trustedDevices, device_id];
-          await supabase.from('profiles').update({ admin_trusted_devices: updatedDevices }).eq('id', me.id);
-        }
-
-        return { data: { verified: true }, verified: true };
-      }
-
-      return { data: { verified: false, error: 'Verification code required.' }, verified: false, error: 'Verification code required.' };
     }
 
     if (functionName === 'getAdminDashboardMetrics') {

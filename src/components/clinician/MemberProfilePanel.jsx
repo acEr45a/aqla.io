@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { autoFlagResponse } from "@/lib/clinicalFlag";
 import { notify } from "@/lib/clinicianToast";
 import { localDateKey } from "@/lib/dateKey";
@@ -98,7 +98,7 @@ function AiSummary({ member, checkIns, cognitiveTests, brainDomains }) {
         assessment_responses: member.assessment?.responses || {},
       };
 
-      const res = await base44.integrations.Core.InvokeLLM({
+      const res = await apiClient.integrations.Core.InvokeLLM({
         prompt: `You are AQLA Clinical Summary, generating a concise clinical overview for a clinician reviewing an AQLA member.
 
 STRICT ZERO-HALLUCINATION RULES:
@@ -318,7 +318,7 @@ function ActionsTab({ member, onChanged }) {
     if (!recDraft.message.trim() || sendingRec) return;
     setSendingRec(true);
     try {
-      await base44.functions.invoke("pushMemberRecommendation", {
+      await apiClient.functions.invoke("pushMemberRecommendation", {
         user_id: member.id, title: recDraft.title, message: recDraft.message, category: recDraft.category,
       });
       notify("Recommendation sent", `Sent to ${member.name} — will appear on their dashboard.`);
@@ -336,7 +336,7 @@ function ActionsTab({ member, onChanged }) {
     setChangingPlan(true);
     setPlanMsg("");
     try {
-      const res = await base44.functions.invoke("changeMemberPlan", {
+      const res = await apiClient.functions.invoke("changeMemberPlan", {
         user_id: member.id, family: planDraft.family, reason: planDraft.reason,
       });
       if (res.data?.ok) {

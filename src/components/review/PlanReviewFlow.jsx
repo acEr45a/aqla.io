@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import ReviewSurvey from "@/components/review/ReviewSurvey";
 import ReviewRecommendation from "@/components/review/ReviewRecommendation";
 import { analyzePlanReview } from "@/lib/analyzePlanReview";
@@ -12,7 +12,7 @@ export default function PlanReviewFlow({ protocol, checkIns, onComplete }) {
   const analyze = async () => { setBusy(true); setAnalysis(await analyzePlanReview(protocol, checkIns, values)); setBusy(false); };
   const decide = async (decision) => {
     setBusy(true);
-    await base44.entities.PlanReview.create({
+    await apiClient.entities.PlanReview.create({
       protocol_id: protocol.id, protocol_family: protocol.family, cycle_started_date: protocol.start_date,
       responses: values, analysis_summary: analysis.summary, observed_results: analysis.observed_results,
       recommendation_reason: analysis.reason, recommended_family: analysis.recommended_family,

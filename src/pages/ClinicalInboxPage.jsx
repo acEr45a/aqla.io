@@ -209,7 +209,7 @@ export default function ClinicalInboxPage() {
       } else if (action === "markRead") {
         await supabase.from("messages").update({ is_read: true }).in("thread_id", targetIds);
       }
-    } catch {}
+    } catch { }
   };
 
   // Send Message Routine
@@ -245,7 +245,7 @@ export default function ClinicalInboxPage() {
             category: newThread.category,
           },
         ]);
-      } catch {}
+      } catch { }
     }
 
     const newMessage = {
@@ -261,10 +261,10 @@ export default function ClinicalInboxPage() {
         updated = prev.map((t) =>
           t.id === threadId
             ? {
-                ...t,
-                updated_at: new Date().toISOString(),
-                messages: [...(t.messages || []), newMessage],
-              }
+              ...t,
+              updated_at: new Date().toISOString(),
+              messages: [...(t.messages || []), newMessage],
+            }
             : t
         );
       } else {
@@ -307,7 +307,7 @@ export default function ClinicalInboxPage() {
           is_encrypted: true,
         },
       ]);
-    } catch {}
+    } catch { }
 
     // Dispatch via send-email edge function if configured
     try {
@@ -317,8 +317,8 @@ export default function ClinicalInboxPage() {
           subject: messagePayload.subject,
           html: messagePayload.body_html,
         },
-      }).catch(() => {});
-    } catch {}
+      }).catch(() => { });
+    } catch { }
   };
 
   // Draft Auto-Save
@@ -334,7 +334,7 @@ export default function ClinicalInboxPage() {
           updated_at: new Date().toISOString(),
         },
       ]);
-    } catch {}
+    } catch { }
   };
 
   // Filtered threads for current folder/category/tag view

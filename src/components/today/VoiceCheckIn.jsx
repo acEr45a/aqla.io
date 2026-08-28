@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import useVoiceChat, { micSupported, VOICE_BY_MOOD } from "@/lib/useVoiceChat";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
@@ -68,7 +68,7 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
 
     let res;
     try {
-      res = await base44.integrations.Core.InvokeLLM({
+      res = await apiClient.integrations.Core.InvokeLLM({
         model: "gpt_5_mini",
         prompt: `${INTERVIEW_PROMPT}
 
@@ -134,7 +134,7 @@ Return your reply, the full set of extracted values so far (merge with anything 
     (async () => {
       try {
         const prefs = loadVoicePrefs();
-        const { url } = await base44.integrations.Core.GenerateSpeech({
+        const { url } = await apiClient.integrations.Core.GenerateSpeech({
           text: msg.text, voice: VOICE_BY_MOOD[prefs.mood] || "honey", language_code: "en",
         });
         if (cancelled) return;

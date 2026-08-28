@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import AdminMetricStrip from "@/components/admin/AdminMetricStrip";
 import RegistrationChart from "@/components/admin/RegistrationChart";
@@ -59,10 +59,10 @@ export default function AdminDashboard() {
         return setAllowed(false);
       }
       setAllowed(true);
-      base44.functions.invoke("superAdminOps", { action: "check" })
+      apiClient.functions.invoke("superAdminOps", { action: "check" })
         .then((r) => setIsSuperAdmin(!!r?.data?.isSuperAdmin || !!r?.data?.is_super_admin || !!r?.is_super_admin))
         .catch(() => {});
-      const response = await base44.functions.invoke("getAdminDashboardMetrics", {});
+      const response = await apiClient.functions.invoke("getAdminDashboardMetrics", {});
       const metrics = response?.data || response;
       if (metrics) {
         setData(metrics);

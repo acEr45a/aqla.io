@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { activateProtocolFamily } from "@/lib/protocolPlan";
 import useVoiceChat, { micSupported } from "@/lib/useVoiceChat";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
@@ -27,10 +27,10 @@ export default function Coach() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.BrainDomain.list("-updated_date"),
-      base44.entities.Protocol.list("-created_date"),
-      base44.entities.DailyCheckIn.list("-date", 14),
-      base44.entities.Experiment.list("-created_date", 3),
+      apiClient.entities.BrainDomain.list("-updated_date"),
+      apiClient.entities.Protocol.list("-created_date"),
+      apiClient.entities.DailyCheckIn.list("-date", 14),
+      apiClient.entities.Experiment.list("-created_date", 3),
     ]).then(([domains, protocols, checkIns, experiments]) => {
       setContext({ domains, protocol: protocols.find((item) => item.status === "active"), protocols, checkIns, experiments });
     });
@@ -44,7 +44,7 @@ export default function Coach() {
     setMessages((m) => [...m, { role: "user", text: question }]);
     setLoading(true);
 
-    const res = await base44.integrations.Core.InvokeLLM({
+    const res = await apiClient.integrations.Core.InvokeLLM({
       prompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
 FIRST decide the mode of your reply:
 - mode "chat" — greetings, small talk, thanks, jokes, "how are you", personal chit-chat, or anything not asking about the user's brain data. Reply warmly and briefly (1-3 sentences) in chat_reply, like a friendly human colleague. Use the user's name or their data only if it fits naturally. Do NOT fill the analysis fields with placeholders; leave them as empty strings. Never force an analysis on small talk, and you may gently invite a question about their focus, sleep or protocol.

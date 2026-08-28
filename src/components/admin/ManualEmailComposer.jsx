@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,7 +46,7 @@ export default function ManualEmailComposer({ users = [], onSent }) {
   const send = async () => {
     setSending(true);
     setStatus(null);
-    const response = await base44.functions.invoke("sendManualEmail", {
+    const response = await apiClient.functions.invoke("sendManualEmail", {
       subject, message, sendToAll, recipientIds: selected,
       template: useTemplate ? "registration" : undefined,
     });

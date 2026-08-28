@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 // After login/registration, persist any baseline tests taken as a guest.
 export default function GuestTestSync() {
@@ -7,7 +7,7 @@ export default function GuestTestSync() {
     const raw = localStorage.getItem("aqla_guest_tests");
     if (!raw) return;
     const records = JSON.parse(raw);
-    base44.entities.CognitiveTest.bulkCreate(records).then(() => {
+    apiClient.entities.CognitiveTest.bulkCreate(records).then(() => {
       localStorage.removeItem("aqla_guest_tests");
     });
   }, []);

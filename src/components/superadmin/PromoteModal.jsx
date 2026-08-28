@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { AlertTriangle, Loader2 } from "lucide-react";
 
 export default function PromoteModal({ target, onClose, onDone }) {
@@ -16,7 +16,7 @@ export default function PromoteModal({ target, onClose, onDone }) {
   const promote = async () => {
     setSaving(true); setError("");
     try {
-      const res = await base44.functions.invoke("superAdminOps", { action: "promote", target_user_id: target.id });
+      const res = await apiClient.functions.invoke("superAdminOps", { action: "promote", target_user_id: target.id });
       if (res.data?.error) throw new Error(res.data.error);
       onDone(); onClose();
     } catch (e) { setError(e.message); }

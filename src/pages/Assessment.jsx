@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { CHAPTERS } from "@/lib/assessmentData";
 import { DOMAINS } from "@/lib/scoring";
 import RadialMap from "@/components/brainmap/RadialMap";
@@ -60,7 +60,7 @@ export default function Assessment() {
   const next = async () => {
     if (chapter < CHAPTERS.length - 1) { setChapter(chapter + 1); return; }
     setSaving(true);
-    await base44.entities.Assessment.create({ responses, completed_date: new Date().toISOString(), version: "1.0" });
+    await apiClient.entities.Assessment.create({ responses, completed_date: new Date().toISOString(), version: "1.0" });
     navigate("/analysis");
   };
 

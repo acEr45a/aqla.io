@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import ProtocolPlanCard from "@/components/protocols/ProtocolPlanCard";
 import DailyPlanPdfButton from "@/components/today/DailyPlanPdfButton";
 import EvidenceActionCard from "@/components/evidence/EvidenceActionCard";
@@ -15,14 +15,14 @@ export default function ProtocolPage() {
   const [domains, setDomains] = useState([]);
 
   useEffect(() => {
-    base44.entities.Protocol.list("-created_date").then(setProtocols);
+    apiClient.entities.Protocol.list("-created_date").then(setProtocols);
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) return;
       const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
       if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
     }).catch(() => {});
-    base44.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
-    base44.entities.BrainDomain.list("-updated_date").then(setDomains);
+    apiClient.entities.DailyCheckIn.list("-date", 8).then(setCheckIns);
+    apiClient.entities.BrainDomain.list("-updated_date").then(setDomains);
   }, []);
 
   const protocol = protocols?.find((item) => item.status === "active") || null;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 const CYCLE_MS = 14 * 24 * 60 * 60 * 1000;
 
@@ -10,7 +10,7 @@ export default function ReassessmentPrompt() {
 
   useEffect(() => {
     let timer;
-    base44.entities.Assessment.list("-completed_date", 1).then(([latest]) => {
+    apiClient.entities.Assessment.list("-completed_date", 1).then(([latest]) => {
       if (!latest) return;
       const completedAt = new Date(latest.completed_date || latest.created_date).getTime();
       const remaining = completedAt + CYCLE_MS - Date.now();

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { X } from "lucide-react";
 import GameRating from "./GameRating";
 
@@ -12,7 +12,7 @@ export default function GamePlayer({ game, best, onClose, onRecorded }) {
 
   const complete = async ({ raw, score }) => {
     setSaving(true);
-    await base44.entities.GameSession.create({
+    await apiClient.entities.GameSession.create({
       game_id: game.id,
       raw_results: raw,
       score,

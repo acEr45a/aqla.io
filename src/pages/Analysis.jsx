@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { computeDomains, primaryBottleneck } from "@/lib/scoring";
 import RadialMap from "@/components/brainmap/RadialMap";
 import RecommendedPlanStart from "@/components/protocols/RecommendedPlanStart";
@@ -43,7 +43,7 @@ export default function Analysis() {
     if (ran.current) return;
     ran.current = true;
     (async () => {
-      const assessments = await base44.entities.Assessment.list("-created_date", 1);
+      const assessments = await apiClient.entities.Assessment.list("-created_date", 1);
       const responses = assessments[0]?.responses || {};
       const computed = computeDomains(responses);
       setDomains(computed);
@@ -57,9 +57,9 @@ export default function Analysis() {
       const fits = protocolFit(bottleneck.key);
       const recommended = Object.keys(fits).find((family) => fits[family].status === "Recommended") || "RESET";
       setRecommendedFamily(recommended);
-      const existing = await base44.entities.BrainDomain.list();
-      if (existing.length) await base44.entities.BrainDomain.deleteMany({});
-      await base44.entities.BrainDomain.bulkCreate(computed.map((d) => ({
+      const existing = await apiClient.entities.BrainDomain.list();
+      if (existing.length) await apiClient.entities.BrainDomain.deleteMany({});
+      await apiClient.entities.BrainDomain.bulkCreate(computed.map((d) => ({
         domain_key: d.key,
         domain_name: d.label,
         score: d.score,

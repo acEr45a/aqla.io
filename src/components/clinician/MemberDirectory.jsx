@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -30,7 +30,7 @@ export default function MemberDirectory() {
 
   const load = async () => {
     try {
-      const res = await base44.functions.invoke("getMemberData", {});
+      const res = await apiClient.functions.invoke("getMemberData", {});
       setMembers(res.data?.members || []);
     } catch {
       setMembers([]);
@@ -65,7 +65,7 @@ export default function MemberDirectory() {
     setChangingPlan(true);
     setPlanMsg("");
     try {
-      const res = await base44.functions.invoke("changeMemberPlan", {
+      const res = await apiClient.functions.invoke("changeMemberPlan", {
         user_id: selected.id,
         family: planDraft.family,
         reason: planDraft.reason,
@@ -90,7 +90,7 @@ export default function MemberDirectory() {
     setSending(true);
     setError("");
     try {
-      await base44.functions.invoke("pushMemberRecommendation", {
+      await apiClient.functions.invoke("pushMemberRecommendation", {
         user_id: selected.id,
         title: draft.title,
         message: draft.message,

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Flag, CheckCircle2, Loader2, Send, User, RotateCcw } from "lucide-react";
 import FollowUpComposer from "@/components/clinician/FollowUpComposer";
 import { notify } from "@/lib/clinicianToast";
@@ -30,7 +30,7 @@ export default function ClinicalFlagsPanel({ onOpenMember, onAction }) {
   const [updating, setUpdating] = useState(null);
 
   const load = () => {
-    base44.entities.ClinicalFlag.list("-created_date", 200).then(setFlags).catch(() => setFlags([]));
+    apiClient.entities.ClinicalFlag.list("-created_date", 200).then(setFlags).catch(() => setFlags([]));
   };
   useEffect(() => { load(); }, []);
 
@@ -45,7 +45,7 @@ export default function ClinicalFlagsPanel({ onOpenMember, onAction }) {
     setUpdating(f.id);
     const next = f.status === "reviewed" ? "pending" : "reviewed";
     try {
-      await base44.entities.ClinicalFlag.update(f.id, { status: next });
+      await apiClient.entities.ClinicalFlag.update(f.id, { status: next });
       notify(
         next === "reviewed" ? "Flag reviewed" : "Flag reopened",
         next === "reviewed"

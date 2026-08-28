@@ -285,8 +285,8 @@ async function startVoiceSession() {
 
   try {
     await audioStreamer.startRecording();
-    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Athlete';
-    
+    const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '';
+
     // Fetch live session config / token from backend proxy
     let apiKey = null;
     try {

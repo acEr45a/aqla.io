@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { DOMAINS } from "@/lib/scoring";
 import NeuralBrainVisual from "@/components/brainmap/NeuralBrainVisual";
 import BrainHealthSummary from "@/components/brainmap/BrainHealthSummary";
@@ -18,7 +18,7 @@ export default function BrainMap() {
   const [showWhy, setShowWhy] = useState(false);
 
   useEffect(() => {
-    base44.entities.BrainDomain.list("-updated_date").then((rows) => {
+    apiClient.entities.BrainDomain.list("-updated_date").then((rows) => {
       const latest = {};
       rows.forEach((r) => { if (!latest[r.domain_key]) latest[r.domain_key] = r; });
       setRecords(latest);

@@ -5,16 +5,16 @@
   "version": "1.0.0",
   "description": "Precision cognitive readiness, background focus telemetry, and real-time voice neuro-performance companion.",
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
   },
   "action": {
     "default_title": "Open Aqla Neurological Companion",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
     }
   },
   "side_panel": {
@@ -30,7 +30,6 @@
     "activeTab",
     "tabs",
     "identity",
-    "audioCapture",
     "alarms"
   ],
   "host_permissions": [

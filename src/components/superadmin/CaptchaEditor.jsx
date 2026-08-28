@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { KeyRound, Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ export default function CaptchaEditor() {
   const [msg, setMsg] = useState("");
 
   const load = async () => {
-    const res = await base44.functions.invoke("superAdminOps", { action: "getCaptcha" });
+    const res = await apiClient.functions.invoke("superAdminOps", { action: "getCaptcha" });
     if (res.data?.config) setConfig({ score_threshold: 0.5, ...res.data.config });
     setLoading(false);
   };
@@ -21,7 +21,7 @@ export default function CaptchaEditor() {
   const save = async () => {
     setSaving(true); setMsg("");
     try {
-      const res = await base44.functions.invoke("superAdminOps", { action: "saveCaptcha", config });
+      const res = await apiClient.functions.invoke("superAdminOps", { action: "saveCaptcha", config });
       if (res.data?.error) throw new Error(res.data.error);
       setMsg("Saved. Test Mode bypasses CAPTCHA while on.");
     } catch (e) { setMsg(e.message); }

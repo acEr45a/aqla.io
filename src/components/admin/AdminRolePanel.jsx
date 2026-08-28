@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ export default function AdminRolePanel() {
   const [error, setError] = useState("");
 
   const load = async (payload = {}) => {
-    const response = await base44.functions.invoke("manageUserRoles", payload);
+    const response = await apiClient.functions.invoke("manageUserRoles", payload);
     setState(response.data);
   };
 

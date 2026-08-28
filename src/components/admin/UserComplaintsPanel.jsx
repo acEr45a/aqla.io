@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import {
   MessageSquareWarning, Search, Loader2, Sparkles, ChevronDown, ChevronRight,
   RefreshCw, CircleDot, CheckCircle2, Wrench, Copy, Check
@@ -41,7 +41,7 @@ export default function UserComplaintsPanel() {
   const load = async () => {
     setLoading(true);
     try {
-      const list = await base44.entities.UserComplaint.list("-created_date", 500);
+      const list = await apiClient.entities.UserComplaint.list("-created_date", 500);
       setComplaints(list || []);
     } catch {
       setComplaints([]);
@@ -77,7 +77,7 @@ export default function UserComplaintsPanel() {
     if (!query.trim() || aiSearching) return;
     setAiSearching(true); setAiError(""); setAiMatches(null);
     try {
-      const res = await base44.functions.invoke("searchUserComplaints", { query });
+      const res = await apiClient.functions.invoke("searchUserComplaints", { query });
       if (res.data?.error) { setAiError(res.data.error); }
       else {
         const map = {};
@@ -91,7 +91,7 @@ export default function UserComplaintsPanel() {
   const setStatus2 = async (c, next) => {
     setUpdatingId(c.id);
     try {
-      await base44.entities.UserComplaint.update(c.id, { status: next });
+      await apiClient.entities.UserComplaint.update(c.id, { status: next });
       await load();
     } catch { }
     setUpdatingId(null);

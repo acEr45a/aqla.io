@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { autoFlagResponse } from "@/lib/clinicalFlag";
 import { notify } from "@/lib/clinicianToast";
 import { X, Loader2, Send, Sparkles, RefreshCw } from "lucide-react";
@@ -30,7 +30,7 @@ export default function AiComposer({ member, onClose, onSent }) {
     setError("");
     setDraft("");
     try {
-      const res = await base44.functions.invoke("draftClinicianMessage", {
+      const res = await apiClient.functions.invoke("draftClinicianMessage", {
         user_id: member.id,
         intent,
         note: note.trim(),
@@ -52,7 +52,7 @@ export default function AiComposer({ member, onClose, onSent }) {
     setSending(true);
     setError("");
     try {
-      await base44.functions.invoke("pushMemberRecommendation", {
+      await apiClient.functions.invoke("pushMemberRecommendation", {
         user_id: member.id,
         title: `A note from your AQLA clinician`,
         message: draft.trim(),

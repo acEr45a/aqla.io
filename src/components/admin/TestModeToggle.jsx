@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Switch } from "@/components/ui/switch";
 import { getPublicSettings, clearSettingsCache } from "@/lib/captcha";
 import { Beaker, Loader2 } from "lucide-react";
@@ -16,7 +16,7 @@ export default function TestModeToggle() {
   const toggle = async (checked) => {
     setSaving(true);
     try {
-      await base44.functions.invoke("updateAppSettings", { test_mode: checked });
+      await apiClient.functions.invoke("updateAppSettings", { test_mode: checked });
       setTestMode(checked);
       clearSettingsCache();
     } catch (e) { /* ignore */ }

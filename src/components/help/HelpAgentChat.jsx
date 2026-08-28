@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Send, Loader2, CircleHelp, Flag } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { autoFlagResponse, detectClinicalContent, CLINICAL_NOTE } from "@/lib/clinicalFlag";
@@ -24,12 +24,12 @@ export default function HelpAgentChat() {
         if (profile) setUser({ id: session.user.id, email: session.user.email, ...profile });
       }).catch(() => {});
       try {
-        const existing = await base44.agents.listConversations({ agent_name: "help_agent" });
+        const existing = await apiClient.agents.listConversations({ agent_name: "help_agent" });
         let conv;
         if (existing && existing.length > 0) {
           conv = existing[0];
         } else {
-          conv = await base44.agents.createConversation({
+          conv = await apiClient.agents.createConversation({
             agent_name: "help_agent",
             metadata: { name: "Help Center Chat", description: "In-app help assistant" },
           });
@@ -37,7 +37,7 @@ export default function HelpAgentChat() {
         setConversation(conv);
         setMessages(conv.messages || []);
         setLoading(false);
-        unsub = base44.agents.subscribeToConversation(conv.id, (data) => {
+        unsub = apiClient.agents.subscribeToConversation(conv.id, (data) => {
           setMessages(data.messages || []);
         });
       } catch {
@@ -70,7 +70,7 @@ export default function HelpAgentChat() {
     setInput("");
     setSending(true);
     try {
-      await base44.agents.addMessage(conversation, { role: "user", content: text });
+      await apiClient.agents.addMessage(conversation, { role: "user", content: text });
       setSending(false);
     } catch {
       setSending(false);

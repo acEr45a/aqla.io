@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { CATEGORIES, GAMES, gamesIn } from "@/lib/gamesCatalog";
 import GameRow from "@/components/games/GameRow";
 import GamePlayer from "@/components/games/GamePlayer";
@@ -14,8 +14,8 @@ export default function Games() {
 
   const load = useCallback(async () => {
     const [sessions, gameRatings] = await Promise.all([
-      base44.entities.GameSession.list("-created_date", 300),
-      base44.entities.GameRating.list("-created_date", 500),
+      apiClient.entities.GameSession.list("-created_date", 300),
+      apiClient.entities.GameRating.list("-created_date", 500),
     ]);
     setRows(sessions);
     setRatings(gameRatings);

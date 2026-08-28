@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { STATUS_META } from "@/lib/safety";
 import { Shield, ArrowRight } from "lucide-react";
 
@@ -8,7 +8,7 @@ export default function EligibilityGate() {
   const [profile, setProfile] = useState(undefined);
 
   useEffect(() => {
-    base44.entities.HealthProfile.list("-created_date", 1).then((rows) => setProfile(rows[0] || null));
+    apiClient.entities.HealthProfile.list("-created_date", 1).then((rows) => setProfile(rows[0] || null));
   }, []);
 
   if (profile === undefined) return null;

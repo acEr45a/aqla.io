@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Star } from "lucide-react";
 
 // Lets a player rate the game they just finished, with optional written feedback.
@@ -15,7 +15,7 @@ export default function GameRating({ game }) {
     setStatus("saving");
     setError("");
     try {
-      await base44.entities.GameRating.create({
+      await apiClient.entities.GameRating.create({
         game_id: game.id,
         game_name: game.name,
         stars,

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { toast } from "@/components/ui/use-toast";
 
 // Surfaces in-dashboard pop-up alerts to the clinician when new clinical flags
@@ -30,7 +30,7 @@ export default function ClinicianAlerts({ onNew }) {
     SOURCES.forEach(async ({ entity, label, describe }) => {
       if (!lastSeen.current) return;
       try {
-        const rows = await base44.entities[entity].list("-created_date", 20);
+        const rows = await apiClient.entities[entity].list("-created_date", 20);
         const fresh = (rows || []).filter(
           (r) => r.created_date > lastSeen.current && r.status === "pending"
         );
@@ -44,7 +44,7 @@ export default function ClinicianAlerts({ onNew }) {
     // Live pass: new records arriving while the dashboard is open.
     const unsubs = SOURCES.map(({ entity, label, describe }) => {
       try {
-        return base44.entities[entity].subscribe((event) => {
+        return apiClient.entities[entity].subscribe((event) => {
           if (event?.type !== "create" || !event.data) return;
           alert(label, describe(event.data));
           onNew?.();

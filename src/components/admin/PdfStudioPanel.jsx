@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Loader2, Sparkles, FileDown, RotateCcw } from "lucide-react";
 import { DEFAULT_THEME, loadPdfTheme } from "@/lib/pdf/fableCore";
 import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
@@ -22,7 +22,7 @@ export default function PdfStudioPanel() {
     if (!instruction.trim() || busy) return;
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("backendOpsAi", { task: "pdfTheme", instruction });
+      const res = await apiClient.functions.invoke("backendOpsAi", { task: "pdfTheme", instruction });
       setNote(res.data.note || "Theme updated.");
       setInstruction("");
       await refresh();
@@ -34,8 +34,8 @@ export default function PdfStudioPanel() {
   };
 
   const reset = async () => {
-    const rows = await base44.entities.PdfTheme.list("-updated_date", 10);
-    await Promise.all(rows.map((r) => base44.entities.PdfTheme.delete(r.id)));
+    const rows = await apiClient.entities.PdfTheme.list("-updated_date", 10);
+    await Promise.all(rows.map((r) => apiClient.entities.PdfTheme.delete(r.id)));
     setNote("Theme reset to Fable defaults.");
     refresh();
   };

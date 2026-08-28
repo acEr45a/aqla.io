@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import HealthGauge from "@/components/admin/HealthGauge";
 import CopyButton from "@/components/ui/copy-button";
 import { Activity, CheckCircle2, AlertTriangle, XCircle, Loader2, RefreshCw, Wrench } from "lucide-react";
@@ -21,7 +21,7 @@ export default function AppHealthPanel() {
   const runTest = async () => {
     setRunning(true); setError("");
     try {
-      const res = await base44.functions.invoke("runAppDiagnostics", {});
+      const res = await apiClient.functions.invoke("runAppDiagnostics", {});
       if (res.data?.checks) setResult(res.data);
       else setError(res.data?.error || "Test could not complete.");
     } catch (e) {
@@ -36,7 +36,7 @@ export default function AppHealthPanel() {
     setError("");
     setBuilderPrompt((prev) => { const n = { ...prev }; delete n[check.name]; return n; });
     try {
-      const res = await base44.functions.invoke("resolveAppIssue", {
+      const res = await apiClient.functions.invoke("resolveAppIssue", {
         action: check.resolve_action,
         check_name: check.name,
         check_detail: check.detail,

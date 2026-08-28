@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Users, ArrowLeft, ShieldCheck } from "lucide-react";
 import ComparisonBar from "@/components/community/ComparisonBar";
 
@@ -8,7 +8,7 @@ export default function CommunityInsights() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    base44.functions.invoke("getCommunityInsights", {}).then((res) => setData(res.data));
+    apiClient.functions.invoke("getCommunityInsights", {}).then((res) => setData(res.data));
   }, []);
 
   if (!data) {

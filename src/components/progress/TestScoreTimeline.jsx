@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceArea, ResponsiveContainer, Legend } from "recharts";
 
 const METRICS = [
@@ -16,8 +16,8 @@ export default function TestScoreTimeline() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.CognitiveTest.list("-created_date", 200),
-      base44.entities.Protocol.list("-created_date", 10),
+      apiClient.entities.CognitiveTest.list("-created_date", 200),
+      apiClient.entities.Protocol.list("-created_date", 10),
     ]).then(([tests, prots]) => {
       const byDate = {};
       tests.forEach((t) => {

@@ -2,7 +2,7 @@
 // All drawing goes through this class: the cursor (this.y) is the single source of truth,
 // page breaks repaint the background + header automatically. No incremental coordinate math.
 import { jsPDF } from "jspdf";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 
 const hexToRgb = (hex) => {
   const h = String(hex || "").replace("#", "");
@@ -27,7 +27,7 @@ export const DEFAULT_THEME = {
 /* Latest saved theme (edited via the admin PDF Studio), merged over defaults. */
 export async function loadPdfTheme() {
   try {
-    const rows = await base44.entities.PdfTheme.list("-updated_date", 1);
+    const rows = await apiClient.entities.PdfTheme.list("-updated_date", 1);
     return { ...DEFAULT_THEME, ...(rows[0]?.config || {}) };
   } catch {
     return DEFAULT_THEME;

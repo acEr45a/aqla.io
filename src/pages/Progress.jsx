@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Users, ArrowRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import TestScoreTimeline from "@/components/progress/TestScoreTimeline";
 
@@ -60,7 +60,7 @@ export default function Progress() {
   const [checkIns, setCheckIns] = useState(null);
 
   useEffect(() => {
-    base44.entities.DailyCheckIn.list("-date", 30).then((rows) => setCheckIns([...rows].reverse()));
+    apiClient.entities.DailyCheckIn.list("-date", 30).then((rows) => setCheckIns([...rows].reverse()));
   }, []);
 
   const data = (checkIns || []).map((c) => ({

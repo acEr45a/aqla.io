@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Trash2 } from "lucide-react";
 import {
   AlertDialog,
@@ -21,7 +21,7 @@ export default function AdminUserTable({ users, onDeleted }) {
     setPendingId(userId);
     setError("");
     try {
-      await base44.functions.invoke("deleteUserAndData", { user_id: userId });
+      await apiClient.functions.invoke("deleteUserAndData", { user_id: userId });
       onDeleted?.();
     } catch (err) {
       setError(err?.message || "Could not delete this user.");

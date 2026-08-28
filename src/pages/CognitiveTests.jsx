@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import ReactionTest from "@/components/tests/ReactionTest";
 import AttentionTest from "@/components/tests/AttentionTest";
 import MemoryTest from "@/components/tests/MemoryTest";
@@ -36,7 +36,7 @@ export default function CognitiveTests() {
     setApplying(true);
     for (const t of TESTS) {
       const d = QA_DEFAULTS[t.type];
-      await base44.entities.CognitiveTest.create({
+      await apiClient.entities.CognitiveTest.create({
         test_type: t.type,
         raw_results: d.raw,
         normalized_score: d.score,
@@ -52,8 +52,8 @@ export default function CognitiveTests() {
 
   const load = async () => {
     const [rows, assessments] = await Promise.all([
-      base44.entities.CognitiveTest.list("-created_date"),
-      base44.entities.Assessment.list("-completed_date", 2),
+      apiClient.entities.CognitiveTest.list("-created_date"),
+      apiClient.entities.Assessment.list("-completed_date", 2),
     ]);
     const cycleStart = assessments.length > 1
       ? new Date(assessments[0].completed_date || assessments[0].created_date).getTime()
@@ -73,7 +73,7 @@ export default function CognitiveTests() {
 
   const applyToBrainMap = async (latest) => {
     setApplying(true);
-    const domains = await base44.entities.BrainDomain.list("-updated_date");
+    const domains = await apiClient.entities.BrainDomain.list("-updated_date");
     const byKey = {};
     domains.forEach((d) => { if (!byKey[d.domain_key]) byKey[d.domain_key] = d; });
     for (const [domainKey, testType, w] of BLEND) {
@@ -82,7 +82,7 @@ export default function CognitiveTests() {
       if (!d || !t) continue;
       const newScore = Math.round(d.score * (1 - w) + t.normalized_score * w);
       const sources = Array.from(new Set([...(d.data_sources || []), "Cognitive baseline tests"]));
-      await base44.entities.BrainDomain.update(d.id, {
+      await apiClient.entities.BrainDomain.update(d.id, {
         score: newScore,
         confidence: "high",
         trend: newScore > d.score ? "up" : newScore < d.score ? "down" : d.trend,
@@ -94,7 +94,7 @@ export default function CognitiveTests() {
   };
 
   const onTestComplete = async (test, { raw, score }) => {
-    await base44.entities.CognitiveTest.create({
+    await apiClient.entities.CognitiveTest.create({
       test_type: test.type,
       raw_results: raw,
       normalized_score: score,

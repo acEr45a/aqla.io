@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { Link, useNavigate } from "react-router-dom";
+import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
 import { getPublicSettings, executeV3, renderV2, getV2Response, verifyCaptchaToken } from "@/lib/captcha";
 import { Input } from "@/components/ui/input";
@@ -10,9 +9,10 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { useAuth } from "@/lib/AuthContext";
-import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { isAuthenticated, isLoadingAuth } = useAuth();
   const [email, setEmail] = useState(() => localStorage.getItem("aqla_remembered_email") || "");
   const [password, setPassword] = useState("");
@@ -20,7 +20,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const raw = safeReturnTo();
-  const returnTo = raw === "/" ? dashboardDestination() : raw;
+  const returnTo = raw === "/" ? "/dashboard" : raw;
 
   const [settings, setSettings] = useState(null);
   const [showV2, setShowV2] = useState(false);
@@ -30,9 +30,9 @@ export default function Login() {
   // If already authenticated, redirect to destination
   useEffect(() => {
     if (!isLoadingAuth && isAuthenticated) {
-      window.location.href = returnTo;
+      navigate(returnTo, { replace: true });
     }
-  }, [isAuthenticated, isLoadingAuth, returnTo]);
+  }, [isAuthenticated, isLoadingAuth, returnTo, navigate]);
 
   useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
   useEffect(() => {
@@ -65,8 +65,8 @@ export default function Login() {
           }
         }
       }
-      await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = returnTo;
+      await apiClient.auth.loginViaEmailPassword(email, password);
+      navigate(returnTo, { replace: true });
     } catch (err) {
       // Collision guard: an account created through Google has no password, so
       // point the user at the right button instead of "invalid password".
@@ -86,7 +86,7 @@ export default function Login() {
     try {
       // Always hand the provider an explicit, validated destination so the
       // platform callback returns to the right host (custom domain in prod).
-      await base44.auth.loginWithProvider("google", returnTo || dashboardDestination());
+      await apiClient.auth.loginWithProvider("google", returnTo || dashboardDestination());
     } catch (err) {
       setError(err?.message || "Google sign-in could not start. Please try again.");
     }

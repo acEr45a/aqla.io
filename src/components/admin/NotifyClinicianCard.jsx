@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Loader2, Send, Megaphone } from "lucide-react";
 
 export default function NotifyClinicianCard({ users }) {
@@ -15,7 +15,7 @@ export default function NotifyClinicianCard({ users }) {
     if (!clinicianId || !subject.trim() || !message.trim() || sending) return;
     setSending(true); setStatus("");
     try {
-      const res = await base44.functions.invoke("notifyClinician", { user_id: clinicianId, subject, message });
+      const res = await apiClient.functions.invoke("notifyClinician", { user_id: clinicianId, subject, message });
       if (res.data?.ok) {
         setStatus("Notified.");
         setSubject(""); setMessage(""); setClinicianId("");

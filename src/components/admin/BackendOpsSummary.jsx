@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import OpsJobCard from "@/components/admin/ops/OpsJobCard";
 import OpsActivityChart from "@/components/admin/ops/OpsActivityChart";
 import OpsWriteMix from "@/components/admin/ops/OpsWriteMix";
@@ -17,7 +17,7 @@ export default function BackendOpsSummary() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    base44.functions.invoke("getBackendOpsSummary", {})
+    apiClient.functions.invoke("getBackendOpsSummary", {})
       .then((res) => (res.data?.days ? setData(res.data) : setError(res.data?.error || "Could not load ops summary.")))
       .catch((e) => setError(e.message));
   }, []);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { Loader2, Send, CheckCircle2, AlertOctagon } from "lucide-react";
 
 const CATEGORIES = ["Bug", "Account", "Data issue", "Protocol question", "Safety concern", "Other"];
@@ -17,7 +17,7 @@ export default function IssueReportForm() {
     if (!detail.trim() || sending) return;
     setSending(true); setError(""); setResult(null);
     try {
-      const res = await base44.functions.invoke("submitIssue", {
+      const res = await apiClient.functions.invoke("submitIssue", {
         category,
         subject: subject || "User issue",
         detail,

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FileDown, Loader2, AlertTriangle } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { apiClient } from "@/api/apiClient";
 import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
 import { loadPdfTheme } from "@/lib/pdf/fableCore";
 import { localDateKey } from "@/lib/dateKey";
@@ -15,11 +15,11 @@ export default function DailyPlanPdfButton({ user, protocol, checkIns = [], doma
     try {
       // Fresh server fetch of EVERY data source the PDF uses — never stale props
       const [profiles, tests, fullCheckIns, freshProtocols, freshDomains, theme] = await Promise.all([
-        base44.entities.HealthProfile.list("-completed_date", 1),
-        base44.entities.CognitiveTest.list("-completed_date", 10),
-        base44.entities.DailyCheckIn.list("-date", 30),
-        base44.entities.Protocol.filter({ status: "active" }, "-created_date", 1),
-        base44.entities.BrainDomain.list("-updated_date"),
+        apiClient.entities.HealthProfile.list("-completed_date", 1),
+        apiClient.entities.CognitiveTest.list("-completed_date", 10),
+        apiClient.entities.DailyCheckIn.list("-date", 30),
+        apiClient.entities.Protocol.filter({ status: "active" }, "-created_date", 1),
+        apiClient.entities.BrainDomain.list("-updated_date"),
         loadPdfTheme(),
       ]);
       const freshProtocol = freshProtocols[0] || protocol;
@@ -32,7 +32,7 @@ export default function DailyPlanPdfButton({ user, protocol, checkIns = [], doma
         cognitiveTests: tests,
         theme,
       });
-      await base44.entities.PdfArchive.create({
+      await apiClient.entities.PdfArchive.create({
         kind: "daily",
         title: `Daily plan — ${freshProtocol?.name || "AQLA"}`,
         date: today,
