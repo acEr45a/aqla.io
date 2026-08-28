@@ -10,7 +10,7 @@ const MAX_TURNS_PER_HOUR = 20;
 const REPEAT_LIMIT = 3; // same prompt this many times in a row → canned redirect
 
 const CANNED = {
-  tooLong: "That's a lot to take in — could you trim it to a sentence or two so I can give you a focused answer?",
+  tooLong: "That's a lot to take in — could you trim it to a few sentences or less so I can give you a focused answer?",
   rateLimited: "You're asking a lot right now — let's slow down. Give me a moment and ask one question at a time.",
   loop: "I think we've covered this one a few times. If something isn't clear, try rephrasing, or check the Help Center for a fuller breakdown.",
 };
@@ -39,7 +39,7 @@ export function useAqlaCoach() {
       if (!session?.user) return;
       const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
       if (profile) userRef.current = { id: session.user.id, email: session.user.email, ...profile };
-    }).catch(() => {});
+    }).catch(() => { });
     Promise.all([
       apiClient.entities.BrainDomain.list("-updated_date"),
       apiClient.entities.Protocol.list("-created_date"),

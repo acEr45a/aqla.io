@@ -15,6 +15,7 @@
 *.pfx
 *.p12
 secrets.json
+.agents/mcp_config.json
 
 # ==============================================================================
 # LOCAL SUPABASE STATE & CLI ARTIFACTS

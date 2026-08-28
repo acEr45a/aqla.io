@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { LocoScrollProvider } from '@/lib/LocoScrollProvider';
 
 // Lazy-loaded page components for route-level code splitting
 const Landing = lazy(() => import('@/pages/Landing'));
@@ -152,11 +153,13 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <LocoScrollProvider>
+          <Router>
+            <ScrollToTop />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </LocoScrollProvider>
       </QueryClientProvider>
     </AuthProvider>
   )

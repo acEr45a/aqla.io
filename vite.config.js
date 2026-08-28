@@ -13,16 +13,19 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-react':   ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-ui': ['framer-motion', 'lucide-react', '@tanstack/react-query'],
+          'vendor-ui':      ['framer-motion', 'lucide-react', '@tanstack/react-query'],
+          // Three.js stack — loaded only when AuthBrainPanel lazy-imports
+          'vendor-three':   ['three', '@react-three/fiber', '@react-three/drei', '@react-three/postprocessing', 'postprocessing'],
         },
       },
     },
   },
 });
+
 
