@@ -248,8 +248,8 @@ export default function ReadingPane({
 
     const messagePayload = {
       thread_id: thread.id,
-      sender_email: currentUser?.email || "clinician@ndapape.resend.app",
-      sender_name: currentUser?.full_name || "Dr. Richardson (Clinician)",
+      sender_email: currentUser?.email?.includes("@") ? currentUser.email : "clinician@aqla.io",
+      sender_name: currentUser?.full_name || "AQLA Clinical Team",
       recipient_email: recipientEmail,
       subject: thread.subject.startsWith("Re:") ? thread.subject : `Re: ${thread.subject}`,
       body_html: replyBody.startsWith("<") ? replyBody : `<p>${replyBody.replace(/\n/g, "<br/>")}</p>`,

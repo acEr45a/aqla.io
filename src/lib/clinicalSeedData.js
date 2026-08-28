@@ -7,7 +7,7 @@ export const STARTER_THREADS = [
   {
     id: "th-seed-1",
     subject: "Protocol Calibration & Midday Mental Energy Crash",
-    participant_emails: ["elena.vance@stanford.edu", "clinician@ndapape.resend.app"],
+    participant_emails: ["elena.vance@stanford.edu", "clinician@aqla.io"],
     category: "Patient Care",
     is_starred: true,
     is_archived: false,
@@ -22,7 +22,7 @@ export const STARTER_THREADS = [
         email_id: "em-seed-1-1",
         sender_email: "elena.vance@stanford.edu",
         sender_name: "Dr. Elena Vance (Patient)",
-        recipient_email: "clinician@ndapape.resend.app",
+        recipient_email: "clinician@aqla.io",
         subject: "Protocol Calibration & Midday Mental Energy Crash",
         body_html: `<p>Hello Clinician,</p>
 <p>I have completed Day 12 on the SPARK protocol. My morning focus scores on the sustained attention task have improved by ~14%, which is fantastic. However, around 2:30 PM I am experiencing a pronounced cognitive slump and slight headache.</p>
@@ -58,7 +58,7 @@ export const STARTER_THREADS = [
   {
     id: "th-seed-2",
     subject: "Lab Review & Digit Span Adaptation Score (+22%)",
-    participant_emails: ["marcus.chen@biotech.io", "clinician@ndapape.resend.app"],
+    participant_emails: ["marcus.chen@biotech.io", "clinician@aqla.io"],
     category: "Primary",
     is_starred: false,
     is_archived: false,
@@ -73,7 +73,7 @@ export const STARTER_THREADS = [
         email_id: "em-seed-2-1",
         sender_email: "marcus.chen@biotech.io",
         sender_name: "Marcus Chen",
-        recipient_email: "clinician@ndapape.resend.app",
+        recipient_email: "clinician@aqla.io",
         subject: "Lab Review & Digit Span Adaptation Score (+22%)",
         body_html: `<p>Hi team,</p>
 <p>Just finished my weekly review on the FLOW protocol. Digit Span working memory jumped from 7 items to 9 items forwards, and reaction latency on PVT dropped to 215ms.</p>
@@ -95,7 +95,7 @@ export const STARTER_THREADS = [
         id: "msg-seed-2-2",
         thread_id: "th-seed-2",
         email_id: "em-seed-2-2",
-        sender_email: "clinician@ndapape.resend.app",
+        sender_email: "clinician@aqla.io",
         sender_name: "Dr. Richardson (AQLA Clinician)",
         recipient_email: "marcus.chen@biotech.io",
         subject: "Re: Lab Review & Digit Span Adaptation Score (+22%)",
@@ -113,7 +113,7 @@ export const STARTER_THREADS = [
   {
     id: "th-seed-3",
     subject: "AQLA Platform Diagnostic: Automatic Realtime Sync Verification",
-    participant_emails: ["system-ops@aqla.io", "clinician@ndapape.resend.app"],
+    participant_emails: ["system-ops@aqla.io", "clinician@aqla.io"],
     category: "System Updates",
     is_starred: false,
     is_archived: false,
@@ -128,10 +128,10 @@ export const STARTER_THREADS = [
         email_id: "em-seed-3-1",
         sender_email: "system-ops@aqla.io",
         sender_name: "AQLA Security & Ops Daemon",
-        recipient_email: "clinician@ndapape.resend.app",
+        recipient_email: "clinician@aqla.io",
         subject: "AQLA Platform Diagnostic: Automatic Realtime Sync Verification",
         body_html: `<p><strong>AQLA SECURITY & AUDIT DISPATCH</strong></p>
-<p>All inbound clinical channels connected to <code>clinician@ndapape.resend.app</code> are actively monitored with Svix cryptographic signature validation.</p>
+<p>All inbound clinical channels connected to <code>clinician@aqla.io</code> are actively monitored with Svix cryptographic signature validation.</p>
 <ul>
   <li>Realtime WebSocket Channels: <strong>HEALTHY (0ms jitter)</strong></li>
   <li>Attachment Encryption: <strong>AES-256 Storage Enforced</strong></li>
@@ -147,7 +147,7 @@ export const STARTER_THREADS = [
   {
     id: "th-seed-4",
     subject: "Sleep Latency & Oura Ring Integration Data",
-    participant_emails: ["sarah.k@nordicneurolab.org", "clinician@ndapape.resend.app"],
+    participant_emails: ["sarah.k@nordicneurolab.org", "clinician@aqla.io"],
     category: "Patient Care",
     is_starred: false,
     is_archived: false,
@@ -162,7 +162,7 @@ export const STARTER_THREADS = [
         email_id: "em-seed-4-1",
         sender_email: "sarah.k@nordicneurolab.org",
         sender_name: "Sarah Lindqvist",
-        recipient_email: "clinician@ndapape.resend.app",
+        recipient_email: "clinician@aqla.io",
         subject: "Sleep Latency & Oura Ring Integration Data",
         body_html: `<p>Dear Dr. Richardson,</p>
 <p>I have synced my sleep staging data from the past 14 nights. Deep sleep increased from 42 mins to 1 hour 18 mins after implementing the RESET evening protocol.</p>

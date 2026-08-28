@@ -156,7 +156,7 @@ export default function CustomInboxSettings({
                       <Mail className="h-4 w-4 text-primary" /> Automatic Inbound Email Forwarding
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Forward inbound patient messages arriving at <code>clinician@ndapape.resend.app</code> to external addresses.
+                      Forward inbound patient messages arriving at <code>clinician@aqla.io</code> to external addresses.
                     </p>
                   </div>
                   <Switch checked={forwardingEnabled} onCheckedChange={setForwardingEnabled} />
@@ -238,7 +238,7 @@ export default function CustomInboxSettings({
                   <ShieldAlert className="h-4 w-4" /> Global Inbound Routing Pipeline
                 </p>
                 <div className="space-y-1 text-xs text-amber-300/80 font-mono">
-                  <p>Inbound Domain: <code>clinician@ndapape.resend.app</code></p>
+                  <p>Inbound Domain: <code>clinician@aqla.io</code></p>
                   <p>Cloudflare MX & Routing: <span className="text-emerald-400 font-bold">CONNECTED & VERIFIED</span></p>
                   <p>Svix Cryptographic Headers: <span className="text-emerald-400 font-bold">ENFORCED</span></p>
                 </div>

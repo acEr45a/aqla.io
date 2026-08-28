@@ -311,9 +311,14 @@ export default function ClinicalInboxPage() {
 
     // Dispatch via send-email edge function if configured
     try {
+      const fromEmail = messagePayload.sender_email?.includes("@") && messagePayload.sender_email.includes("aqla.io")
+        ? `AQLA Clinician <${messagePayload.sender_email}>`
+        : "AQLA Clinician <clinician@aqla.io>";
+
       supabase.functions.invoke("send-email", {
         body: {
           to: messagePayload.recipient_email,
+          from: fromEmail,
           subject: messagePayload.subject,
           html: messagePayload.body_html,
         },
@@ -346,7 +351,7 @@ export default function ClinicalInboxPage() {
     if (activeFolder === "sent") {
       const msgs = th.messages || [];
       const hasSent = msgs.some(
-        (m) => m.sender_email?.includes("ndapape.resend.app") || m.sender_email === currentUser?.email
+        (m) => m.sender_email?.includes("aqla.io") || m.sender_email?.includes("ndapape.resend.app") || m.sender_email === currentUser?.email
       );
       if (!hasSent) return false;
     }
@@ -366,7 +371,7 @@ export default function ClinicalInboxPage() {
   const counts = {
     inbox: threads.filter((t) => !t.is_archived && !t.is_trashed && !t.is_spam && t.messages?.some((m) => !m.is_read)).length,
     starred: threads.filter((t) => t.is_starred).length,
-    sent: threads.filter((t) => t.messages?.some((m) => m.sender_email?.includes("ndapape.resend.app"))).length,
+    sent: threads.filter((t) => t.messages?.some((m) => m.sender_email?.includes("aqla.io") || m.sender_email?.includes("ndapape.resend.app") || m.sender_email === currentUser?.email)).length,
     drafts: 0,
     archive: threads.filter((t) => t.is_archived).length,
     spam: threads.filter((t) => t.is_spam).length,

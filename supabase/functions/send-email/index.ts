@@ -11,7 +11,8 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const DEFAULT_FROM = "AQLA <noreply@aqla.io>";
+const DEFAULT_FROM = "AQLA Clinician <clinician@aqla.io>";
+
 
 function buildProfessionalEmail({ subject, contentHtml, paragraphs, actionButton }) {
   const bodyContent = contentHtml || (paragraphs || []).map((p) => `<p style="margin: 0 0 16px 0; font-size: 14px; color: #a1a7b0; line-height: 1.65;">${p}</p>`).join("");

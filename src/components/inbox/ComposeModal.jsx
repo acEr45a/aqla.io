@@ -177,8 +177,8 @@ export default function ComposeModal({
 
     const payload = {
       recipient_email: recipient.trim(),
-      sender_email: currentUser?.email || "clinician@ndapape.resend.app",
-      sender_name: currentUser?.full_name || "Dr. Richardson (Clinician)",
+      sender_email: currentUser?.email?.includes("@") ? currentUser.email : "clinician@aqla.io",
+      sender_name: currentUser?.full_name || "AQLA Clinical Team",
       subject: subject.trim() || "(No Subject)",
       category,
       body_html: body.startsWith("<") ? body : `<p>${body.replace(/\n/g, "<br/>")}</p>`,

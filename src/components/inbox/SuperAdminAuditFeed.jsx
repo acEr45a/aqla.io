@@ -115,7 +115,7 @@ export default function SuperAdminAuditFeed({
           </thead>
           <tbody className="divide-y divide-border/20">
             {filtered.map((msg, idx) => {
-              const isInbound = msg.recipient_email?.includes("ndapape.resend.app");
+              const isInbound = msg.recipient_email?.includes("aqla.io") || msg.recipient_email?.includes("ndapape.resend.app");
 
               return (
                 <tr
