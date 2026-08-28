@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { useAuth } from "@/lib/AuthContext";
-import { safeReturnTo } from "@/lib/authReturnTo";
+import { safeReturnTo, dashboardDestination } from "@/lib/authReturnTo";
 
 export default function Login() {
   const navigate = useNavigate();
