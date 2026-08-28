@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Inbox,
@@ -20,6 +21,7 @@ import {
   Eye,
   PanelLeftClose,
   PanelLeftOpen,
+  ArrowLeft,
 } from "lucide-react";
 
 export default function Sidebar({
@@ -39,6 +41,7 @@ export default function Sidebar({
   globalAuditMode,
   setGlobalAuditMode,
 }) {
+  const navigate = useNavigate();
   const [tagList, setTagList] = useState(tags);
   const [newTagInput, setNewTagInput] = useState("");
   const [showAddTag, setShowAddTag] = useState(false);
@@ -74,7 +77,20 @@ export default function Sidebar({
         }`}
     >
       {/* Top Header / Compose CTA */}
-      <div className="p-3 border-b border-border/40 flex flex-col gap-2">
+      <div className="p-3 border-b border-border/40 flex flex-col gap-2.5">
+        {/* Back to Portal / Navigation */}
+        <button
+          onClick={() => {
+            if (window.history.length > 1) navigate(-1);
+            else navigate("/clinician");
+          }}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors w-fit ${collapsed ? "justify-center w-full px-0" : ""}`}
+          title="Back to Clinician Portal"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
+          {!collapsed && <span className="text-[11px] tracking-wide uppercase font-semibold text-foreground/80">Exit to Portal</span>}
+        </button>
+
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center gap-2">
