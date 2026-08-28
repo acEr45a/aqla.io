@@ -249,8 +249,20 @@ export const auth = {
     return data;
   },
 
-  async resetPassword({ email }) {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+  async resetPassword(emailOrObj, options = {}) {
+    const email = typeof emailOrObj === 'string' ? emailOrObj : emailOrObj?.email;
+    const redirectTo = options?.redirectTo || (typeof window !== 'undefined' ? `${window.location.origin}/reset-password` : undefined);
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) throw error;
+    return data;
+  },
+
+  async resetPasswordRequest(email, options = {}) {
+    return this.resetPassword(email, options);
+  },
+
+  async updatePassword(newPassword) {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) throw error;
     return data;
   },
