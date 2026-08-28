@@ -2,46 +2,54 @@ import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
-// Add page imports here
-import Landing from '@/pages/Landing';
-import Start from '@/pages/Start';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import OAuthConsent from '@/pages/OAuthConsent';
-import AppLayout from '@/components/AppLayout';
-import Assessment from '@/pages/Assessment';
-import Analysis from '@/pages/Analysis';
-import Today from '@/pages/Today';
-import BrainMap from '@/pages/BrainMap';
-import ProtocolPage from '@/pages/ProtocolPage';
-import Protocols from '@/pages/Protocols';
-import Toolkit from '@/pages/Toolkit';
-import Progress from '@/pages/Progress';
-import History from '@/pages/History';
-import Coach from '@/pages/Coach';
-import CognitiveTests from '@/pages/CognitiveTests';
-import Games from '@/pages/Games';
-import SafetyScreening from '@/pages/SafetyScreening';
-import Science from '@/pages/Science';
-import Clinician from '@/pages/Clinician';
-import Trust from '@/pages/Trust';
-import SettingsPage from '@/pages/Settings';
-import EvidenceLibrary from '@/pages/EvidenceLibrary';
-import HelpCenter from '@/pages/HelpCenter';
-import AccountManagement from '@/pages/AccountManagement';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import TermsOfUse from '@/pages/TermsOfUse';
-import AdminDashboard from '@/pages/AdminDashboard';
-import CommunityInsights from '@/pages/CommunityInsights';
-import AdminSecurityGate from '@/components/admin/AdminSecurityGate';
-import ClinicalInboxPage from '@/pages/ClinicalInboxPage';
+
+// Lazy-loaded page components for route-level code splitting
+const Landing = lazy(() => import('@/pages/Landing'));
+const Start = lazy(() => import('@/pages/Start'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const OAuthConsent = lazy(() => import('@/pages/OAuthConsent'));
+const AppLayout = lazy(() => import('@/components/AppLayout'));
+const Assessment = lazy(() => import('@/pages/Assessment'));
+const Analysis = lazy(() => import('@/pages/Analysis'));
+const Today = lazy(() => import('@/pages/Today'));
+const BrainMap = lazy(() => import('@/pages/BrainMap'));
+const ProtocolPage = lazy(() => import('@/pages/ProtocolPage'));
+const Protocols = lazy(() => import('@/pages/Protocols'));
+const Toolkit = lazy(() => import('@/pages/Toolkit'));
+const Progress = lazy(() => import('@/pages/Progress'));
+const History = lazy(() => import('@/pages/History'));
+const Coach = lazy(() => import('@/pages/Coach'));
+const CognitiveTests = lazy(() => import('@/pages/CognitiveTests'));
+const Games = lazy(() => import('@/pages/Games'));
+const SafetyScreening = lazy(() => import('@/pages/SafetyScreening'));
+const Science = lazy(() => import('@/pages/Science'));
+const Clinician = lazy(() => import('@/pages/Clinician'));
+const Trust = lazy(() => import('@/pages/Trust'));
+const SettingsPage = lazy(() => import('@/pages/Settings'));
+const EvidenceLibrary = lazy(() => import('@/pages/EvidenceLibrary'));
+const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
+const AccountManagement = lazy(() => import('@/pages/AccountManagement'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
+const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
+const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
+const AdminSecurityGate = lazy(() => import('@/components/admin/AdminSecurityGate'));
+const ClinicalInboxPage = lazy(() => import('@/pages/ClinicalInboxPage'));
+
+const PageLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50">
+    <div className="w-7 h-7 border-3 border-muted border-t-primary rounded-full animate-spin"></div>
+  </div>
+);
 
 // These routes must render immediately — never block them with global full-screen spinners.
 const PUBLIC_ROUTES = [
@@ -88,51 +96,53 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  // Render the main app with code-split lazy routes
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/start" element={<Start />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/oauth/consent" element={<OAuthConsent />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-      <Route path="/terms" element={<TermsOfUse />} />
-      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/inbox" element={<ClinicalInboxPage />} />
-        <Route path="/clinician/inbox" element={<ClinicalInboxPage />} />
-        <Route path="/assessment" element={<Assessment />} />
-        <Route path="/analysis" element={<Analysis />} />
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Today />} />
-          <Route path="/today" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/map" element={<BrainMap />} />
-          <Route path="/protocol" element={<ProtocolPage />} />
-          <Route path="/protocols" element={<Protocols />} />
-          <Route path="/toolkit" element={<Toolkit />} />
-          <Route path="/experiments" element={<Navigate to="/toolkit" replace />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/community-insights" element={<CommunityInsights />} />
-          <Route path="/coach" element={<Coach />} />
-          <Route path="/tests" element={<CognitiveTests />} />
-          <Route path="/games" element={<Games />} />
-          <Route path="/safety" element={<SafetyScreening />} />
-          <Route path="/science" element={<Science />} />
-          <Route path="/clinician" element={<Clinician />} />
-          <Route path="/trust" element={<Trust />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/evidence-library" element={<EvidenceLibrary />} />
-          <Route path="/help-center" element={<HelpCenter />} />
-          <Route path="/account-management" element={<AccountManagement />} />
-          <Route path="/admin" element={<AdminSecurityGate><AdminDashboard /></AdminSecurityGate>} />
-          <Route path="/super-admins" element={<Navigate to="/admin" replace />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/start" element={<Start />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/oauth/consent" element={<OAuthConsent />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfUse />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route path="/inbox" element={<ClinicalInboxPage />} />
+          <Route path="/clinician/inbox" element={<ClinicalInboxPage />} />
+          <Route path="/assessment" element={<Assessment />} />
+          <Route path="/analysis" element={<Analysis />} />
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Today />} />
+            <Route path="/today" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/map" element={<BrainMap />} />
+            <Route path="/protocol" element={<ProtocolPage />} />
+            <Route path="/protocols" element={<Protocols />} />
+            <Route path="/toolkit" element={<Toolkit />} />
+            <Route path="/experiments" element={<Navigate to="/toolkit" replace />} />
+            <Route path="/progress" element={<Progress />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/community-insights" element={<CommunityInsights />} />
+            <Route path="/coach" element={<Coach />} />
+            <Route path="/tests" element={<CognitiveTests />} />
+            <Route path="/games" element={<Games />} />
+            <Route path="/safety" element={<SafetyScreening />} />
+            <Route path="/science" element={<Science />} />
+            <Route path="/clinician" element={<Clinician />} />
+            <Route path="/trust" element={<Trust />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/evidence-library" element={<EvidenceLibrary />} />
+            <Route path="/help-center" element={<HelpCenter />} />
+            <Route path="/account-management" element={<AccountManagement />} />
+            <Route path="/admin" element={<AdminSecurityGate><AdminDashboard /></AdminSecurityGate>} />
+            <Route path="/super-admins" element={<Navigate to="/admin" replace />} />
+          </Route>
         </Route>
-      </Route>
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
