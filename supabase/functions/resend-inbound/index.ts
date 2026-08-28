@@ -14,6 +14,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET") || Deno.env.get("SVIX_WEBHOOK_SECRET") || "whsec_ZENQbUwS5UbBxWIcbpk5cAUKWRo9lxmz";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const svixId = req.headers.get("svix-id");
@@ -28,7 +29,7 @@ serve(async (req) => {
       payload = {};
     }
 
-    console.log("[resend-inbound] Received webhook event:", payload.type || "unknown");
+    console.log("[resend-inbound] Webhook event received. Svix-ID:", svixId, "Type:", payload.type || "direct");
 
     // Process email.received event
     const emailData = payload.data || payload;

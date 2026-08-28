@@ -19,21 +19,62 @@ export default function ResetPassword() {
   const [hasValidSession, setHasValidSession] = useState(false);
 
   useEffect(() => {
-    const hasTokens =
-      typeof window !== "undefined" &&
-      (window.location.hash.includes("access_token") ||
-        window.location.search.includes("code=") ||
-        window.location.search.includes("token="));
+    let mounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session || hasTokens) {
-        setHasValidSession(true);
+    // Check for errors in hash or query (e.g. otp_expired)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const searchParams = new URLSearchParams(window.location.search);
+    const errorDesc = hashParams.get("error_description") || searchParams.get("error_description");
+    if (errorDesc) {
+      setError(decodeURIComponent(errorDesc.replace(/\+/g, " ")));
+      setChecking(false);
+      return;
+    }
+
+    const code = searchParams.get("code");
+    const token = hashParams.get("access_token") || searchParams.get("token");
+
+    const setupSession = async () => {
+      try {
+        if (code) {
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (!exchangeError && data?.session && mounted) {
+            setHasValidSession(true);
+            setChecking(false);
+            return;
+          }
+        }
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && mounted) {
+          setHasValidSession(true);
+          setChecking(false);
+          return;
+        }
+
+        if (token && mounted) {
+          setHasValidSession(true);
+        }
+      } catch (err) {
+        console.warn("[ResetPassword] Session setup error:", err);
+      } finally {
+        if (mounted) setChecking(false);
       }
-      setChecking(false);
-    }).catch(() => {
-      if (hasTokens) setHasValidSession(true);
-      setChecking(false);
+    };
+
+    setupSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") && session && mounted) {
+        setHasValidSession(true);
+        setChecking(false);
+      }
     });
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e) => {
