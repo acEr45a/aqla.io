@@ -86,3 +86,4 @@ ehthumbs.db
 # LOCAL TESTING & TEMPORARY SCRIPTS
 # ==============================================================================
 *.local
+.superpowers/
