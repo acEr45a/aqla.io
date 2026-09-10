@@ -1,20 +1,20 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 
-const LocoScrollContext = createContext({ scrollY: { current: 0 }, ready: false });
+const LocoScrollContext = createContext({ scrollY: { current: 0 }, ready: false, instance: { current: null } });
 
 /**
- * Shared Locomotive Scroll v5 provider.
+ * Shared Locomotive Scroll v5 provider (scoped per-page).
  *
- * Wraps any part of the tree that wants smooth-scroll + scroll-progress data.
- * Auth pages pipe `scrollY` into the R3F brain panel for parallax.
- * The landing page can plug in later with `useLocoScroll()`.
+ * Wraps individual pages (e.g. Landing, coming-soon teasers) that want
+ * inertia smooth scrolling and parallax attributes (data-scroll, data-scroll-speed).
+ * When unmounted upon navigating to dashboard, clinician, or forms, it cleanly
+ * destroys the Locomotive / Lenis instance and restores native browser scrolling.
  */
-export function LocoScrollProvider({ children }) {
+export function LocoScrollProvider({ children, options }) {
   const scrollYRef = useRef(0);
   const [ready, setReady] = useState(false);
   const scrollInstanceRef = useRef(null);
 
-  // Lazy-init: Locomotive Scroll is imported only when the provider mounts.
   useEffect(() => {
     let instance = null;
     let cancelled = false;
@@ -25,13 +25,20 @@ export function LocoScrollProvider({ children }) {
         if (cancelled) return;
 
         instance = new LocomotiveScroll({
-          // v5 defaults — smooth inertia everywhere
           lenisOptions: {
             lerp: 0.08,
             duration: 1.2,
             smoothWheel: true,
+            syncTouch: false, // avoid touch hijacking on mobile
+            ...options?.lenisOptions,
           },
+          ...options,
         });
+
+        if (cancelled) {
+          instance.destroy();
+          return;
+        }
 
         instance.on("scroll", ({ scroll }) => {
           scrollYRef.current = scroll;
@@ -39,8 +46,9 @@ export function LocoScrollProvider({ children }) {
 
         scrollInstanceRef.current = instance;
         setReady(true);
-      } catch {
-        // If Locomotive Scroll fails to load, degrade gracefully — no smooth scroll.
+      } catch (err) {
+        console.warn("[LocoScrollProvider] Failed to load Locomotive Scroll:", err);
+        // Degrade gracefully — native browser scroll remains active
         setReady(true);
       }
     })();
@@ -48,11 +56,33 @@ export function LocoScrollProvider({ children }) {
     return () => {
       cancelled = true;
       if (instance) {
-        instance.destroy();
+        try {
+          instance.destroy();
+        } catch (e) {
+          console.warn("[LocoScrollProvider] Error destroying instance:", e);
+        }
       }
       scrollInstanceRef.current = null;
+      setReady(false);
+
+      // Clean up any residual HTML/body classes and styles left by Locomotive/Lenis
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove(
+          "has-scroll-smooth",
+          "has-scroll-init",
+          "lenis",
+          "lenis-smooth",
+          "lenis-scrolling",
+          "lenis-stopped"
+        );
+        document.body.classList.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+        document.documentElement.style.removeProperty("overflow");
+        document.documentElement.style.removeProperty("height");
+        document.body.style.removeProperty("overflow");
+        document.body.style.removeProperty("height");
+      }
     };
-  }, []);
+  }, [options]);
 
   const value = React.useMemo(
     () => ({ scrollY: scrollYRef, ready, instance: scrollInstanceRef }),
@@ -67,9 +97,11 @@ export function LocoScrollProvider({ children }) {
 }
 
 /**
- * Hook to consume Locomotive Scroll state from any component.
- * Returns { scrollY: MutableRefObject<number>, ready: boolean, instance: Ref }
+ * Hook to consume Locomotive Scroll state from any component within a LocoScrollProvider tree.
+ * Returns { scrollY: MutableRefObject<number>, ready: boolean, instance: MutableRefObject }
  */
 export function useLocoScroll() {
   return useContext(LocoScrollContext);
 }
+
+export default LocoScrollProvider;

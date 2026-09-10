@@ -1,9 +1,36 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiClient } from "@/api/apiClient";
-import { Send, Loader2, CircleHelp, Flag } from "lucide-react";
+import { Send, Loader2, CircleHelp, Flag, BookOpen, ChevronDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { autoFlagResponse, detectClinicalContent, CLINICAL_NOTE } from "@/lib/clinicalFlag";
+
+function CitationBadge({ match }) {
+  const [open, setOpen] = useState(false);
+  const title = match.title || "Platform Knowledge Reference";
+  const similarity = match.similarity ? `${Math.round(match.similarity * 100)}% match` : null;
+
+  return (
+    <div className="mt-2 text-xs">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/20 transition-colors"
+      >
+        <BookOpen className="h-3 w-3 shrink-0" />
+        <span className="truncate max-w-[200px] sm:max-w-xs">{title}</span>
+        {similarity && <span className="font-mono text-[9px] opacity-75">({similarity})</span>}
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div className="mt-1.5 rounded-xl border border-border/50 bg-secondary/30 p-2.5 text-[11px] text-muted-foreground leading-relaxed">
+          <p className="font-semibold text-foreground/80 mb-1">{title}</p>
+          <p>{match.content}</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HelpAgentChat() {
   const [conversation, setConversation] = useState(null);
@@ -51,7 +78,7 @@ export default function HelpAgentChat() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, sending]);
 
   // Auto-flag the latest assistant response for clinician review when it contains clinical content.
   useEffect(() => {
@@ -71,8 +98,7 @@ export default function HelpAgentChat() {
     setSending(true);
     try {
       await apiClient.agents.addMessage(conversation, { role: "user", content: text });
-      setSending(false);
-    } catch {
+    } finally {
       setSending(false);
     }
   };
@@ -94,11 +120,11 @@ export default function HelpAgentChat() {
 
   return (
     <div className="aqla-panel rounded-3xl overflow-hidden flex flex-col h-[60vh] min-h-[420px] sm:h-[520px] max-h-[75vh]">
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border/40">
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border/40 bg-card/40">
         <CircleHelp className="w-4 h-4 text-primary" strokeWidth={1.5} />
-        <span className="font-display text-sm text-foreground">AQLA Help Assistant</span>
-        <span className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary/70" /> Remembers your context
+        <span className="font-display text-sm text-foreground font-semibold">AQLA Help Assistant</span>
+        <span className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> RAG Verified • DeepSeek V3.1
         </span>
       </div>
 
@@ -109,43 +135,56 @@ export default function HelpAgentChat() {
             <p className="mt-4 text-sm text-muted-foreground">Ask me anything about AQLA — your scores, protocols, tests, or how to use a feature.</p>
           </div>
         )}
-        {messages.map((msg, i) => (
-          <div key={i} className={msg.role === "user" ? "flex justify-end" : "flex justify-start"}>
-            {msg.role === "user" ? (
-              <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary/15 px-4 py-2.5 text-sm text-foreground">
-                {msg.content}
-              </div>
-            ) : (
-              <div className="max-w-[85%]">
-                {msg.content && (
-                  <ReactMarkdown className="text-sm text-foreground/90 prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                    {msg.content}
-                  </ReactMarkdown>
-                )}
-                {msg.tool_calls?.map((tc, idx) => {
-                  const isFailed = tc.status === "failed" || tc.status === "error";
-                  const hide = tc.display_projection?.hide_details && tc.display_projection?.details_redacted;
-                  return (
-                    <div key={idx} className="mt-2 text-[11px] text-muted-foreground flex items-center gap-1.5">
-                      <span className={isFailed ? "text-destructive" : "text-primary/70"}>
-                        {isFailed ? "✗" : "↳"} {hide ? (tc.display_projection?.label || "tool") : (tc.name || "tool")}
-                      </span>
-                      {!hide && tc.status === "running" && <Loader2 className="w-3 h-3 animate-spin" />}
+        {messages.map((msg, i) => {
+          const isUser = msg.role === "user";
+          const toolCalls = msg.tool_calls || msg.metadata?.tool_executions || [];
+          // Extract RAG matches for citation badge
+          const ragTool = toolCalls.find((tc) => (tc.tool || tc.name) === "search_knowledge_base");
+          const matches = ragTool?.result?.matches || [];
+
+          return (
+            <div key={i} className={isUser ? "flex justify-end" : "flex justify-start"}>
+              {isUser ? (
+                <div className="max-w-[80%] rounded-2xl rounded-br-md bg-primary/15 px-4 py-2.5 text-sm text-foreground">
+                  {msg.content}
+                </div>
+              ) : (
+                <div className="max-w-[85%]">
+                  {msg.content && (
+                    <ReactMarkdown className="text-sm text-foreground/90 prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
+
+                  {/* Sleek RAG Citation Badges */}
+                  {matches.length > 0 && (
+                    <div className="mt-2 space-y-1.5 pt-1 border-t border-border/30">
+                      {matches.map((m, mIdx) => (
+                        <CitationBadge key={m.id || mIdx} match={m} />
+                      ))}
                     </div>
-                  );
-                })}
-                {detectClinicalContent(msg.content) && (
-                  <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#E8A28F]">
-                    <Flag className="h-3 w-3" /> {CLINICAL_NOTE}
-                  </p>
-                )}
-              </div>
-            )}
+                  )}
+
+                  {detectClinicalContent(msg.content) && (
+                    <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#E8A28F]">
+                      <Flag className="h-3 w-3" /> {CLINICAL_NOTE}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {sending && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+            <span>Searching knowledge base &amp; formulating verified reply…</span>
           </div>
-        ))}
+        )}
       </div>
 
-      <div className="border-t border-border/40 px-4 py-3 flex items-center gap-2">
+      <div className="border-t border-border/40 px-4 py-3 flex items-center gap-2 bg-card/20">
         <input
           type="text"
           value={input}

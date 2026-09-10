@@ -1,7 +1,7 @@
 // src/lib/resend.js
-// AQLA Transactional Email Client powered by Resend (noreply@aqla.io)
+// AQLA Transactional Email Client powered by Supabase send-email Edge Function
 
-const RESEND_API_URL = 'https://api.resend.com/emails';
+import { supabase } from './supabase';
 
 export const DEFAULT_FROM = 'AQLA <noreply@aqla.io>';
 
@@ -78,46 +78,38 @@ export function buildAqlaEmailHtml({ title, contentHtml, actionButton }) {
 }
 
 /**
- * Sends an email using the Resend API or Supabase send-email Edge Function.
+ * Sends an email securely via the Supabase send-email Edge Function.
+ * The Resend API key is never exposed to client-side code.
  */
 export async function sendEmail({ to, subject, html, text, from = DEFAULT_FROM, replyTo, actionButton }) {
-  const apiKey =
-    import.meta.env?.VITE_RESEND_API_KEY ||
-    import.meta.env?.RESEND_API_KEY ||
-    '';
-
   const recipients = Array.isArray(to) ? to : [to];
   const finalHtml = html && html.includes('<!DOCTYPE')
     ? html
     : buildAqlaEmailHtml({ title: subject, contentHtml: html || `<p>${text || ''}</p>`, actionButton });
 
-  const body = {
-    from,
-    to: recipients,
-    subject,
-    html: finalHtml,
-    ...(text ? { text } : {}),
-    ...(replyTo ? { reply_to: replyTo } : {}),
-  };
+  try {
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        to: recipients,
+        from,
+        subject,
+        html: finalHtml,
+        ...(text ? { text } : {}),
+        ...(replyTo ? { reply_to: replyTo } : {}),
+        actionButton,
+      },
+    });
 
-  const response = await fetch(RESEND_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
+    if (error) {
+      console.error('[sendEmail] Edge function dispatch failed:', error);
+      return { success: false, error: error.message };
+    }
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const errorMsg = data?.message || data?.error || `Resend error (${response.status})`;
-    console.error('[Resend] Email dispatch failed:', errorMsg);
-    return { success: false, error: errorMsg };
+    return { success: true, data };
+  } catch (err) {
+    console.error('[sendEmail] Unexpected error:', err);
+    return { success: false, error: err.message };
   }
-
-  return { success: true, id: data.id };
 }
 
 export default sendEmail;

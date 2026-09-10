@@ -12,6 +12,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
+const OTP_COOLDOWN_SECONDS = 60;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,7 +49,6 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to body user_id or email
     if (!userId && body.user_id) {
       userId = body.user_id;
     }
@@ -60,7 +60,31 @@ serve(async (req) => {
       });
     }
 
-    // Fetch user profile
+    // Rate limit: at most one OTP per OTP_COOLDOWN_SECONDS per user, to prevent
+    // request-spamming / email-bombing a target's inbox.
+    if (userId) {
+      const { data: recentOtps } = await adminClient
+        .from("admin_otps")
+        .select("created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const lastCreatedAt = recentOtps?.[0]?.created_at;
+      if (lastCreatedAt) {
+        const secondsSinceLast = (Date.now() - new Date(lastCreatedAt).getTime()) / 1000;
+        if (secondsSinceLast < OTP_COOLDOWN_SECONDS) {
+          return new Response(
+            JSON.stringify({
+              sent: false,
+              error: `Please wait ${Math.ceil(OTP_COOLDOWN_SECONDS - secondsSinceLast)}s before requesting another code.`,
+            }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
+    }
+
     let profile = null;
     if (userId) {
       const { data: p } = await adminClient
@@ -79,11 +103,9 @@ serve(async (req) => {
       });
     }
 
-    // Generate 6-digit OTP code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    // Insert into admin_otps table
     if (userId) {
       await adminClient.from("admin_otps").insert([{
         code,
@@ -94,7 +116,6 @@ serve(async (req) => {
       }]);
     }
 
-    // Premium Email HTML Template
     const emailHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -102,68 +123,33 @@ serve(async (req) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AQLA Admin Verification Code</title>
 </head>
-<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-  <table width="100%" bgcolor="#0c0d0e" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; width: 100% !important; background-color: #0c0d0e;">
-    <tr>
-      <td align="center" style="padding: 48px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 520px; background-color: #141619; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);">
-          <tr>
-            <td height="3" style="background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); line-height: 3px; font-size: 3px;">&nbsp;</td>
-          </tr>
-          <tr>
-            <td style="padding: 36px 36px 32px 36px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                  <td align="left" style="font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #ffffff; text-transform: uppercase; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
-                    AQLA
-                  </td>
-                </tr>
-              </table>
-
-              <h1 style="margin: 28px 0 12px 0; font-size: 21px; font-weight: 500; color: #ffffff; letter-spacing: -0.01em; line-height: 1.3;">
-                Admin Verification Code
-              </h1>
-
-              <p style="margin: 0 0 24px 0; font-size: 14px; color: #9ca3af; line-height: 1.6;">
-                Use the one-time passcode below to verify your administrator session on the AQLA Console:
-              </p>
-
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0 24px 0;">
-                <tr>
-                  <td align="center" style="background: #1c1f24; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 22px 16px;">
-                    <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 36px; font-weight: 700; letter-spacing: 0.35em; color: #ffffff; display: block; padding-left: 0.35em;">
-                      ${code}
-                    </span>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
-                This code expires in <strong style="color: #9ca3af;">10 minutes</strong> and can only be used once.
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
-                If you did not initiate this request, please contact your security team immediately.
-              </p>
-            </td>
-          </tr>
-          <tr>
-            <td style="background-color: #0f1113; border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 20px 36px; text-align: center;">
-              <p style="margin: 0; font-size: 11px; color: #4b5563; line-height: 1.5;">
-                &copy; ${new Date().getFullYear()} AQLA.io &middot; Advanced Cognitive Operating System
-              </p>
-              <p style="margin: 4px 0 0 0; font-size: 11px; color: #374151;">
-                Sent securely from <span style="color: #6b7280;">noreply@aqla.io</span>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table width="100%" bgcolor="#0c0d0e" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; width: 100% !important;">
+    <tr><td align="center" style="padding: 48px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 520px; background-color: #141619; border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; overflow: hidden;">
+        <tr><td height="3" style="background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); line-height: 3px; font-size: 3px;">&nbsp;</td></tr>
+        <tr><td style="padding: 36px;">
+          <p style="font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #fff; text-transform: uppercase; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.07); margin: 0 0 24px 0;">AQLA</p>
+          <h1 style="margin: 0 0 12px 0; font-size: 21px; font-weight: 500; color: #fff;">Admin Verification Code</h1>
+          <p style="margin: 0 0 24px 0; font-size: 14px; color: #9ca3af; line-height: 1.6;">Use the one-time passcode below to verify your administrator session on the AQLA Console:</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
+            <tr><td align="center" style="background: #1c1f24; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 22px 16px;">
+              <span style="font-family: ui-monospace, monospace; font-size: 36px; font-weight: 700; letter-spacing: 0.35em; color: #fff; display: block; padding-left: 0.35em;">${code}</span>
+            </td></tr>
+          </table>
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280;">This code expires in <strong style="color: #9ca3af;">10 minutes</strong> and can only be used once.</p>
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">If you did not initiate this request, contact your security team immediately.</p>
+        </td></tr>
+        <tr><td style="background-color: #0f1113; border-top: 1px solid rgba(255,255,255,0.06); padding: 20px 36px; text-align: center;">
+          <p style="margin: 0; font-size: 11px; color: #4b5563;">&copy; ${new Date().getFullYear()} AQLA.io &middot; Advanced Cognitive Operating System</p>
+          <p style="margin: 4px 0 0 0; font-size: 11px; color: #374151;">Sent securely from <span style="color: #6b7280;">noreply@aqla.io</span></p>
+        </td></tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;
 
-    // Send email via Resend
     let emailSent = false;
     let resendError = null;
 
@@ -179,7 +165,7 @@ serve(async (req) => {
           to: [recipientEmail],
           subject: "AQLA Admin Console Verification Code",
           html: emailHtml,
-          text: `Your AQLA Admin verification code is: ${code} (expires in 10 minutes). Sent from noreply@aqla.io`,
+          text: `Your AQLA Admin verification code is: ${code} (expires in 10 minutes).`,
         }),
       });
 
@@ -188,24 +174,14 @@ serve(async (req) => {
       } else {
         const errJson = await resendRes.json().catch(() => ({}));
         resendError = errJson.message || resendRes.statusText;
-        console.warn("[sendAdminOtp] Resend API error:", resendError);
       }
     } catch (err: any) {
       resendError = err.message;
-      console.warn("[sendAdminOtp] Resend fetch exception:", err);
     }
 
     return new Response(
-      JSON.stringify({
-        sent: true,
-        email_dispatched: emailSent,
-        recipient: recipientEmail,
-        warning: resendError ? `Email dispatch notice: ${resendError}` : undefined,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ sent: emailSent, email_dispatched: emailSent, recipient: recipientEmail, warning: resendError ? `Email dispatch notice: ${resendError}` : undefined }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("[sendAdminOtp] Error:", error);

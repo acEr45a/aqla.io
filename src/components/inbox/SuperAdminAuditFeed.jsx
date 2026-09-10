@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export default function SuperAdminAuditFeed({
   threads = [],
@@ -230,7 +231,7 @@ export default function SuperAdminAuditFeed({
                 <span className="text-muted-foreground font-semibold">Body Content:</span>
                 <div
                   className="mt-1 p-3 rounded-xl bg-black/40 border border-border/60 text-foreground/90 max-h-48 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: inspectedMessage.body_html }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(inspectedMessage.body_html) }}
                 />
               </div>
 

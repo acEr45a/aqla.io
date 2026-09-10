@@ -87,8 +87,19 @@ serve(async (req) => {
 
     modelName = worker.model;
 
-    // 3. Role-based authorization
-    if (worker.audience !== "member" && !worker.allowedRoles.includes(userRole)) {
+    // 3. Authorization: every worker requires an authenticated caller; allowedRoles
+    // then gates which authenticated roles may use this specific worker.
+    // (Previously, "member" audience workers skipped this check entirely, since the
+    // check only ran when audience !== "member" — meaning aqla_intelligence,
+    // voice_checkin, weekly_summary, plan_review, and the dynamic_worker fallback
+    // were all callable with zero authentication. Fixed here.)
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: authentication required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!worker.allowedRoles.includes(userRole)) {
       return new Response(
         JSON.stringify({ error: `Unauthorized: worker requires role ${worker.allowedRoles.join(" or ")}` }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },

@@ -5,7 +5,7 @@
 
 export const STARTER_THREADS = [
   {
-    id: "th-seed-1",
+    id: "th--1",
     subject: "Protocol Calibration & Midday Mental Energy Crash",
     participant_emails: ["elena.vance@stanford.edu", "clinician@aqla.io"],
     category: "Patient Care",
@@ -17,9 +17,9 @@ export const STARTER_THREADS = [
     updated_at: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
     messages: [
       {
-        id: "msg-seed-1-1",
-        thread_id: "th-seed-1",
-        email_id: "em-seed-1-1",
+        id: "msg--1-1",
+        thread_id: "th--1",
+        email_id: "em--1-1",
         sender_email: "elena.vance@stanford.edu",
         sender_name: "Dr. Elena Vance (Patient)",
         recipient_email: "clinician@aqla.io",
@@ -56,7 +56,7 @@ export const STARTER_THREADS = [
     ],
   },
   {
-    id: "th-seed-2",
+    id: "th--2",
     subject: "Lab Review & Digit Span Adaptation Score (+22%)",
     participant_emails: ["marcus.chen@biotech.io", "clinician@aqla.io"],
     category: "Primary",
@@ -68,9 +68,9 @@ export const STARTER_THREADS = [
     updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     messages: [
       {
-        id: "msg-seed-2-1",
-        thread_id: "th-seed-2",
-        email_id: "em-seed-2-1",
+        id: "msg--2-1",
+        thread_id: "th--2",
+        email_id: "em--2-1",
         sender_email: "marcus.chen@biotech.io",
         sender_name: "Marcus Chen",
         recipient_email: "clinician@aqla.io",
@@ -92,9 +92,9 @@ export const STARTER_THREADS = [
         created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
       },
       {
-        id: "msg-seed-2-2",
-        thread_id: "th-seed-2",
-        email_id: "em-seed-2-2",
+        id: "msg--2-2",
+        thread_id: "th--2",
+        email_id: "em--2-2",
         sender_email: "clinician@aqla.io",
         sender_name: "Dr. Richardson (AQLA Clinician)",
         recipient_email: "marcus.chen@biotech.io",
@@ -111,7 +111,7 @@ export const STARTER_THREADS = [
     ],
   },
   {
-    id: "th-seed-3",
+    id: "th--3",
     subject: "AQLA Platform Diagnostic: Automatic Realtime Sync Verification",
     participant_emails: ["system-ops@aqla.io", "clinician@aqla.io"],
     category: "System Updates",
@@ -123,9 +123,9 @@ export const STARTER_THREADS = [
     updated_at: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
     messages: [
       {
-        id: "msg-seed-3-1",
-        thread_id: "th-seed-3",
-        email_id: "em-seed-3-1",
+        id: "msg--3-1",
+        thread_id: "th--3",
+        email_id: "em--3-1",
         sender_email: "system-ops@aqla.io",
         sender_name: "AQLA Security & Ops Daemon",
         recipient_email: "clinician@aqla.io",
@@ -145,7 +145,7 @@ export const STARTER_THREADS = [
     ],
   },
   {
-    id: "th-seed-4",
+    id: "th--4",
     subject: "Sleep Latency & Oura Ring Integration Data",
     participant_emails: ["sarah.k@nordicneurolab.org", "clinician@aqla.io"],
     category: "Patient Care",
@@ -157,9 +157,9 @@ export const STARTER_THREADS = [
     updated_at: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
     messages: [
       {
-        id: "msg-seed-4-1",
-        thread_id: "th-seed-4",
-        email_id: "em-seed-4-1",
+        id: "msg--4-1",
+        thread_id: "th--4",
+        email_id: "em--4-1",
         sender_email: "sarah.k@nordicneurolab.org",
         sender_name: "Sarah Lindqvist",
         recipient_email: "clinician@aqla.io",

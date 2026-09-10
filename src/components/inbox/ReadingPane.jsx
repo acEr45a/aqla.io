@@ -45,6 +45,7 @@ import {
   generatePatientDomainScorecardAttachment,
   generatePatientCognitiveTelemetryCsv,
 } from "@/lib/patientClinicalContext";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export default function ReadingPane({
   thread,
@@ -651,7 +652,7 @@ export default function ReadingPane({
                   <div className="px-4 pb-4 pt-2 border-t border-border/40 text-xs leading-relaxed space-y-4">
                     <div
                       className="text-foreground/90 prose prose-invert prose-xs max-w-none break-words"
-                      dangerouslySetInnerHTML={{ __html: msg.body_html }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.body_html) }}
                     />
 
                     {/* Attachments Section */}

@@ -3,22 +3,32 @@ import { supabase } from "@/lib/supabase";
 import { apiClient } from "@/api/apiClient";
 import OpsMessageBubble from "@/components/admin/OpsMessageBubble";
 import OpsSidebar from "@/components/admin/OpsSidebar";
+import KnowledgeManagerTab from "@/components/admin/KnowledgeManagerTab";
 import { manualFlagResponse } from "@/lib/clinicalFlag";
-import { Send, X, Terminal, Code2, PanelLeft } from "lucide-react";
+import {
+  Send,
+  X,
+  Terminal,
+  Code2,
+  PanelLeft,
+  BookOpen,
+  Cpu,
+  Sparkles,
+} from "lucide-react";
 
-// Backend Ops = lime (platform health / metrics). Architect = indigo (deep build / structure).
-// Each mode keeps its own conversation history, persisted server-side and tagged with metadata.mode.
+// Backend Ops = lime (platform health / metrics). Architect = indigo (deep build / structure). Knowledge = amber (vector RAG).
 const MODES = {
   ops: {
     key: "ops",
     label: "Backend Ops",
     accent: "#C9F24E",
     icon: Terminal,
-    placeholder: "Ask Backend Ops about platform state…",
+    placeholder: "Ask Backend Ops about platform telemetry, DB health, or users…",
     prompts: [
-      "Which users signed up but never completed an assessment?",
-      "Are summary emails going out correctly?",
-      "Show me check-in activity over the last 14 days.",
+      "Check live database telemetry and system health",
+      "Which users signed up but have incomplete onboarding?",
+      "Search knowledge base: what is the protocol for cognitive fatigue?",
+      "Show email delivery status and recent error rates",
     ],
   },
   architect: {
@@ -26,12 +36,20 @@ const MODES = {
     label: "AQLA Architect",
     accent: "#6C9EFF",
     icon: Code2,
-    placeholder: "Ask the Architect about structure, ideas, or code…",
+    placeholder: "Ask Architect about schemas, codebase, or security rules…",
     prompts: [
-      "Refine this idea: a streak tracker for daily check-ins",
-      "Generate 3 fresh feature ideas around the games catalog",
-      "Review the open dev checklist and suggest what to tackle next",
+      "Inspect database schema for ai_runs and knowledge_documents",
+      "Search codebase for RLS security boundary implementations",
+      "Search knowledge base for system architecture specifications",
     ],
+  },
+  knowledge: {
+    key: "knowledge",
+    label: "Knowledge Base",
+    accent: "#F59E0B",
+    icon: BookOpen,
+    placeholder: "Manage platform documentation and vector embeddings",
+    prompts: [],
   },
 };
 
@@ -40,7 +58,6 @@ const MODE_TAG = {
   architect: "[Architect mode — development checklist, features, architecture, code structure]",
 };
 
-// Map a conversation to its mode (new convs use metadata.mode; legacy ones use the old fixed names).
 const convMode = (conv) => {
   const m = conv?.metadata?.mode;
   if (m === "ops" || m === "architect") return m;
@@ -59,24 +76,52 @@ const titleFromMessage = (text) => {
 export default function OpsConsoleWidget() {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("ops");
-  const [showSidebar, setShowSidebar] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 768 : true);
-  const [conversationsByMode, setConversationsByMode] = useState({ ops: [], architect: [] });
-  const [activeIdByMode, setActiveIdByMode] = useState({ ops: null, architect: null });
-  const [messagesByMode, setMessagesByMode] = useState({ ops: [], architect: [] });
+  const [showSidebar, setShowSidebar] = useState(
+    () => typeof window !== "undefined" ? window.innerWidth >= 768 : true
+  );
+  const [conversationsByMode, setConversationsByMode] = useState({
+    ops: [],
+    architect: [],
+  });
+  const [activeIdByMode, setActiveIdByMode] = useState({
+    ops: null,
+    architect: null,
+  });
+  const [messagesByMode, setMessagesByMode] = useState({
+    ops: [],
+    architect: [],
+  });
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
   const [flaggedContent, setFlaggedContent] = useState(() => new Set());
   const endRef = useRef(null);
 
-  const cfg = MODES[mode];
+  // Runtime Model & Reasoning Configuration
+  const [selectedModelByMode, setSelectedModelByMode] = useState({
+    ops: "anthropic/claude-sonnet-4.5",
+    architect: "anthropic/claude-sonnet-4.5",
+  });
+  const [selectedReasoningByMode, setSelectedReasoningByMode] = useState({
+    ops: "high",
+    architect: "high",
+  });
+
+  const cfg = MODES[mode] || MODES.ops;
 
   const loadConversations = async (m) => {
+    if (m === "knowledge") return [];
     try {
-      const all = await apiClient.agents.getConversations({ agent_name: "backend_ops" });
+      const all = await apiClient.agents.getConversations({
+        agent_name: "backend_ops",
+      });
       const list = (Array.isArray(all) ? all : [])
         .filter((c) => convMode(c) === m)
-        .sort((a, b) => new Date(b.updated_date || b.created_date || 0) - new Date(a.updated_date || a.created_date || 0));
+        .sort(
+          (a, b) =>
+            new Date(b.updated_date || b.created_date || 0) -
+            new Date(a.updated_date || a.created_date || 0)
+        );
       setConversationsByMode((prev) => ({ ...prev, [m]: list }));
       return list;
     } catch {
@@ -113,9 +158,8 @@ export default function OpsConsoleWidget() {
   };
 
   const creatingPromiseRef = useRef({ ops: null, architect: null });
-  // Returns a promise that resolves to the created conversation (or null on failure).
-  // Concurrent callers share the same promise so we never create two chats at once.
   const newChat = (m) => {
+    if (m === "knowledge") return Promise.resolve(null);
     if (creatingPromiseRef.current[m]) return creatingPromiseRef.current[m];
     creatingPromiseRef.current[m] = (async () => {
       try {
@@ -123,7 +167,10 @@ export default function OpsConsoleWidget() {
           agent_name: "backend_ops",
           metadata: { name: "New chat", mode: m },
         });
-        setConversationsByMode((prev) => ({ ...prev, [m]: [created, ...prev[m]] }));
+        setConversationsByMode((prev) => ({
+          ...prev,
+          [m]: [created, ...prev[m]],
+        }));
         setActiveIdByMode((prev) => ({ ...prev, [m]: created.id }));
         setMessagesByMode((prev) => ({ ...prev, [m]: [] }));
         return created;
@@ -136,9 +183,8 @@ export default function OpsConsoleWidget() {
     return creatingPromiseRef.current[m];
   };
 
-  // When the panel opens, load the active mode's conversations (and select/create as needed).
   useEffect(() => {
-    if (!open) return;
+    if (!open || mode === "knowledge") return;
     let cancelled = false;
     (async () => {
       const list = await loadConversations(mode);
@@ -150,12 +196,13 @@ export default function OpsConsoleWidget() {
         await newChat(mode);
       }
     })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
   }, [open, mode]);
 
-  // Subscribe to the active conversation for the current mode (streams new messages).
   useEffect(() => {
+    if (mode === "knowledge") return;
     const id = activeIdByMode[mode];
     if (!id) return;
     const unsubscribe = apiClient.agents.subscribeToConversation(id, (data) =>
@@ -164,24 +211,51 @@ export default function OpsConsoleWidget() {
     return () => unsubscribe();
   }, [activeIdByMode, mode]);
 
-  const messages = messagesByMode[mode];
+  const messages = messagesByMode[mode] || [];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, mode]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session?.user) return;
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-      if (profile) setAdminUser({ id: session.user.id, email: session.user.email, ...profile });
-    }).catch(() => {});
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (!session?.user) return;
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        if (profile)
+          setAdminUser({ id: session.user.id, email: session.user.email, ...profile });
+      })
+      .catch(() => {});
   }, []);
 
   const handleFlag = async (message) => {
     if (!message?.content || flaggedContent.has(message.content)) return;
-    const ok = await manualFlagResponse({ message: message.content, admin: adminUser });
+    const ok = await manualFlagResponse({
+      message: message.content,
+      admin: adminUser,
+    });
     if (ok) setFlaggedContent((prev) => new Set(prev).add(message.content));
+  };
+
+  const handleConfirmAction = async ({ tool_name, params, is_approved }) => {
+    const activeId = activeIdByMode[mode];
+    if (!activeId) return;
+    try {
+      await apiClient.agents.confirmAction(activeId, {
+        tool_name,
+        params,
+        is_approved,
+      });
+      const full = await apiClient.agents.getConversation(activeId);
+      setMessagesByMode((prev) => ({ ...prev, [mode]: full.messages || [] }));
+    } catch (err) {
+      alert("Failed to confirm action: " + err.message);
+    }
   };
 
   const send = async (text) => {
@@ -189,41 +263,54 @@ export default function OpsConsoleWidget() {
     if (!trimmed || sending) return;
     let activeId = activeIdByMode[mode];
     let conv = conversationsByMode[mode].find((c) => c.id === activeId);
-    // No active conversation yet (e.g. just opened) — create one on demand so the quick-start prompts work immediately.
+
     if (!activeId || !conv) {
       conv = await newChat(mode);
       if (!conv) return;
       activeId = conv.id;
     } else {
-      // Always pass a full conversation object to addMessage (the SDK requires it).
       try {
         conv = await apiClient.agents.getConversation(activeId);
-        setConversationsByMode((prev) => (prev[mode].some((c) => c.id === activeId) ? prev : { ...prev, [mode]: [conv, ...prev[mode]] }));
+        setConversationsByMode((prev) =>
+          prev[mode].some((c) => c.id === activeId)
+            ? prev
+            : { ...prev, [mode]: [conv, ...prev[mode]] }
+        );
       } catch {
         conv = { id: activeId, agent_name: "backend_ops" };
       }
     }
+
     const framed = `${MODE_TAG[mode]}\n\n${trimmed}`;
     setInput("");
     setSending(true);
-    // Name the chat after the first message if it's still the default (local only — SDK has no rename API).
+
     if (conv && (conv.metadata?.name === "New chat" || !conv.metadata?.name)) {
       const title = titleFromMessage(trimmed);
       setConversationsByMode((prev) => ({
         ...prev,
-        [mode]: prev[mode].map((c) => (c.id === conv.id ? { ...c, metadata: { name: title, mode } } : c)),
+        [mode]: prev[mode].map((c) =>
+          c.id === conv.id ? { ...c, metadata: { name: title, mode } } : c
+        ),
       }));
     }
+
     try {
-      await apiClient.agents.addMessage(conv, { role: "user", content: framed });
+      await apiClient.agents.addMessage(conv, {
+        role: "user",
+        content: framed,
+        metadata: {
+          model_override: selectedModelByMode[mode],
+          reasoning_override: selectedReasoningByMode[mode],
+        },
+      });
     } catch {
-      /* surfaced via subscription state */
+      /* surfaced via subscription */
     } finally {
       setSending(false);
     }
   };
 
-  // Resolve a failed/problematic tool call by asking Backend Ops to investigate and fix it.
   const resolveTool = async ({ name, arguments: args, result, error }) => {
     let activeId = activeIdByMode[mode];
     let conv = conversationsByMode[mode].find((c) => c.id === activeId);
@@ -231,27 +318,30 @@ export default function OpsConsoleWidget() {
       conv = await newChat(mode);
       if (!conv) return;
       activeId = conv.id;
-    } else {
-      try {
-        conv = await apiClient.agents.getConversation(activeId);
-      } catch {
-        conv = { id: activeId, agent_name: "backend_ops" };
-      }
     }
+
     const detail = [
-      `A tool call in this conversation reported a problem and needs resolution.`,
+      `A tool call reported a problem and needs resolution.`,
       `Tool: ${name}`,
       args ? `Arguments: ${JSON.stringify(args)}` : "",
       result ? `Result: ${JSON.stringify(result)}` : "",
       error ? `Error: ${error}` : "",
-      `Please investigate the root cause and perform the appropriate corrective action.`,
-    ].filter(Boolean).join("\n");
+      `Please investigate and execute corrective action.`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
     const framed = `${MODE_TAG[mode]}\n\n${detail}`;
     setSending(true);
     try {
-      await apiClient.agents.addMessage(conv, { role: "user", content: framed });
-    } catch {
-      /* surfaced via subscription state */
+      await apiClient.agents.addMessage(conv, {
+        role: "user",
+        content: framed,
+        metadata: {
+          model_override: selectedModelByMode[mode],
+          reasoning_override: selectedReasoningByMode[mode],
+        },
+      });
     } finally {
       setSending(false);
     }
@@ -266,7 +356,10 @@ export default function OpsConsoleWidget() {
         <button
           onClick={() => setOpen(true)}
           className="fixed right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card shadow-lg shadow-black/40 transition-transform hover:scale-105"
-          style={{ bottom: "max(env(safe-area-inset-bottom), 1.25rem)", boxShadow: `0 0 0 1px ${cfg.accent}22, 0 10px 30px rgba(0,0,0,0.45)` }}
+          style={{
+            bottom: "max(env(safe-area-inset-bottom), 1.25rem)",
+            boxShadow: `0 0 0 1px ${cfg.accent}22, 0 10px 30px rgba(0,0,0,0.45)`,
+          }}
           aria-label="Open Backend Ops"
         >
           <cfg.icon className="h-5 w-5" style={accentStyle} />
@@ -276,22 +369,29 @@ export default function OpsConsoleWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed inset-x-0 bottom-0 z-50 flex h-[80svh] flex-col overflow-hidden rounded-t-2xl border border-border bg-card sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(560px,85svh)] sm:w-[min(460px,calc(100vw-2.5rem))] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/50"
-          style={{ boxShadow: "0 0 0 1px " + cfg.accent + "22, 0 -10px 40px rgba(0,0,0,0.5)" }}
+          className="fixed inset-x-0 bottom-0 z-50 flex h-[85svh] flex-col overflow-hidden rounded-t-2xl border border-border bg-card sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[min(640px,88svh)] sm:w-[min(680px,calc(100vw-2.5rem))] sm:rounded-2xl sm:shadow-2xl sm:shadow-black/50"
+          style={{
+            boxShadow: "0 0 0 1px " + cfg.accent + "22, 0 -10px 40px rgba(0,0,0,0.5)",
+          }}
         >
-          {/* Header with toggle */}
-          <div className="border-b border-border/60 p-3">
+          {/* Header */}
+          <div className="border-b border-border/60 p-3 bg-card/80">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowSidebar((v) => !v)}
-                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  aria-label="Toggle history"
-                >
-                  <PanelLeft className="h-3.5 w-3.5" />
-                </button>
-                <span className="h-2 w-2 animate-pulse rounded-full" style={{ background: cfg.accent }} />
-                <span className="font-mono text-[11px] uppercase tracking-widest text-foreground">
+                {mode !== "knowledge" && (
+                  <button
+                    onClick={() => setShowSidebar((v) => !v)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    aria-label="Toggle history"
+                  >
+                    <PanelLeft className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <span
+                  className="h-2 w-2 animate-pulse rounded-full"
+                  style={{ background: cfg.accent }}
+                />
+                <span className="font-mono text-[11px] uppercase tracking-widest text-foreground font-semibold">
                   {cfg.label}
                 </span>
               </div>
@@ -303,7 +403,7 @@ export default function OpsConsoleWidget() {
               </button>
             </div>
 
-            {/* Mode toggle */}
+            {/* Mode toggle bar */}
             <div className="mt-3 flex rounded-full bg-secondary/60 p-1">
               {Object.values(MODES).map((m) => {
                 const active = m.key === mode;
@@ -311,8 +411,12 @@ export default function OpsConsoleWidget() {
                   <button
                     key={m.key}
                     onClick={() => setMode(m.key)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors"
-                    style={active ? { background: m.accent, color: "#0A0A0A" } : { color: "hsl(var(--muted-foreground))" }}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors font-medium"
+                    style={
+                      active
+                        ? { background: m.accent, color: "#0A0A0A" }
+                        : { color: "hsl(var(--muted-foreground))" }
+                    }
                   >
                     <m.icon className="h-3.5 w-3.5" />
                     {m.label}
@@ -320,90 +424,181 @@ export default function OpsConsoleWidget() {
                 );
               })}
             </div>
-          </div>
 
-          {/* Body: sidebar + chat */}
-          <div className="relative flex flex-1 overflow-hidden">
-            {showSidebar && (
-              <>
-                <div className="absolute inset-0 z-10 bg-black/50 sm:hidden" onClick={() => setShowSidebar(false)} />
-                <div className="absolute inset-0 z-20 w-full sm:relative sm:inset-auto sm:z-auto sm:w-[150px] shrink-0">
-                  <OpsSidebar
-                    conversations={conversationsByMode[mode]}
-                    activeId={activeIdByMode[mode]}
-                    accent={cfg.accent}
-                    onSelect={(conv) => { openConversation(conv, mode); if (window.innerWidth < 768) setShowSidebar(false); }}
-                    onNew={() => { newChat(mode); if (window.innerWidth < 768) setShowSidebar(false); }}
-                    onDelete={(conv) => deleteChat(conv, mode)}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Messages */}
-            <div className="flex flex-1 flex-col">
-              <div className="flex-1 space-y-4 overflow-y-auto p-4">
-                {messages.length === 0 && (
-                  <div className="space-y-3">
-                    <p className="text-xs text-muted-foreground">
-                      {mode === "ops"
-                        ? "Diagnose platform data, delivery, and stuck users."
-                        : "Plan features, refine ideas, and review the dev checklist."}
-                    </p>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                      {cfg.prompts.map((prompt) => (
-                        <button
-                          key={prompt}
-                          type="button"
-                          onClick={() => send(prompt)}
-                          disabled={sending}
-                          className="w-full sm:w-auto text-left rounded-full border border-border px-4 py-2.5 sm:px-3 sm:py-1.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
-                        >
-                          {prompt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {messages.map((message, index) => (
-                  <OpsMessageBubble
-                    key={index}
-                    message={message}
-                    accent={cfg.accent}
-                    onResolve={resolveTool}
-                    flaggable={mode === "architect"}
-                    onFlag={handleFlag}
-                    flagged={flaggedContent.has(message.content)}
-                  />
-                ))}
-                <div ref={endRef} />
-              </div>
-
-              {/* Input */}
-              <form
-                onSubmit={(event) => { event.preventDefault(); send(input); }}
-                className="border-t border-border/60 p-3"
-                style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)" }}
-              >
-                <div className="flex items-center gap-2 rounded-full bg-secondary/60 pl-4 pr-1.5 py-1.5">
-                  <input
-                    value={input}
-                    onChange={(event) => setInput(event.target.value)}
-                    placeholder={cfg.placeholder}
-                    className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!input.trim() || !activeIdByMode[mode]}
-                    className="flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30"
-                    style={{ background: cfg.accent, color: "#0A0A0A" }}
+            {/* Runtime Model & Reasoning Selector for Ops & Architect */}
+            {mode !== "knowledge" && (
+              <div className="flex items-center justify-between gap-2 mt-2.5 pt-2 border-t border-border/40 text-xs">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <Cpu className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <select
+                    value={selectedModelByMode[mode]}
+                    onChange={(e) =>
+                      setSelectedModelByMode((prev) => ({
+                        ...prev,
+                        [mode]: e.target.value,
+                      }))
+                    }
+                    className="bg-secondary/40 border border-border/60 text-[11px] font-medium rounded-lg px-2 py-0.5 text-foreground focus:outline-none w-full truncate"
                   >
-                    <Send className="h-3.5 w-3.5" />
-                  </button>
+                    <optgroup label="Tier 1 — Flagship">
+                      <option value="anthropic/claude-sonnet-4.5">
+                        Claude Sonnet 4.5 (Default)
+                      </option>
+                      <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                      <option value="openai/gpt-4o">OpenAI GPT-4o</option>
+                      <option value="openai/gpt-5">OpenAI GPT-5</option>
+                      <option value="deepseek/deepseek-r1">
+                        DeepSeek R1 (Thinking)
+                      </option>
+                      <option value="deepseek/deepseek-v3.1">DeepSeek V3.1</option>
+                    </optgroup>
+                    <optgroup label="Tier 2 — Fast & Diagnostic">
+                      <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+                      <option value="google/gemini-3.8-flash">Gemini 3.8 Flash</option>
+                      <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                    </optgroup>
+                    <optgroup label="Tier 3 — Reasoning Specialists">
+                      <option value="openai/o3-mini">OpenAI o3-mini</option>
+                    </optgroup>
+                  </select>
                 </div>
-              </form>
-            </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                  <select
+                    value={selectedReasoningByMode[mode]}
+                    onChange={(e) =>
+                      setSelectedReasoningByMode((prev) => ({
+                        ...prev,
+                        [mode]: e.target.value,
+                      }))
+                    }
+                    className="bg-secondary/40 border border-border/60 text-[11px] font-medium rounded-lg px-2 py-0.5 text-foreground focus:outline-none"
+                  >
+                    <option value="none">Reason: None</option>
+                    <option value="low">Reason: Low</option>
+                    <option value="medium">Reason: Med</option>
+                    <option value="high">Reason: High</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Body */}
+          {mode === "knowledge" ? (
+            <div className="flex-1 overflow-hidden">
+              <KnowledgeManagerTab accent={cfg.accent} />
+            </div>
+          ) : (
+            <div className="relative flex flex-1 overflow-hidden">
+              {showSidebar && (
+                <>
+                  <div
+                    className="absolute inset-0 z-10 bg-black/50 sm:hidden"
+                    onClick={() => setShowSidebar(false)}
+                  />
+                  <div className="absolute inset-0 z-20 w-full sm:relative sm:inset-auto sm:z-auto sm:w-[160px] shrink-0">
+                    <OpsSidebar
+                      conversations={conversationsByMode[mode]}
+                      activeId={activeIdByMode[mode]}
+                      accent={cfg.accent}
+                      onSelect={(conv) => {
+                        openConversation(conv, mode);
+                        if (window.innerWidth < 768) setShowSidebar(false);
+                      }}
+                      onNew={() => {
+                        newChat(mode);
+                        if (window.innerWidth < 768) setShowSidebar(false);
+                      }}
+                      onDelete={(conv) => deleteChat(conv, mode)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Chat timeline */}
+              <div className="flex flex-1 flex-col">
+                <div className="flex-1 space-y-4 overflow-y-auto p-4">
+                  {messages.length === 0 && (
+                    <div className="space-y-3">
+                      <p className="text-xs text-muted-foreground">
+                        {mode === "ops"
+                          ? "Diagnose platform data, inspect user drop-offs, and query RAG knowledge."
+                          : "Inspect Postgres schema, codebase structure, and architectural specs."}
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {cfg.prompts.map((prompt) => (
+                          <button
+                            key={prompt}
+                            type="button"
+                            onClick={() => send(prompt)}
+                            disabled={sending}
+                            className="text-left rounded-xl border border-border/80 bg-secondary/20 px-3.5 py-2 text-xs text-muted-foreground transition-all hover:border-primary/50 hover:bg-secondary/50 hover:text-foreground disabled:opacity-50"
+                          >
+                            {prompt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {messages.map((message, index) => (
+                    <OpsMessageBubble
+                      key={index}
+                      message={message}
+                      accent={cfg.accent}
+                      onResolve={resolveTool}
+                      onConfirmAction={handleConfirmAction}
+                      flaggable={mode === "architect"}
+                      onFlag={handleFlag}
+                      flagged={flaggedContent.has(message.content)}
+                    />
+                  ))}
+
+                  {sending && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
+                      <span
+                        className="h-2 w-2 rounded-full animate-ping"
+                        style={{ backgroundColor: cfg.accent }}
+                      />
+                      <span>Agent is executing tools &amp; deliberating…</span>
+                    </div>
+                  )}
+                  <div ref={endRef} />
+                </div>
+
+                {/* Input form */}
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    send(input);
+                  }}
+                  className="border-t border-border/60 p-3 bg-card/60"
+                  style={{
+                    paddingBottom: "max(env(safe-area-inset-bottom), 0.75rem)",
+                  }}
+                >
+                  <div className="flex items-center gap-2 rounded-full bg-secondary/60 pl-4 pr-1.5 py-1.5 border border-border/40">
+                    <input
+                      value={input}
+                      onChange={(event) => setInput(event.target.value)}
+                      placeholder={cfg.placeholder}
+                      className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!input.trim() || !activeIdByMode[mode] || sending}
+                      className="flex h-8 w-8 items-center justify-center rounded-full disabled:opacity-30 transition-transform active:scale-95"
+                      style={{ background: cfg.accent, color: "#0A0A0A" }}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </>

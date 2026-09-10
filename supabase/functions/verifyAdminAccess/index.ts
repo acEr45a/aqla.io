@@ -11,6 +11,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -52,7 +55,8 @@ serve(async (req) => {
 
     const trustedDevices = Array.isArray(profile?.admin_trusted_devices) ? profile.admin_trusted_devices : [];
 
-    // Auto-verify check for existing trusted device
+    // Auto-verify check for existing trusted device (not subject to the OTP
+    // lockout below — it doesn't involve guessing a code).
     if (!otp && device_id) {
       const isTrusted = trustedDevices.includes(device_id);
       return new Response(JSON.stringify({ verified: isTrusted, error: isTrusted ? undefined : "Device not trusted" }), {
@@ -63,6 +67,16 @@ serve(async (req) => {
 
     // Verify OTP code
     if (otp) {
+      // Lockout check: block further attempts if this account is currently locked out.
+      const lockedUntil = profile?.admin_otp_locked_until ? new Date(profile.admin_otp_locked_until) : null;
+      if (lockedUntil && lockedUntil.getTime() > Date.now()) {
+        const secondsLeft = Math.ceil((lockedUntil.getTime() - Date.now()) / 1000);
+        return new Response(
+          JSON.stringify({ verified: false, error: `Too many failed attempts. Try again in ${Math.ceil(secondsLeft / 60)} minute(s).` }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       const { data: validOtps } = await adminClient
         .from("admin_otps")
         .select("*")
@@ -74,6 +88,15 @@ serve(async (req) => {
         .limit(1);
 
       if (!validOtps || validOtps.length === 0) {
+        // Record the failed attempt; lock out after MAX_FAILED_ATTEMPTS.
+        const currentFailed = (profile?.admin_otp_failed_attempts || 0) + 1;
+        const updates: Record<string, unknown> = { admin_otp_failed_attempts: currentFailed };
+        if (currentFailed >= MAX_FAILED_ATTEMPTS) {
+          updates.admin_otp_locked_until = new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000).toISOString();
+          updates.admin_otp_failed_attempts = 0;
+        }
+        await adminClient.from("profiles").update(updates).eq("id", user.id);
+
         return new Response(JSON.stringify({ verified: false, error: "Invalid or expired verification code." }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -82,6 +105,9 @@ serve(async (req) => {
 
       // Mark OTP as used
       await adminClient.from("admin_otps").update({ used: true }).eq("id", validOtps[0].id);
+
+      // Successful verification resets the failed-attempt counter/lockout.
+      await adminClient.from("profiles").update({ admin_otp_failed_attempts: 0, admin_otp_locked_until: null }).eq("id", user.id);
 
       // Trust device if requested
       if (device_id && trust_device && !trustedDevices.includes(device_id)) {

@@ -11,8 +11,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const DEFAULT_FROM = "AQLA Clinician <clinician@aqla.io>";
-
+const DEFAULT_FROM = "AQLA <noreply@aqla.io>";
 
 function buildProfessionalEmail({ subject, contentHtml, paragraphs, actionButton }) {
   const bodyContent = contentHtml || (paragraphs || []).map((p) => `<p style="margin: 0 0 16px 0; font-size: 14px; color: #a1a7b0; line-height: 1.65;">${p}</p>`).join("");
@@ -90,13 +89,61 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const resendApiKey = Deno.env.get("RESEND_API_KEY") ?? "";
 
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    // Authorization: previously this function had NO auth check at all — anyone
+    // could call it, including with sendToAll:true to blast every user in the
+    // database. Now requires an authenticated clinician/admin for any send, and
+    // admin specifically for sendToAll broadcasts. Matches how the three real
+    // callers (admin broadcast panel, admin's notify-clinician card, clinician
+    // inbox replies) already use this function today.
+    const authHeader = req.headers.get("Authorization");
+    let callerId: string | null = null;
+    let callerRole = "user";
+
+    if (authHeader) {
+      const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await userClient.auth.getUser();
+      if (user) {
+        callerId = user.id;
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        callerRole = profile?.role || "user";
+      }
+    }
+
+    if (!callerId) {
+      return new Response(JSON.stringify({ error: "Unauthorized: authentication required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (callerRole !== "clinician" && callerRole !== "admin") {
+      return new Response(JSON.stringify({ error: "Unauthorized: clinician or admin role required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { to, subject, html, text, from = DEFAULT_FROM, actionButton, recipientIds, sendToAll, message } = await req.json();
+
+    if (sendToAll && callerRole !== "admin") {
+      return new Response(JSON.stringify({ error: "Unauthorized: admin role required to email all users" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const recipients: string[] = [];
 
@@ -124,7 +171,7 @@ serve(async (req) => {
 
     const emailSubject = subject || "AQLA Update";
     const emailText = text || message || "";
-    const paragraphs = emailText ? emailText.split(/\n\n+/).map((p: string) => p.replace(/\n/g, "<br/>")) : [];
+    const paragraphs = emailText ? emailText.split(/\\n\\n+/).map((p: string) => p.replace(/\\n/g, "<br/>")) : [];
 
     const finalHtml = html && html.includes("<!DOCTYPE")
       ? html

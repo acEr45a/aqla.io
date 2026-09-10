@@ -6,6 +6,53 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, svix-id, svix-timestamp, svix-signature",
 };
 
+// Helper to verify Svix webhook signature using Web Crypto HMAC-SHA256
+async function verifySvixSignature(
+  secret: string,
+  id: string,
+  timestamp: string,
+  body: string,
+  signatureHeader: string
+): Promise<boolean> {
+  const ts = parseInt(timestamp, 10);
+  if (isNaN(ts)) return false;
+  const now = Math.floor(Date.now() / 1000);
+  // 5 minute tolerance
+  if (Math.abs(now - ts) > 300) {
+    return false;
+  }
+
+  let keyBytes: Uint8Array;
+  if (secret.startsWith("whsec_")) {
+    const b64 = secret.slice(6);
+    keyBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  } else {
+    keyBytes = new TextEncoder().encode(secret);
+  }
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const toSign = new TextEncoder().encode(`${id}.${timestamp}.${body}`);
+  const signatureBuffer = await crypto.subtle.sign("HMAC", key, toSign);
+  const signatureBytes = new Uint8Array(signatureBuffer);
+  const computedSignature = btoa(String.fromCharCode(...signatureBytes));
+
+  const signatures = signatureHeader.split(" ");
+  for (const sig of signatures) {
+    const [version, signature] = sig.split(",");
+    if (version === "v1" && signature === computedSignature) {
+      return true;
+    }
+  }
+  return false;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -14,7 +61,15 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET") || Deno.env.get("SVIX_WEBHOOK_SECRET") || "whsec_ZENQbUwS5UbBxWIcbpk5cAUKWRo9lxmz";
+    const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET") || Deno.env.get("SVIX_WEBHOOK_SECRET");
+    if (!webhookSecret) {
+      console.error("[resend-inbound] Missing RESEND_WEBHOOK_SECRET or SVIX_WEBHOOK_SECRET in environment");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error: Webhook secret not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const svixId = req.headers.get("svix-id");
@@ -22,6 +77,22 @@ serve(async (req) => {
     const svixSignature = req.headers.get("svix-signature");
 
     const rawBody = await req.text();
+
+    if (!svixId || !svixTimestamp || !svixSignature) {
+      return new Response(
+        JSON.stringify({ error: "Missing Svix signature headers (svix-id, svix-timestamp, svix-signature)" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const isValid = await verifySvixSignature(webhookSecret, svixId, svixTimestamp, rawBody, svixSignature);
+    if (!isValid) {
+      return new Response(
+        JSON.stringify({ error: "Invalid webhook signature" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     let payload: any = {};
     try {
       payload = JSON.parse(rawBody);
@@ -29,7 +100,7 @@ serve(async (req) => {
       payload = {};
     }
 
-    console.log("[resend-inbound] Webhook event received. Svix-ID:", svixId, "Type:", payload.type || "direct");
+    console.log("[resend-inbound] Webhook event received & verified. Svix-ID:", svixId, "Type:", payload.type || "direct");
 
     // Process email.received event
     const emailData = payload.data || payload;

@@ -295,16 +295,18 @@ export const auth = {
   },
 };
 
-// Direct client Gemini caller securely proxied through Supabase Edge Function
+// Direct client AI caller securely routed through Supabase Edge Function ai-run
 export async function directGeminiInvoke({
   prompt,
   response_json_schema,
   system_instruction,
-  model = 'models/gemini-2.5-flash',
+  model = 'deepseek/deepseek-v3.1',
+  worker_id = 'dynamic_worker',
 }) {
   try {
-    const { data, error } = await supabase.functions.invoke('gemini-proxy', {
+    const { data, error } = await supabase.functions.invoke('ai-run', {
       body: {
+        worker_id,
         prompt,
         response_json_schema,
         system_instruction,
@@ -316,11 +318,11 @@ export async function directGeminiInvoke({
       throw new Error(`Edge function invocation failed: ${error.message || error}`);
     }
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const text = data?.text || data?.candidates?.[0]?.content?.parts?.[0]?.text || (typeof data === 'string' ? data : '');
 
     if (response_json_schema) {
       try {
-        const parsed = JSON.parse(text);
+        const parsed = typeof data?.parsed === 'object' ? data.parsed : JSON.parse(text);
         return { ...parsed, text, data: parsed };
       } catch {
         return { text, data: { text } };
@@ -328,7 +330,7 @@ export async function directGeminiInvoke({
     }
     return { text, data: text };
   } catch (err) {
-    console.error('[directGeminiInvoke] Secure proxy invocation failed:', err);
+    console.error('[directGeminiInvoke] Invocation failed:', err);
     throw err;
   }
 }
@@ -336,8 +338,8 @@ export async function directGeminiInvoke({
 // AQLA AI Gateway Integration layer (replaces Core.InvokeLLM & GenerateSpeech)
 export const integrations = {
   Core: {
-    async InvokeLLM({ prompt, response_json_schema, worker_id, system_instruction, ...rest }) {
-      return directGeminiInvoke({ prompt, response_json_schema, system_instruction });
+    async InvokeLLM({ prompt, response_json_schema, worker_id = 'dynamic_worker', system_instruction, model = 'deepseek/deepseek-v3.1', ...rest }) {
+      return directGeminiInvoke({ prompt, response_json_schema, worker_id, system_instruction, model });
     },
 
     async GenerateSpeech({ text }) {
@@ -491,47 +493,88 @@ export const agents = {
         'You are AQLA Backend Ops AI. Assist administrators with system operations, diagnostic analysis, and technical architecture recommendations.';
     }
 
-    let assistantText = 'I have noted your request.';
+    let assistantMsg = null;
     try {
-      const historyText = localAgentState.conversations[convId].messages
-        .slice(-8)
-        .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
-        .join('\n');
-
-      const fullPrompt = `${historyText}\nAssistant:`;
-      const geminiRes = await directGeminiInvoke({
-        prompt: fullPrompt,
-        system_instruction: systemInstruction,
+      // Invoke agent-message Edge Function with tool calling, vector RAG, and safety gates
+      const { data, error } = await supabase.functions.invoke('agent-message', {
+        body: {
+          conversation_id: convId,
+          message: { role, content, metadata },
+          model_override: metadata?.model_override,
+          reasoning_override: metadata?.reasoning_override,
+        },
       });
-      assistantText = geminiRes.text || geminiRes.data || assistantText;
+
+      if (error) throw error;
+      if (data) {
+        assistantMsg = {
+          id: data.id || crypto.randomUUID?.() || `msg-${Date.now() + 1}`,
+          conversation_id: convId,
+          role: 'assistant',
+          content: data.content || '',
+          tool_calls: data.tool_calls || data.metadata?.tool_executions || null,
+          metadata: data.metadata || {},
+          created_at: data.created_at || new Date().toISOString(),
+        };
+      }
     } catch (err) {
-      console.warn('[agents.addMessage] Gemini call fallback:', err.message);
-      assistantText = `I understand your question regarding "${content.slice(0, 40)}...". How else can I assist with your cognitive protocols?`;
+      console.warn('[agents.addMessage] Edge function fallback:', err.message);
+      // Graceful fallback to ai-run / direct invocation
+      try {
+        const fallbackRes = await directGeminiInvoke({
+          prompt: content,
+          model: metadata?.model_override || 'deepseek/deepseek-v3.1',
+        });
+        assistantMsg = {
+          id: crypto.randomUUID?.() || `msg-${Date.now() + 1}`,
+          conversation_id: convId,
+          role: 'assistant',
+          content: fallbackRes.text || fallbackRes.data || 'Response received.',
+          metadata: { fallback: true },
+          created_at: new Date().toISOString(),
+        };
+      } catch {
+        assistantMsg = {
+          id: crypto.randomUUID?.() || `msg-${Date.now() + 1}`,
+          conversation_id: convId,
+          role: 'assistant',
+          content: `I understand your question regarding "${content.slice(0, 40)}...". How else can I assist with your cognitive protocols?`,
+          metadata: { fallback_error: true },
+          created_at: new Date().toISOString(),
+        };
+      }
     }
 
-    const assistantMsgId = crypto.randomUUID?.() || `msg-${Date.now() + 1}`;
-    const assistantMsg = {
-      id: assistantMsgId,
-      conversation_id: convId,
-      role: 'assistant',
-      content: assistantText,
-      created_at: new Date().toISOString(),
-    };
+    if (assistantMsg) {
+      localAgentState.conversations[convId].messages.push(assistantMsg);
+      try {
+        await supabase.from('ai_messages').insert([assistantMsg]);
+      } catch {}
 
-    localAgentState.conversations[convId].messages.push(assistantMsg);
-
-    try {
-      await supabase.from('ai_messages').insert([assistantMsg]);
-    } catch {}
-
-    if (localAgentState.subscribers[convId]) {
-      localAgentState.subscribers[convId]({
-        id: convId,
-        messages: [...localAgentState.conversations[convId].messages],
-      });
+      if (localAgentState.subscribers[convId]) {
+        localAgentState.subscribers[convId]({
+          id: convId,
+          messages: [...localAgentState.conversations[convId].messages],
+        });
+      }
     }
 
     return assistantMsg;
+  },
+
+  async confirmAction(convId, { tool_name, params, is_approved }) {
+    const { data, error } = await supabase.functions.invoke('agent-message', {
+      body: {
+        conversation_id: convId,
+        action_confirmation: {
+          tool_name,
+          params,
+          is_approved,
+        },
+      },
+    });
+    if (error) throw error;
+    return data;
   },
 
   subscribeToConversation(id, callback) {
@@ -1087,12 +1130,56 @@ export const appLogs = {
   },
 };
 
+// Knowledge Base & Vector RAG Management
+export const knowledge = {
+  async listDocuments({ category = 'all', search = '' } = {}) {
+    try {
+      const { data, error } = await supabase.functions.invoke('knowledge-manage', {
+        body: { action: 'list_documents', category, search },
+      });
+      if (error) throw error;
+      return data?.documents || [];
+    } catch {
+      let q = supabase.from('knowledge_documents').select('*').order('updated_at', { ascending: false });
+      if (category && category !== 'all') q = q.eq('category', category);
+      if (search) q = q.ilike('title', `%${search}%`);
+      const { data } = await q;
+      return (data || []).map((d) => ({ ...d, has_embedding: Boolean(d.embedding) }));
+    }
+  },
+
+  async upsertDocument(doc) {
+    const { data, error } = await supabase.functions.invoke('knowledge-manage', {
+      body: { action: 'upsert_document', ...doc },
+    });
+    if (error) throw error;
+    return data?.document;
+  },
+
+  async deleteDocument(id) {
+    const { data, error } = await supabase.functions.invoke('knowledge-manage', {
+      body: { action: 'delete_document', id },
+    });
+    if (error) throw error;
+    return data?.success;
+  },
+
+  async testSimilarity({ query, category = null, limit = 5 }) {
+    const { data, error } = await supabase.functions.invoke('knowledge-manage', {
+      body: { action: 'test_similarity', query, category, limit },
+    });
+    if (error) throw error;
+    return data?.matches || [];
+  },
+};
+
 export const apiClient = {
   auth,
   entities,
   functions,
   integrations,
   agents,
+  knowledge,
   appLogs,
 };
 

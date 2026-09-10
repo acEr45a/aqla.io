@@ -80,6 +80,15 @@ serve(async (req) => {
           });
         }
 
+        // Authorization: caller must be requesting their own data, or be a clinician/admin.
+        const isSelf = callerUser?.id === targetUserId;
+        if (!isSelf && callerRole !== "clinician" && callerRole !== "admin") {
+          return new Response(JSON.stringify({ error: "Unauthorized: you can only access your own data" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
         const [profile, domains, checkIns, protocols, reviews, tests] = await Promise.all([
           adminClient.from("profiles").select("*").eq("id", targetUserId).single(),
           adminClient.from("brain_domains").select("*").eq("created_by_id", targetUserId),
@@ -113,8 +122,7 @@ serve(async (req) => {
         const { userName, context: memberContext, intent } = payload;
         const res = await geminiGenerate(geminiApiKey, {
           model: "gemini-2.5-flash",
-          systemInstruction: `You are drafting a professional neural-health coaching message from an AQLA clinician to a member (${userName || "Member"}).
-Maintain an encouraging, objective, and clinically grounded tone.`,
+          systemInstruction: `You are drafting a professional neural-health coaching message from an AQLA clinician to a member (${userName || "Member"}).\nMaintain an encouraging, objective, and clinically grounded tone.`,
           contents: [{
             role: "user",
             parts: [{ text: `Member context: ${JSON.stringify(memberContext || {})}\nIntent: ${intent || "General check-in follow up"}` }],
@@ -129,6 +137,13 @@ Maintain an encouraging, objective, and clinically grounded tone.`,
 
       // 4. Push recommendation to member
       case "pushMemberRecommendation": {
+        if (callerRole !== "clinician" && callerRole !== "admin") {
+          return new Response(JSON.stringify({ error: "Clinician or Admin role required" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
         const { user_id, title, message, category } = payload;
         const { data, error } = await adminClient.from("member_recommendations").insert([{
           user_id,
@@ -146,6 +161,13 @@ Maintain an encouraging, objective, and clinically grounded tone.`,
 
       // 5. Change member plan
       case "changeMemberPlan": {
+        if (callerRole !== "clinician" && callerRole !== "admin") {
+          return new Response(JSON.stringify({ error: "Clinician or Admin role required" }), {
+            status: 403,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
         const { user_id, family, reason } = payload;
         // Pause active protocols
         await adminClient.from("protocols").update({ status: "paused" }).eq("created_by_id", user_id).eq("status", "active");
