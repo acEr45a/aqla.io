@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Antigravity on 2026-09-11 18:00 UTC | **Task:** Inter-Agent Handshake Seeding & Dual-Track Gateway Bridging
+> **Last Updated By:** Freebuff on 2026-09-11 14:33 UTC | **Task:** Browser Testing Toolchain Setup & First Smoke Test
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -55,6 +55,31 @@ All AI operations are routed through a unified dual-track architecture:
 
 ## 2. Handover Changelog
 
+### [Entry 002] Freebuff — 2026-09-11 14:33 UTC
+- **Task:** Installed & configured the browser testing / antidetect toolchain (Playwright Chromium, nodriver, Puppeteer MCP) and ran the first validated headless smoke test.
+- **Toolchain Installed:**
+  - **Playwright Chromium** — browser build `chromium-1243` (+ `chromium_headless_shell-1243`) at `%LOCALAPPDATA%\ms-playwright\`; `playwright` also added as a **devDependency** so test scripts can import it directly.
+  - **nodriver** — `pip install nodriver` on Python 3.13.7, version **0.50.3** (antidetect CDP engine for bot-protected external endpoints, per Section 4.B).
+  - **Puppeteer MCP server** — `@modelcontextprotocol/server-puppeteer` registered in `C:\Users\danis\.gemini\config\mcp_config.json` under `mcpServers` (existing `supabase` entry preserved).
+- **Files Touched:**
+  - `package.json`, `package-lock.json` — added `playwright` devDependency.
+  - `scripts/browser-smoke-test.js` — **NEW** reusable headless smoke test (full-page screenshot + console/page-error capture + JSON result; artifacts to git-ignored `logs/browser-validation/`).
+  - `logs/start-dev.bat` — NEW detached Vite dev-server launcher for Windows (harness BACKGROUND mode unavailable).
+  - `C:\Users\danis\.gemini\config\mcp_config.json` — puppeteer MCP entry (outside repo).
+  - `AGENT_NOTEBOOK.md` — this entry + Section 4.B toolchain status block.
+- **Smoke Test Validation (per Section 4 protocol):**
+  - **Tool:** Playwright headless Chromium (`chromium-1243`), command `node scripts/browser-smoke-test.js http://localhost:5173`.
+  - **URL / Flow:** `http://localhost:5173` (Vite dev server, launched detached) — landing page load, network-idle wait, SPA render settle, body text extraction.
+  - **Result: PASS** — title `AQLA — Your brain, understood`, hero copy rendered; **0 console errors, 0 page errors**.
+  - **Artifacts:** `logs/browser-validation/smoke-home.png` (full-page screenshot), `logs/browser-validation/smoke-result.json` (machine-readable report). `logs/` is git-ignored.
+- **Rationale / Architectural Notes:**
+  - Playwright kept out of the production bundle (devDependency only); test artifacts confined to git-ignored `logs/`.
+  - Windows dev-server lifecycle: `nohup ... &` dies with the parent shell in this harness — use `cmd /c "start /b cmd /c logs\start-dev.bat"` then poll for HTTP 200.
+- **Open Items / Heads-up for Antigravity:**
+  - Puppeteer MCP is registered for the Gemini CLI — verify it surfaces in your tool list next session.
+  - Section 3 pending tasks (edge function deploys `agent-message`/`ai-run`/`knowledge-manage` + Supabase secrets) remain open and unassigned.
+  - Changes are staged in the working tree, NOT committed — coordinate before pushing.
+
 ### [Entry 001] Antigravity — 2026-09-11 18:00 UTC
 - **Task:** Implemented Agent Tool Calling, Vector RAG, Knowledge Management, and resolved Peer-Review Drift findings.
 - **Files Touched / Created:**
@@ -109,6 +134,17 @@ Both agents are required to validate frontend UI changes directly in the browser
   - For external endpoints with bot protection (Cloudflare/DataDome), Freebuff uses engine-level antidetect tools (`camoufox` or `nodriver` with CDP) to prevent detection.
   - Takes full-page screenshots to inspect layout integrity and captures console logs.
 - **Reporting in Notebook:** Document the tool used (e.g., `Playwright/Puppeteer`, `Camoufox`, `nodriver`), exact command/script executed, URLs navigated, actions performed (clicks, inputs), and screenshot output paths.
+
+**Installed Toolchain Status (2026-09-11, verified by Freebuff):**
+
+| Component | Status | Details |
+|---|---|---|
+| Playwright (Node) + Chromium | ✅ Installed | devDependency; browsers at `%LOCALAPPDATA%\ms-playwright` (`chromium-1243`, `chromium_headless_shell-1243`) |
+| nodriver (Python antidetect CDP) | ✅ Installed | Python 3.13.7, v0.50.3 — for Cloudflare/DataDome-protected external endpoints |
+| Puppeteer MCP server | ✅ Registered | `C:\Users\danis\.gemini\config\mcp_config.json` → `mcpServers.puppeteer` |
+| Reusable smoke test | ✅ Ready | `node scripts/browser-smoke-test.js <url>` → screenshot + console-error report in `logs/browser-validation/` (git-ignored) |
+
+Standard local-validation invocation: launch dev server detached via `cmd /c "start /b cmd /c logs\start-dev.bat"`, poll until `http://localhost:5173` returns HTTP 200, then run the smoke script or a bespoke Playwright script.
 
 ---
 
