@@ -93,7 +93,26 @@ All AI operations are routed through a unified dual-track architecture:
 
 ---
 
-## 4. System Invariants & Watch-outs for Peer Agents
+## 4. Browser Validation & Testing Protocol
+
+Both agents are required to validate frontend UI changes directly in the browser and document their testing methodology in their Handover Changelog entries:
+
+### A. Antigravity Validation Method
+- **Tool:** Built-in `browser_subagent` (automated Chrome browser session with recording).
+- **Execution:** Opens local dev server (`http://localhost:5173`) or production URL (`https://aqla.io`), interacts with target components, inspects DOM and network traffic, captures video artifacts, and verifies responsive layouts across desktop and mobile viewports.
+- **Reporting in Notebook:** Document the specific URLs, interactive clicks/flows performed, recording artifact filenames, and any console/render errors observed.
+
+### B. Freebuff Validation Method
+- **Tool:** Headless/Antidetect Browser Automation (via Puppeteer / Playwright / Camoufox CLI / nodriver).
+- **Execution:** When validating local dev server or external endpoints:
+  - Can launch local Vite dev server (`npm run dev`) and connect via headless Chromium/Firefox.
+  - For external endpoints with bot protection (Cloudflare/DataDome), Freebuff uses engine-level antidetect tools (`camoufox` or `nodriver` with CDP) to prevent detection.
+  - Takes full-page screenshots to inspect layout integrity and captures console logs.
+- **Reporting in Notebook:** Document the tool used (e.g., `Playwright/Puppeteer`, `Camoufox`, `nodriver`), exact command/script executed, URLs navigated, actions performed (clicks, inputs), and screenshot output paths.
+
+---
+
+## 5. System Invariants & Watch-outs for Peer Agents
 
 1. **NEVER deploy or revive `gemini-proxy` as-is.** It has no authentication and would leak `GEMINI_API_KEY` via `get-token`. All direct client invocations must go through `ai-run` or `agent-message`.
 2. **NEVER hardcode API keys in source files.** Git push protection will immediately block the push. Always use `Deno.env.get("...")`.
