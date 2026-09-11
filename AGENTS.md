@@ -97,7 +97,7 @@ This is the aqla.io web application repository - a neural wellness / cognitive p
 
 - `src/api/apiClient.js` - the central API layer. Most of the app's "backend calls" are actually direct Supabase table operations through `entities.*` here, not edge function calls. Read this file before assuming any `functions.invoke(...)` name actually hits an edge function - many are intercepted and resolved as direct table writes/reads inside this file, or return **hardcoded fake data** (`getCommunityInsights`, `runAppDiagnostics`, `resolveAppIssue`, `getBackendOpsSummary`).
 - `src/lib/supabase.js` - Supabase client, session stored in `localStorage`.
-- `supabase/functions/_shared/gemini.ts` - the real, hardened Gemini adapter (multi-model fallback, used by `ai-run`/`agent-message`/`aqla-ops`).
+- `supabase/functions/_shared/gateway.ts` - Vercel AI Gateway client for multi-provider LLMs.
 - `supabase/functions/_shared/worker-registry.ts` - catalog of AI "workers" (prompts, schemas, role gating) used by `ai-run`.
 
 ## Critical: What's Actually Deployed vs. What Exists as Source
@@ -107,14 +107,17 @@ Several edge functions exist in `supabase/functions/` but are not deployed - con
 | Function | Deployed? |
 |---|---|
 | `send-email`, `sendAdminOtp`, `verifyAdminAccess`, `ai-run`, `agent-message` | Yes, live |
-| `gemini-proxy`, `aqla-ops`, `resend-inbound` | No - source only |
+| `aqla-ops`, `resend-inbound`, `knowledge-manage` | Source / pending deploy |
+| `gemini-proxy` | **Permanently Deleted** |
 
-## Critical: Two Disconnected AI Systems
+## AI System Architecture
 
-- `ai-run` + `worker-registry.ts` - well-designed, authenticated, role-gated, deployed - but nothing in the live frontend calls it.
-- `directGeminiInvoke()` (in `apiClient.js`, backs `InvokeLLM`/`GenerateSpeech`) - this is what the live app actually uses (voice check-in interview, main AQLA Assistant chat) - and it calls the undeployed `gemini-proxy`, so these features are currently broken in production, failing silently.
-
-The correct fix is repointing `directGeminiInvoke()` to `ai-run` with the right `worker_id` - not deploying `gemini-proxy` as-is, which has no authentication at all and would leak the raw `GEMINI_API_KEY` to any caller via its `get-token` action if it ever went live.
+- All AI operations are unified under the **Vercel AI Gateway** (`https://ai-gateway.vercel.sh/v1`).
+- `ai-run` + `worker-registry.ts`: Authenticated, role-gated, multi-provider AI runner.
+- `directGeminiInvoke()` in `apiClient.js` routes directly to `ai-run` with default model `deepseek/deepseek-v3.1`.
+- `agent-message`: Multi-turn conversational agent loop with 11 standardized tools and safety gates.
+- `embeddings.ts`: Powered by `openai/text-embedding-3-small` (768 dimensions) via Vercel AI Gateway.
+- `GEMINI_API_KEY` and legacy `gemini-proxy` have been completely removed.
 
 ## Security Model - Read Before Touching Auth/Data Access
 

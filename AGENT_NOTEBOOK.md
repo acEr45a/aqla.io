@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-11 14:33 UTC | **Task:** Browser Testing Toolchain Setup & First Smoke Test
+> **Last Updated By:** Antigravity on 2026-09-11 18:45 UTC | **Task:** Full Gemini Key Retirement & 100% Transition to Vercel AI Gateway
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -7,21 +7,23 @@ Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigra
 
 ## 1. Active Architecture & System State
 
-### A. AI Gateway Dual-Track Protocol
-All AI operations are routed through a unified dual-track architecture:
-- **Track 1: Vercel AI Gateway** (`https://ai-gateway.vercel.sh/v1/chat/completions`)
+### A. Unified Vercel AI Gateway Protocol
+All AI operations are routed 100% through the Vercel AI Gateway:
+- **Chat Completions & Multi-Step Agent Loops:** `https://ai-gateway.vercel.sh/v1/chat/completions`
   - Client: `supabase/functions/_shared/gateway.ts` (`callAiGateway`)
-  - Providers: DeepSeek (`deepseek/deepseek-v3.1`, `deepseek/deepseek-r1`), Anthropic (`anthropic/claude-sonnet-4.5`), OpenAI (`openai/gpt-4o`, `openai/gpt-5`, `openai/o3-mini`).
+  - Providers: DeepSeek (`deepseek/deepseek-v3.1`, `deepseek/deepseek-r1`), Anthropic (`anthropic/claude-sonnet-4.5`), OpenAI (`openai/gpt-4o`, `openai/gpt-5`, `openai/o3-mini`), Google (`google/gemini-2.5-flash`).
   - Supports function calling (`tools`) and extended reasoning (`reasoning: { effort: "none"|"low"|"medium"|"high" }`).
-  - Secret: `VERCEL_AI_GATEWAY_KEY` (or `AI_GATEWAY_KEY`) read from environment variables.
-- **Track 2: Google Gemini Native API** (`https://generativelanguage.googleapis.com/v1beta/models`)
-  - Client: `supabase/functions/_shared/gemini.ts` (`geminiGenerate`)
-  - Used for native `google/*` models and `embeddings.ts` (`text-embedding-004`).
-  - Secret: `GEMINI_API_KEY`.
+  - Secret: `VERCEL_AI_GATEWAY_KEY` (or `AI_GATEWAY_KEY`, `VERCEL_AI_GATEWAY_TOKEN`, `AI_GATEWAY_API_KEY`) read from environment variables.
+- **Semantic Vector Embeddings:** `https://ai-gateway.vercel.sh/v1/embeddings`
+  - Client: `supabase/functions/_shared/embeddings.ts` (`generateEmbedding`)
+  - Provider & Model: `openai/text-embedding-3-small` with `dimensions: 768` (matching Postgres `vector(768)`).
+  - Secret: Same Vercel AI Gateway key.
 - **Edge Function Dispatch:**
-  - `agent-message`: Fully powered by `callAiGateway` with multi-step tool execution.
-  - `ai-run`: Bridges automatically — uses `callAiGateway` if `model` contains a provider prefix (e.g. `deepseek/*`), falls back to `geminiGenerate` for native Gemini models.
+  - `agent-message`: Powered by `callAiGateway` with multi-step tool execution.
+  - `ai-run`: All worker tasks route through `callAiGateway` with automated schema validation.
   - `apiClient.directGeminiInvoke()`: Routes to `ai-run` with default model `deepseek/deepseek-v3.1`.
+  - **Gemini Direct API & `GEMINI_API_KEY` are permanently retired.**
+  - **`gemini-proxy` has been completely deleted.**
 
 ### B. Current Model Assignments Matrix
 | Tier / Surface | Assigned Model | Gateway Status |
@@ -54,6 +56,46 @@ All AI operations are routed through a unified dual-track architecture:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 004] Antigravity — 2026-09-11 18:45 UTC
+- **Task:** Permanently retired `GEMINI_API_KEY` across the entire codebase and completed full transition to unified Vercel AI Gateway (multi-provider + vector embeddings).
+- **Files Touched / Created / Deleted:**
+  - `.env` — Removed `GEMINI_API_KEY` and `VITE_GEMINI_API_KEY`; normalized `VERCEL_AI_GATEWAY_KEY` and `AI_GATEWAY_KEY`.
+  - `supabase/functions/_shared/embeddings.ts` — Switched vector embeddings from Gemini `text-embedding-004` to Vercel AI Gateway (`openai/text-embedding-3-small`, 768 dimensions), matching PostgreSQL `vector(768)`.
+  - `supabase/functions/_shared/worker-registry.ts` — Updated all 13 worker definitions from legacy `gemini-3.6-flash` to their assigned production models (`deepseek/deepseek-v3.1`, `anthropic/claude-sonnet-4.5`); decoupled schema types from `gemini.ts`.
+  - `supabase/functions/ai-run/index.ts` — 100% routed through `callAiGateway` with automated schema JSON extraction/validation and audit logging; eliminated Google direct API call and raw key requirement.
+  - `supabase/functions/_shared/gateway.ts` — Expanded env resolution for `VERCEL_AI_GATEWAY_KEY`, `VERCEL_AI_GATEWAY_TOKEN`, `AI_GATEWAY_KEY`, and `AI_GATEWAY_API_KEY`.
+  - `supabase/functions/_shared/tool-executor.ts` — Decoupled knowledge search from raw Gemini key; calls unified gateway embeddings.
+  - `supabase/functions/agent-message/index.ts` — Removed `geminiApiKey` parameter passing; purely operates on gateway keys.
+  - `supabase/functions/knowledge-manage/index.ts` — Removed `geminiApiKey` dependency; auto-generates 768-d embeddings using AI Gateway.
+  - `supabase/functions/aqla-ops/index.ts` — Removed unused `geminiGenerate` import and `geminiApiKey` variable.
+  - `supabase/functions/gemini-proxy/` — **DELETED** permanently (unsafe, unauthenticated, obsolete).
+  - `extension/sidepanel.js` — Removed legacy call to `gemini-proxy`.
+  - `src/components/admin/KnowledgeManagerTab.jsx` — Updated UI copy to reflect AI Gateway 768-dim embeddings.
+- **Verification:**
+  - Gateway embeddings tested and verified live with HTTP 200 (vector length: 768).
+  - Multi-provider gateway completions verified live with HTTP 200.
+  - Full codebase grep confirms zero remaining `GEMINI_API_KEY` references in source/edge code.
+- **Open Items / Heads-up for Freebuff:**
+  - `GEMINI_API_KEY` is no longer needed in `.env` or Supabase secrets.
+  - When deploying edge functions, only `VERCEL_AI_GATEWAY_KEY` is required.
+
+### [Entry 003] Freebuff — 2026-09-11 14:38 UTC
+- **Task:** Read-only browser validation of the live production site `https://www.aqla.io` (canonical URL; apex `aqla.io` 308-redirects to `www`).
+- **Validation Method (per Section 4.B):**
+  - **Tool:** Playwright headless Chromium (`chromium-1243`). No antidetect escalation needed — Cloudflare fronted the site but did not block headless traffic.
+  - **Script:** `node scripts/live-site-test.js` (**NEW** reusable multi-route live validator; `BASE` configurable at top).
+  - **Pages visited & flows tested (11):** `/` (hero render + nav click `Sign in -> /login`), `/login`, `/register`, `/start` (form render, **no submissions**), `/privacy`, `/terms` (content presence), `/dashboard` + `/admin` (**auth-guard: anonymous correctly redirected to `/login`**), `*` catch-all 404 page, plus mobile-viewport (375x812) spot-checks of `/` and `/login`.
+  - **Result: 11/11 PASS.** **0 console errors, 0 page errors, 0 failed (4xx/5xx) network requests** across all page loads.
+  - **Artifacts:** `logs/browser-validation/live-2026-09-11/` — 10 full-page screenshots + `live-test-result.json` (per-route checks, errors, final URLs). Git-ignored.
+- **Rationale / Architectural Notes:**
+  - Strictly read-only anonymous pass: no form submissions, no account creation, no writes to production data. Auth-guard behavior was verified by *expecting* redirects, not by bypassing them.
+  - Root layout renders auth-guarded routes without `AppLayout`, so anonymous `/admin` + `/dashboard` cleanly hit `ProtectedRoute` -> `/login`.
+  - Note for future runs: the mobile spot-checks reuse route-based screenshot names, so `home.png`/`login.png` on disk are the mobile captures (last write wins).
+- **Open Items / Heads-up for Antigravity:**
+  - Authenticated flows (`/inbox`, Ops Console, Knowledge Base tab, coach chat) remain **untested live** — need test credentials; recommend a dedicated QA account rather than real creds.
+  - Live edge functions (`ai-run`, `agent-message`, `knowledge-manage`) not exercised (would require auth + writes).
+  - `scripts/live-site-test.js` is reusable — extend `BASE`/route list for regression passes after deploys.
 
 ### [Entry 002] Freebuff — 2026-09-11 14:33 UTC
 - **Task:** Installed & configured the browser testing / antidetect toolchain (Playwright Chromium, nodriver, Puppeteer MCP) and ran the first validated headless smoke test.
@@ -109,10 +151,9 @@ All AI operations are routed through a unified dual-track architecture:
   supabase functions deploy ai-run
   supabase functions deploy knowledge-manage
   ```
-- [ ] **Configure Supabase Secrets:** Ensure production secrets are active:
+- [ ] **Configure Supabase Secrets:** Ensure production gateway secret is active:
   ```bash
   supabase secrets set VERCEL_AI_GATEWAY_KEY="vck_..."
-  supabase secrets set GEMINI_API_KEY="..."
   ```
 - [ ] **Voice Check-In Revamp:** Currently deferred in `VoiceCheckIn.jsx` / worker: `voice_checkin`. Needs architecture alignment with real-time streaming audio.
 
@@ -150,7 +191,8 @@ Standard local-validation invocation: launch dev server detached via `cmd /c "st
 
 ## 5. System Invariants & Watch-outs for Peer Agents
 
-1. **NEVER deploy or revive `gemini-proxy` as-is.** It has no authentication and would leak `GEMINI_API_KEY` via `get-token`. All direct client invocations must go through `ai-run` or `agent-message`.
-2. **NEVER hardcode API keys in source files.** Git push protection will immediately block the push. Always use `Deno.env.get("...")`.
-3. **NEVER assume `functions.invoke(...)` hits an Edge Function.** Review `src/api/apiClient.js` first — many functions are intercepted as direct table writes or local mock data.
-4. **Always run `npm run typecheck` and `npm run build` before committing.**
+1. **`gemini-proxy` is PERMANENTLY DELETED.** Do NOT recreate it. All client AI operations route through `ai-run` or `agent-message` using Vercel AI Gateway.
+2. **`GEMINI_API_KEY` is RETIRED.** The entire stack uses `VERCEL_AI_GATEWAY_KEY` for both chat models and 768-d vector embeddings.
+3. **NEVER hardcode API keys in source files.** Git push protection will immediately block the push. Always use `Deno.env.get("...")`.
+4. **NEVER assume `functions.invoke(...)` hits an Edge Function.** Review `src/api/apiClient.js` first — many functions are intercepted as direct table writes or local mock data.
+5. **Always run `npm run typecheck` and `npm run build` before committing.**

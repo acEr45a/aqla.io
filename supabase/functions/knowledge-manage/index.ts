@@ -20,7 +20,6 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const geminiApiKey = Deno.env.get("GEMINI_API_KEY") ?? "";
 
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -116,7 +115,7 @@ serve(async (req) => {
         let embeddingVector: number[] | null = null;
         try {
           const textToEmbed = `${title}\n\n${content}`;
-          embeddingVector = await generateEmbedding(geminiApiKey, textToEmbed);
+          embeddingVector = await generateEmbedding(textToEmbed);
         } catch (embedErr: any) {
           console.warn("[knowledge-manage] Embedding generation warning:", embedErr.message);
         }
@@ -203,7 +202,7 @@ serve(async (req) => {
           });
         }
 
-        const queryEmbedding = await generateEmbedding(geminiApiKey, query);
+        const queryEmbedding = await generateEmbedding(query);
 
         const { data: matches, error } = await adminClient.rpc(
           "match_knowledge_documents",

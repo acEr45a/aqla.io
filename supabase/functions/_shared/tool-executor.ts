@@ -11,7 +11,7 @@ export interface ToolExecutionParams {
   userId: string;
   userRole: string;
   adminClient: any;
-  geminiApiKey: string;
+  gatewayKey?: string;
   isConfirmed?: boolean;
 }
 
@@ -37,7 +37,7 @@ export async function executeAgentTool(
     userId,
     userRole,
     adminClient,
-    geminiApiKey,
+    gatewayKey,
     isConfirmed = false,
   } = params;
 
@@ -85,7 +85,7 @@ export async function executeAgentTool(
           return { toolName, status: "error", error: "Missing required parameter 'query'" };
         }
 
-        const queryEmbedding = await generateEmbedding(geminiApiKey, query);
+        const queryEmbedding = await generateEmbedding(query);
         const matchCount = Math.min(Math.max(Number(args.limit) || 3, 1), 5);
         const categoryFilter = args.category || null;
 
@@ -379,7 +379,7 @@ export async function executeAgentTool(
           "worker-registry": "supabase/functions/_shared/worker-registry.ts — AI worker specifications & role gating.",
           "tools-catalog": "supabase/functions/_shared/tools-catalog.ts — Agent tool calling schemas and mappings.",
           "tool-executor": "supabase/functions/_shared/tool-executor.ts — Tool execution and safety validation engine.",
-          embeddings: "supabase/functions/_shared/embeddings.ts — Gemini text-embedding-004 vector generator.",
+          embeddings: "supabase/functions/_shared/embeddings.ts — AI Gateway 768-d vector embeddings.",
           "agent-message": "supabase/functions/agent-message/index.ts — Agent conversational loop with tool calling.",
           opsconsolewidget: "src/components/admin/OpsConsoleWidget.jsx — Admin operations console and knowledge manager.",
         };

@@ -287,19 +287,13 @@ async function startVoiceSession() {
     await audioStreamer.startRecording();
     const displayName = currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || '';
 
-    // Fetch live session config / token from backend proxy
+    // Fetch session token from local storage if available
     let apiKey = null;
     try {
-      const { data: proxyData, error: proxyError } = await supabase.functions.invoke('gemini-proxy', {
-        body: { action: 'get-live-config' }
-      });
-      if (!proxyError && proxyData?.apiKey) {
-        apiKey = proxyData.apiKey;
-      }
+      const stored = await chrome.storage.local.get(['aqla_voice_token']);
+      apiKey = stored.aqla_voice_token;
     } catch {
-      // Fallback to local storage if edge function invoke is blocked
-      const stored = await chrome.storage.local.get(['aqla_gemini_key']);
-      apiKey = stored.aqla_gemini_key;
+      // Ignored
     }
 
     if (!apiKey) {

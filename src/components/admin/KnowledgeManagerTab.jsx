@@ -317,7 +317,7 @@ export default function KnowledgeManagerTab({ accent = "#C9F24E" }) {
             </h3>
           </div>
           <p className="text-[11px] text-muted-foreground mb-3 leading-normal">
-            Test cosine-similarity ranking in real-time using Gemini <code>text-embedding-004</code>.
+            Test cosine-similarity ranking in real-time using AI Gateway <code>text-embedding-3-small</code> (768-dim).
           </p>
 
           <form onSubmit={handleRunSimulation} className="space-y-2 mb-4">

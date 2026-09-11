@@ -22,7 +22,6 @@ export interface GatewayRequestOptions {
   temperature?: number;
   maxTokens?: number;
   gatewayKey?: string;
-  geminiApiKey?: string;
 }
 
 export interface GatewayResponse {
@@ -50,8 +49,11 @@ export async function callAiGateway(
     reasoningBudget = "none",
     temperature = 0.7,
     maxTokens = 4096,
-    gatewayKey = Deno.env.get("VERCEL_AI_GATEWAY_KEY") ||
+    gatewayKey = opts.gatewayKey ||
+      Deno.env.get("VERCEL_AI_GATEWAY_KEY") ||
+      Deno.env.get("VERCEL_AI_GATEWAY_TOKEN") ||
       Deno.env.get("AI_GATEWAY_KEY") ||
+      Deno.env.get("AI_GATEWAY_API_KEY") ||
       "",
   } = opts;
 
