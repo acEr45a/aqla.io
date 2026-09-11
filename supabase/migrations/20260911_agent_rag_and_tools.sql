@@ -87,6 +87,7 @@ BEGIN
     (filter_category IS NULL OR kd.category = filter_category)
     AND kd.embedding IS NOT NULL
     AND (1 - (kd.embedding <=> query_embedding)) > match_threshold
+    AND (kd.category IN ('platform_faq', 'cognitive_protocols') OR public.is_admin())
   ORDER BY kd.embedding <=> query_embedding
   LIMIT match_count;
 END;

@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { geminiGenerate, validateSchema } from "../_shared/gemini.ts";
+import { callAiGateway } from "../_shared/gateway.ts";
 import { WORKER_REGISTRY } from "../_shared/worker-registry.ts";
 
 const corsHeaders = {
@@ -68,9 +69,9 @@ serve(async (req) => {
         workerId: "dynamic_worker",
         audience: "member",
         allowedRoles: ["user", "clinician", "admin"],
-        model: "gemini-3.6-flash",
+        model: body.model || "deepseek/deepseek-v3.1",
         thinkingBudget: "medium",
-        systemPrompt: "",
+        systemPrompt: body.system_instruction || "",
         responseSchema: customSchema,
         timeoutMs: 30000,
         maxRetries: 1,
@@ -85,14 +86,10 @@ serve(async (req) => {
       );
     }
 
-    modelName = worker.model;
+    modelName = body.model || worker.model;
 
     // 3. Authorization: every worker requires an authenticated caller; allowedRoles
     // then gates which authenticated roles may use this specific worker.
-    // (Previously, "member" audience workers skipped this check entirely, since the
-    // check only ran when audience !== "member" — meaning aqla_intelligence,
-    // voice_checkin, weekly_summary, plan_review, and the dynamic_worker fallback
-    // were all callable with zero authentication. Fixed here.)
     if (!userId) {
       return new Response(
         JSON.stringify({ error: "Unauthorized: authentication required" }),
@@ -106,33 +103,73 @@ serve(async (req) => {
       );
     }
 
-    if (!geminiApiKey) {
-      return new Response(
-        JSON.stringify({ error: "Server error: GEMINI_API_KEY is not configured." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     // 4. Build prompt content
     const promptText = customPrompt || (inputData ? JSON.stringify(inputData) : "");
     const contents = [{ role: "user" as const, parts: [{ text: promptText }] }];
     const schemaToUse = customSchema || worker.responseSchema;
 
-    // 5. Execute Gemini Inference
-    const result = await geminiGenerate(geminiApiKey, {
-      model: worker.model,
-      systemInstruction: worker.systemPrompt,
-      contents,
-      responseJsonSchema: schemaToUse,
-      thinkingBudget: worker.thinkingBudget,
-      correlationId,
-    });
+    // 5. Dual-Track Execution: Vercel AI Gateway for multi-provider models, Gemini for native Google
+    let resultText = "";
+    let parsedResult: any = undefined;
+    let inputTokens = 0;
+    let outputTokens = 0;
+    let executedModel = modelName;
+
+    const isGatewayModel = modelName.includes("/") && !modelName.startsWith("models/");
+
+    if (isGatewayModel) {
+      const messages = [
+        ...(worker.systemPrompt ? [{ role: "system" as const, content: worker.systemPrompt }] : []),
+        { role: "user" as const, content: promptText },
+      ];
+
+      const gwResp = await callAiGateway({
+        model: modelName,
+        messages,
+        reasoningBudget: worker.thinkingBudget || "none",
+      });
+
+      resultText = gwResp.content || "";
+      inputTokens = gwResp.inputTokens;
+      outputTokens = gwResp.outputTokens;
+      executedModel = gwResp.model;
+
+      if (schemaToUse) {
+        try {
+          parsedResult = JSON.parse(resultText);
+        } catch {
+          parsedResult = { text: resultText };
+        }
+      }
+    } else {
+      if (!geminiApiKey) {
+        return new Response(
+          JSON.stringify({ error: "Server error: GEMINI_API_KEY is not configured." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const result = await geminiGenerate(geminiApiKey, {
+        model: modelName,
+        systemInstruction: worker.systemPrompt,
+        contents,
+        responseJsonSchema: schemaToUse,
+        thinkingBudget: worker.thinkingBudget,
+        correlationId,
+      });
+
+      resultText = result.text;
+      parsedResult = result.parsed;
+      inputTokens = result.inputTokens;
+      outputTokens = result.outputTokens;
+      executedModel = result.model;
+    }
 
     const latencyMs = Date.now() - startTime;
 
     // 6. Schema validation if required
-    if (schemaToUse && result.parsed) {
-      const validationErr = validateSchema(result.parsed, schemaToUse);
+    if (schemaToUse && parsedResult) {
+      const validationErr = validateSchema(parsedResult, schemaToUse);
       if (validationErr) {
         console.warn(`[ai-run] Schema warning for ${workerId}: ${validationErr}`);
       }
@@ -143,10 +180,10 @@ serve(async (req) => {
       await adminClient.from("ai_runs").insert({
         user_id: userId,
         worker_id: workerId,
-        model: result.model,
+        model: executedModel,
         prompt_version: "v1-imported-base44",
-        input_tokens: result.inputTokens,
-        output_tokens: result.outputTokens,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
         latency_ms: latencyMs,
         status: "success",
         correlation_id: correlationId,
@@ -156,7 +193,7 @@ serve(async (req) => {
     }
 
     // 8. Return response
-    const output = result.parsed !== undefined ? result.parsed : { text: result.text };
+    const output = parsedResult !== undefined ? parsedResult : { text: resultText };
     return new Response(
       JSON.stringify(output),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

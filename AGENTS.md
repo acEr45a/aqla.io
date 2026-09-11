@@ -1,5 +1,21 @@
 # AGENTS.md
 
+## Mandatory Inter-Agent Handshake Protocol (Antigravity & Freebuff)
+
+Both **Antigravity** and **Freebuff** operate on this repository as equal peer agents. To prevent "Agent Drift", duplicate work, broken architectural assumptions, and conflicting logic, every agent MUST follow this protocol on every interaction:
+
+1. **Step 0 — Mandatory Turn-1 Read:**
+   - Before proposing, planning, or writing any code, **read [`AGENT_NOTEBOOK.md`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/AGENT_NOTEBOOK.md) in the repository root**.
+   - Review the `Active Architecture & System State` section and the latest handover entry to understand what the other agent recently built, what models are assigned, and what constraints are active.
+2. **Step 1 — Drift Reconciliation:**
+   - If you detect that the codebase has drifted or contains broken assumptions from a peer agent:
+     - Technical bugs / security leaks (e.g., broken API routing, missing RLS filters): **Resolve them immediately** and log a `[DRIFT RESOLVED]` entry in `AGENT_NOTEBOOK.md`.
+     - Ambiguous architectural or product divergence: **Pause and ask the user** before making irreversible changes.
+3. **Step 2 — Mandatory Handover on Final Turn:**
+   - Before declaring any task complete or committing:
+     - Update the top header of `AGENT_NOTEBOOK.md`: `> **Last Updated By:** [Antigravity | Freebuff] on [ISO Timestamp] | **Task:** [Summary]`
+     - Prepend a new handover entry in `Section 2: Handover Changelog` documenting the files touched, rationale, and open tasks for the peer agent.
+
 ## Global Subagent Execution Policy
 
 **Core Execution Rule**
