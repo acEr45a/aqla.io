@@ -123,7 +123,7 @@ function processDirectory(inputDir, outputDir) {
   });
 }
 
-const inputFolder = process.argv[2] || 'C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded';
+const inputFolder = process.argv[2] || path.join(__dirname, '../data/csv');
 const outputFolder = path.join(__dirname, '../supabase_ready_imports');
 
 processDirectory(inputFolder, outputFolder);

@@ -222,7 +222,7 @@ def process_and_import_csv(filepath, chunk_size=50):
 
 def find_csv_files():
     search_paths = [
-        "C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded/*.csv",
+        "data/csv/*.csv",
         "*.csv",
         "*_export.csv",
         "**/*_export.csv"

@@ -33,6 +33,11 @@ def to_uuid(val):
         return f"{hex_str[0:8]}-{hex_str[8:12]}-{hex_str[12:16]}-{hex_str[16:20]}-{hex_str[20:32]}".lower()
     return clean
 
+def _uploaded_csv(filename):
+    """Resolve a legacy import CSV path against the in-repo data/csv directory."""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "csv", filename)
+
+
 USER_MAP = {
     "6a670dff96c46b62aaca0b7e": {
         "email": "danishpaeds@gmail.com",
@@ -241,7 +246,7 @@ def setup_users_and_profiles():
 
 def import_captcha_configs():
     print("\n--- 2. Importing Captcha Configs ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/e04009bd-79fe-41b1-b2ef-87e278b5e56e/.user_uploaded/media_1786928671902.csv"
+    path = _uploaded_csv("media_1786928671902.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return
@@ -266,7 +271,7 @@ def import_captcha_configs():
 
 def import_daily_check_ins():
     print("\n--- 3. Importing Daily Check-ins ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/e04009bd-79fe-41b1-b2ef-87e278b5e56e/.user_uploaded/media_1786928671916.csv"
+    path = _uploaded_csv("media_1786928671916.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return
@@ -301,7 +306,7 @@ def import_daily_check_ins():
 
 def import_clinician_reviews():
     print("\n--- 4. Importing Clinician Reviews ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/e04009bd-79fe-41b1-b2ef-87e278b5e56e/.user_uploaded/media_1786928672054.csv"
+    path = _uploaded_csv("media_1786928672054.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return
@@ -334,9 +339,9 @@ def import_clinician_reviews():
 
 def import_brain_domains():
     print("\n--- 5. Importing Brain Domains ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/e04009bd-79fe-41b1-b2ef-87e278b5e56e/.user_uploaded/media_1786928671853.csv"
+    path = _uploaded_csv("media_1786928671853.csv")
     if not os.path.exists(path):
-        path = "C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded/media_1786915002147.csv"
+        path = _uploaded_csv("media_1786915002147.csv")
 
     with open(path, "r", encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
@@ -368,7 +373,7 @@ def import_brain_domains():
 
 def import_clinical_flags():
     print("\n--- 6. Importing Clinical Flags ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded/media_1786915002151.csv"
+    path = _uploaded_csv("media_1786915002151.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return
@@ -404,7 +409,7 @@ def import_clinical_flags():
 
 def import_admin_otps():
     print("\n--- 7. Importing Admin OTPs ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded/media_1786915002142.csv"
+    path = _uploaded_csv("media_1786915002142.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return
@@ -434,7 +439,7 @@ def import_admin_otps():
 
 def import_assessments():
     print("\n--- 8. Importing Assessments ---", flush=True)
-    path = "C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded/media_1786915002172.csv"
+    path = _uploaded_csv("media_1786915002172.csv")
     if not os.path.exists(path):
         print(f"  File not found: {path}", flush=True)
         return

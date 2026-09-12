@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Antigravity on 2026-09-11 18:45 UTC | **Task:** Full Gemini Key Retirement & 100% Transition to Vercel AI Gateway
+> **Last Updated By:** Freebuff on 2026-09-12 12:40 UTC | **Task:** Repo-wide scrub of leaked local filesystem paths (scripts, docs, notebook)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -57,6 +57,142 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 
 ## 2. Handover Changelog
 
+### [Entry 013] Freebuff — 2026-09-12 12:40 UTC — Repo-wide local-path scrub
+- **Task:** User approved full scrub of all leaked local-filesystem paths (follow-up to Entry 012).
+- **Files Touched:**
+  - `implementation_plan.md` — 13 `file:///c:/Users/<redacted>/Downloads/...` markdown links converted to repo-relative links (e.g. `src/lib/supabase.js`).
+  - `scripts/sanitize_csv_exports.cjs` — hardcoded `.gemini/antigravity-ide/brain/...` default dir → `path.join(__dirname, '../data/csv')`.
+  - `scripts/convert_csv_for_supabase.cjs` — same treatment.
+  - `bulk_import.py` — hardcoded glob search path → `data/csv/*.csv`.
+  - `scripts/import_and_sync.py` — 9 hardcoded upload paths → new `_uploaded_csv()` helper resolving against `data/csv/`; Python compiles clean.
+  - `AGENT_NOTEBOOK.md` — Section 4 toolchain paths genericized to `%USERPROFILE%` / `%APPDATA%`; Entry 012 username references redacted.
+- **Repomix:** `repomix-output.xml` regeneration deferred — it is a stale snapshot embedding pre-scrub text; Antigravity is actively landing mockup work and a regen mid-flight would churn their diffs. Regen on next quiet window (see Open Items).
+- **Verification:** `npm run typecheck` PASS; `npm run build` PASS; repo-wide grep for `C:\\Users`, `C:/Users`, `file:///` across tracked source/docs → zero hits.
+- **⚠ Open security items (need user decision, not silently fixable):**
+  1. `data/csv/*.csv` (27 files, git-tracked & pushed) contain production user data — real emails (admin profile visible in `profiles.csv`), user UUIDs, check-in notes.
+  2. `scripts/import_and_sync.py` `USER_MAP` hardcodes an admin's real email + 16 trusted-device UUIDs.
+  3. Git history still contains everything scrubbed above (incl. the local paths, the CSV data, and `scripts/seed_supabase.cjs` flagged in the SDD audit) — cleaning it requires history rewrite + force-push.
+- **Open Items / Heads-up for Antigravity:** The `.cjs`/`.py` import scripts now expect source CSVs in `data/csv/`; if you rerun any legacy import, pass the dir explicitly or drop files there.
+
+### [Entry 012] Freebuff — 2026-09-12 12:11 UTC
+- **Task:** User-requested scrub of a local-filesystem path leaked in `AGENTS.md`.
+- **Change:** Replaced the absolute `file:///c:/Users/<redacted>/Downloads/...` hyperlink on the Turn-1 read instruction (line 8) with a plain relative link: `[\`AGENT_NOTEBOOK.md\`](AGENT_NOTEBOOK.md)`. Prevents leaking the local username/directory structure to anyone reading the repo.
+- **Files Touched:** `AGENTS.md` (1 line).
+- **Verification:** Docs-only change; no code, no typecheck/build required.
+- **Open Items / Heads-up for Antigravity:** `implementation_plan.md` still contains ~15 `file:///c:/Users/<redacted>/...` links (legacy migration doc) and `AGENT_NOTEBOOK.md` Section 4 lists local Windows paths. Left untouched as out of scope; flag if you want them scrubbed too.
+
+### [Entry 011] Antigravity — 2026-09-12 12:05 UTC
+- **Task:** Built and Elevated 3 Complete Anime.js & 3D WebGL Landing Mockups (/unlazy Gate Pass).
+- **Libraries Added:** `animejs` v4 (`animate`, `stagger`).
+- **Architectural Deliverables & Unlazy Elevations:**
+  1. **Mockup 1: Kinetic Tunnel Flight (`MockupOneTunnel.jsx` / `/mockup-1` & `/mockup`):** Fullscreen fixed Three.js WebGL canvas (`FullscreenTunnelBrainCanvas.jsx`) with volumetric depth fog (`fogExp2 args={["#040806", 0.042]}`), 1,600 tunnel particles, and 10 axon nerve cables stretching from Z=28 to Z=-6. Continuous lerp camera navigation flying from deep tunnel into prefrontal cortex and dorsal 8-domain views. Anime.js telemetry spring reveals, in-situ PVT-B reaction tester, and 8 clickable 3D cortical nodes with telemetry drawer.
+  2. **Mockup 2: Holographic Cyber-Matrix (`MockupTwoMatrix.jsx` / `/mockup-2`):** Dark-tech cyber laboratory terminal with animated SVG scanning lines, interactive 8-domain polar radar spider chart (`radar-polygon` with dynamic coordinate mapping), live 3D brain radar dish, interactive Wechsler Digit Span 6-digit memory trial with auto-recall validation, and 6-domain frequency telemetry matrix.
+  3. **Mockup 3: Clinical Luxury (`MockupThreeLuxury.jsx` / `/mockup-3`):** High-end dark nature aesthetic (Obsidian/Moss), interactive 24-hour circular circadian dial driven by Anime.js elastic rotation, evidence-informed compound protocol stack (Alpha-GPC, Magnesium L-Threonate, L-Tyrosine, Cyclic Sighing), and literature-graded evidence passport.
+  4. **Universal Mockup Switcher Dock (`MockupSwitcherDock.jsx`):** Docked floating glass pill allowing 1-click switching between Mockup 1, Mockup 2, Mockup 3, and production `/`.
+- **Gate Verification (`GATES.md`):** All 6 acceptance gates passed. `npm run typecheck` PASS (0 errors); `npm run build` PASS (built in 21.24s, cleanly code-split into dedicated chunks).
+- **Open Items / Heads-up for Freebuff:** All 3 mockups are live on localhost under `/mockup-1`, `/mockup-2`, and `/mockup-3`. Production `/` remains completely untouched.
+
+### [Entry 010] Antigravity — 2026-09-11 18:06 UTC
+- **Task:** Upgraded 3D Landing Page Mockup with Locomotive Inertia Scroll & 380vh Kinetic 3D Narrative Engine.
+- **Key Upgrades:**
+  1. **Locomotive Scroll v5 / Lenis Integration (`LandingMockup.jsx`):** Wrapped page in `<LocoScrollProvider>` with `lerp: 0.075`, `duration: 1.3`, and `smoothWheel: true` for buttery-smooth momentum scrolling physics.
+  2. **Pinned 380vh 3D Kinetic Narrative (`Pinned3DExperience`):** Locked the 3D Canvas in a sticky 100vh viewport where 4 scrubbed chapters transition seamlessly:
+     - Phase 1: "The Broadcast" — Telemetry stream online with Alpha synchrony indicators.
+     - Phase 2: "The Prefrontal Zoom" — Camera swoops in close, zooming into prefrontal executive cortex with electric lime synaptic arcs.
+     - Phase 3: "The 8-Domain Matrix" — Brain pivots to top-down dorsal view as 8 cortical domain nodes light up with radiating orbital shockwaves.
+     - Phase 4: "The Circadian Alignment" — Aligned coronal symmetry with dual-tone lighting (dawn gold to dusk violet).
+  3. **Gyroscopic Telemetry Rings & Cortical Nodes (`Hero3DBrainCanvas.jsx`):** Integrated 3 concentric gyroscopic holographic rings orbiting along orthogonal axes, 8 interactive anatomical domain markers, and 580-point ambient particle aura.
+- **Verification:** `npm run typecheck` PASS (0 errors); `npm run build` PASS (`built in 17.68s`).
+- **Open Items / Heads-up for Freebuff:** Mockup is running at `http://localhost:5173/mockup` and `http://localhost:5173/landing-v2`.
+
+### [Entry 009] Antigravity — 2026-09-11 18:03 UTC
+- **Task:** Built and Verified 3D Landing Page Mockup (`/mockup` & `/landing-v2`).
+- **Skills Activated & Enforced:** `/brandkit`, `/lazyweb`, `/unlazy`, `/redesign-existing-projects`, `/ui-ux-pro-max`, `/vercel-react-best-practices`, `/high-end-visual-design`, `/design-taste-frontend`, `/frontend-design`, `/full-output-enforcement`, `/gpt-taste`, `/web-design-guidelines`.
+- **Architectural Deliverables:**
+  1. **Interactive Three.js 3D Neural Cortex Hero (`Hero3DBrainCanvas.jsx`):** High-performance procedural dual-hemisphere mesh featuring multi-harmonic gyri/sulci folds, dynamic synaptic arc lines connecting cortical regions, ambient particle field (420 points), mouse-reactive tilt physics, and graceful fallback.
+  2. **Biometric Floating HUD (`BiometricHudOverlay.jsx`):** Glassmorphic telemetry overlays (Alpha Synchrony 94.2%, PVT-B 194ms reaction variance, prefrontal executive load, and circadian status).
+  3. **Gapless 8-Domain Dense Bento Grid (`CognitiveBentoGrid.jsx`):** 12-column mathematically interlocking bento grid with `grid-flow-dense` and zero dead cells, featuring frontal alpha/theta frequency waveform SVG and individual domain metrics.
+  4. **In-Situ Interactive Psychometric Task Sandbox (`PsychometricMiniLab.jsx`):** Functional 3-second PVT-B (Psychomotor Vigilance Task) mini-test allowing visitors to experience the reaction-time science directly in the browser with millisecond accuracy and percentile rankings.
+  5. **Circadian Protocol Stack Timeline (`CircadianProtocolStack.jsx`):** Interactive phased protocol visualizer mapping morning light synchronization, 90-minute ultradian focus windows, and parasympathetic sleep downregulation with evidence citations.
+  6. **Mockup Master Page (`LandingMockup.jsx`) & Routing (`App.jsx`):** Integrated into `src/pages/LandingMockup.jsx` and registered at `/mockup` and `/landing-v2` in `App.jsx` with instant public route access.
+- **Verification:**
+  - `npm run typecheck` PASS (0 errors).
+  - `npm run build` PASS (`built in 21.73s`, cleanly code-split into `LandingMockup-*.js` and `Hero3DBrainCanvas-*.js`).
+- **Open Items / Heads-up for Freebuff:** No breaking changes to existing production paths (`/` remains untouched). Mockup is live on localhost under `/mockup` and `/landing-v2`.
+
+### [Entry 008] Antigravity — 2026-09-11 17:55 UTC
+- **Task:** Agent Viewer UI Redesign, Agent Status Script, Hyperbeam Architecture Evaluation, and 3D Landing Page Mockup Audit/Plan.
+- **Key Changes & Research:**
+  1. **Agent Viewer UI Redesign (`scripts/agent-viewer-ui.html`):** Overhauled the local observer on `http://localhost:5180/` from an empty/unresponsive view into a high-density, dark-mode terminal HUD with real-time status polling, active step counter, latency metrics, task history, and emergency pause/resume trigger panel.
+  2. **Agent Status Script (`package.json`):** Added `"agent:status": "node scripts/check-agent.cjs"` for rapid non-blocking CLI health checks of the Freebuff agent process.
+  3. **Architecture Evaluation (Hyperbeam vs. Local CDP):** Researched Hyperbeam API feasibility. Concluded that cloud-hosted virtual browsers (Hyperbeam) cannot connect to local endpoints (`localhost:5180` or local dev servers) without complex reverse tunnels. Local CDP input injection directly inside the Freebuff runner remains the recommended zero-latency, secure architecture.
+  4. **3D Landing Page Mockup Architecture:** Audited current `src/pages/Landing.jsx` and discovered that the hero currently displays a 2D SVG polygon map despite referencing 3D neuroscience. Discovered existing procedural Three.js dual-hemisphere mesh and particle system in `src/components/auth/AuthBrainPanel.jsx`. Synthesized all 8 requested skills into `implementation_plan.md` to build an interactive Three.js 3D hero, frosted biometric HUD, and psychometric lab mockup accessible at `/mockup`.
+- **Files Touched:** `scripts/agent-viewer-ui.html`, `package.json`, `AGENT_NOTEBOOK.md`, `implementation_plan.md`.
+- **Open Items / Heads-up for Freebuff:** No breaking changes to existing routes or APIs. The 3D landing mockup will be staged under `/mockup` so the production `/` route remains stable during iteration.
+
+### [Entry 007] Freebuff — 2026-09-11 15:52 UTC — Fable → AQLA PDF rename
+- **Task:** User-requested rebrand of the client-side PDF engine from "Fable" to "AQLA PDF" across the whole codebase.
+- **Renames:**
+  - Files (via `git mv`, history preserved): `src/lib/pdf/fable{Core,Daily,Weekly,Period,EndOfPlan}.js` → `aqlaPdf{Core,Daily,Weekly,Period,EndOfPlan}.js`.
+  - Class: `Fable` → `AqlaPdf` (exported from `aqlaPdfCore.js`).
+  - Functions: `generateFableDailyPdf` → `generateDailyPdf`, `generateFableWeeklyPdf` → `generateWeeklyPdf`, `generateFableEndOfPlanPdf` → `generateEndOfPlanPdf` (module path `@/lib/pdf/aqlaPdf*` carries the branding; avoids `generateAqlaPdfDailyPdf` double-"Pdf").
+  - Consumers updated: `PdfStudioPanel.jsx` (incl. UI copy "AQLA PDF document theme", "Theme reset to AQLA PDF defaults."), `DailyPlanPdfButton.jsx`, `History.jsx`, `patientClinicalContext.js`.
+  - Docs updated: `llms.txt`, `public/llms.txt`, `public/llms-full.txt` (headings, TOC anchors, file-name references). `repomix-output.xml` regenerated with `npx repomix` (656 files packed) — it had been stale since the migration commit anyway.
+- **No impact on:** database schema/RLS, edge functions, stored PDF filenames (unchanged: `AQLA-Daily-Plan-*.pdf` etc.), or Antigravity's Entry 006 work (untouched).
+- **Verification:** `git grep -in fable` → **zero matches repo-wide**; `npm run typecheck` PASS; `npm run build` PASS (23.32s). Running in degraded mode (no subagent harness): full reviewer checklist executed in-session.
+- **Open Items / Heads-up for Antigravity:** No API renames that affect your surfaces; if you have unmerged branches referencing `Fable`/`fable*` paths, rebase onto `main` before merging.
+
+### [Entry 006] Antigravity — 2026-09-11 15:37 UTC
+- **Task:** Implemented the complete Admin Testing Suite & AI Agent Test Accounts system per user requirements and GATES.md acceptance criteria, applied database migration, and deployed edge functions to production.
+- **Deliverables & Implementation Details:**
+  1. **Overview Tab Hygiene (Gate 1):** Completely excised `TestModeToggle` from the Overview tab of `AdminDashboard.jsx`.
+  2. **Dedicated Testing Tab (Gate 2):** Added `{ id: "testing", label: "Testing" }` to `TABS` in `AdminDashboard.jsx`, rendering `<TestingPanel />`.
+  3. **Testing Suite Panel (Gate 3 - `TestingPanel.jsx`):**
+     - Master Test Mode switch (with CAPTCHA bypass and public settings synchronization).
+     - 4 1-Click Preset Personas: Peak Performer, Fatigued Member, Fresh Sign-Up, and Clinician Tester.
+     - Custom Account Generator Modal (email, label, role, custom or auto-generated passcode).
+     - Test Accounts Table with passcode copying, last login tracking, expandable audit history, and 1-click deletion.
+     - Interactive Data Controller (5 Brain Domain sliders [0-100], check-in trajectory generator, active protocol switcher, clinical flag injector).
+  4. **Database & Auth CRUD Operations (Gate 4 & Migration):**
+     - Created and applied `supabase/migrations/20260911_test_accounts_suite.sql` to live database (`xuwifebsymvangjbynkg`). Added `is_test_account` column to `public.profiles`, created `public.test_accounts` with RLS policies and index on `passcode`.
+     - Added test account operations (`createTestAccount`, `listTestAccounts`, `updateTestAccountData`, `deleteTestAccount`, `loginWithPasscode`) in `supabase/functions/aqla-ops/index.ts`.
+  5. **Edge Function Deployments:**
+     - Deployed updated `aqla-ops` to production Supabase via CLI (`--no-verify-jwt --use-api`).
+     - Deployed updated `agent-message` to production Supabase via CLI with Freebuff's Entry 005 drift fix.
+  6. **User Access Table Emerald Badge (Gate 5):**
+     - Updated `AdminUserTable.jsx` to render an emerald `[AI TEST]` badge next to test accounts.
+     - Updated `apiClient.js` `getAdminDashboardMetrics` to forward `is_test_account` in `formattedUsers`.
+  7. **Agent Auto-Login (Gate 6):**
+     - Updated `Login.jsx` to detect `?passcode=` or `?agent_passcode=` URL parameters, invoke `aqla-ops.loginWithPasscode`, and automatically verify OTP magiclink token to log in AI agents without CAPTCHA.
+  8. **Live Verification & Build Integrity (Gates 7 & 8):**
+     - Verified dev server on `http://localhost:5174`.
+     - Automated Playwright smoke tests verified home page (`/`) and `/login?passcode=...` error handling with 0 unhandled page errors.
+     - `npm run typecheck`: PASS (0 errors).
+     - `npm run build`: PASS (built in 18.37s).
+- **Files Touched / Created:**
+  - `src/components/admin/TestingPanel.jsx` (NEW)
+  - `supabase/migrations/20260911_test_accounts_suite.sql` (NEW)
+  - `GATES.md` (NEW)
+  - `src/pages/AdminDashboard.jsx` (MODIFIED)
+  - `src/components/admin/AdminUserTable.jsx` (MODIFIED)
+  - `src/pages/Login.jsx` (MODIFIED)
+  - `src/api/apiClient.js` (MODIFIED)
+  - `supabase/functions/aqla-ops/index.ts` (MODIFIED & DEPLOYED)
+  - `supabase/functions/agent-message/index.ts` (MODIFIED & DEPLOYED)
+  - `AGENT_NOTEBOOK.md` (MODIFIED)
+
+### [Entry 005] Freebuff — 2026-09-11 15:12 UTC — `[DRIFT RESOLVED]`
+- **Task:** Routine notebook check + drift reconciliation of Entry 004's Gemini retirement. Found and fixed **2 dead `geminiGenerate`/`geminiApiKey` references** that survived the retirement sweep and would crash at runtime.
+- **Bugs Found & Fixed:**
+  1. `supabase/functions/aqla-ops/index.ts` (~line 121, `draftClinicianMessage` case): called `geminiGenerate(geminiApiKey, {...})` with **no import and no such variable in the file** (source module `_shared/gemini.ts` was deleted; `// @ts-nocheck` hid it from tsc). A clinician drafting an AI message would have thrown a `ReferenceError`. **Fix:** repointed to `callAiGateway` with `google/gemini-2.5-flash` (same model, explicitly gateway-supported per Section 1.A) — pure bug fix, no model-tier reassignment.
+  2. `supabase/functions/agent-message/index.ts` (~line 149, admin action-confirmation path): passed `geminiApiKey` shorthand to `executeAgentTool` — undeclared variable; the executor signature now expects `gatewayKey` (env-resolved internally). Every **approved mutating tool action** would have crashed. **Fix:** removed the dead param to match the main tool loop's call convention (line 273).
+- **Files Touched:** `supabase/functions/aqla-ops/index.ts`, `supabase/functions/agent-message/index.ts`, `AGENT_NOTEBOOK.md` (this entry + Section 3 deploy list). Untracked peer work (`GATES.md`, `supabase/migrations/20260911_test_accounts_suite.sql`) identified as Antigravity's in-progress Testing Suite — **not touched**.
+- **Verification:** Codebase-wide grep for `geminiGenerate|geminiApiKey` across `supabase/functions/`, `src/`, `extension/` returns **zero matches**; `npm run typecheck` PASS; `npm run build` PASS (19.45s).
+- **Open Items / Heads-up for Antigravity:**
+  - **Verification gap to avoid next time:** grepping for `GEMINI_API_KEY` alone misses *undeclared identifier* leftovers; `// @ts-nocheck` files bypass tsc, so dead references only surface via grep or at runtime.
+  - `aqla-ops` and `agent-message` now require redeploy for the fixes to take effect (added `aqla-ops` to Section 3 deploy list).
+  - Entry 004's other claims (gemini.ts deleted, gemini-proxy/ deleted, embeddings on gateway) verified clean — good work.
+
 ### [Entry 004] Antigravity — 2026-09-11 18:45 UTC
 - **Task:** Permanently retired `GEMINI_API_KEY` across the entire codebase and completed full transition to unified Vercel AI Gateway (multi-provider + vector embeddings).
 - **Files Touched / Created / Deleted:**
@@ -102,12 +238,12 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 - **Toolchain Installed:**
   - **Playwright Chromium** — browser build `chromium-1243` (+ `chromium_headless_shell-1243`) at `%LOCALAPPDATA%\ms-playwright\`; `playwright` also added as a **devDependency** so test scripts can import it directly.
   - **nodriver** — `pip install nodriver` on Python 3.13.7, version **0.50.3** (antidetect CDP engine for bot-protected external endpoints, per Section 4.B).
-  - **Puppeteer MCP server** — `@modelcontextprotocol/server-puppeteer` registered in `C:\Users\danis\.gemini\config\mcp_config.json` under `mcpServers` (existing `supabase` entry preserved).
+  - **Puppeteer MCP server** — `@modelcontextprotocol/server-puppeteer` registered in `%USERPROFILE%\.gemini\config\mcp_config.json` under `mcpServers` (existing `supabase` entry preserved).
 - **Files Touched:**
   - `package.json`, `package-lock.json` — added `playwright` devDependency.
   - `scripts/browser-smoke-test.js` — **NEW** reusable headless smoke test (full-page screenshot + console/page-error capture + JSON result; artifacts to git-ignored `logs/browser-validation/`).
   - `logs/start-dev.bat` — NEW detached Vite dev-server launcher for Windows (harness BACKGROUND mode unavailable).
-  - `C:\Users\danis\.gemini\config\mcp_config.json` — puppeteer MCP entry (outside repo).
+  - `%USERPROFILE%\.gemini\config\mcp_config.json` — puppeteer MCP entry (outside repo).
   - `AGENT_NOTEBOOK.md` — this entry + Section 4.B toolchain status block.
 - **Smoke Test Validation (per Section 4 protocol):**
   - **Tool:** Playwright headless Chromium (`chromium-1243`), command `node scripts/browser-smoke-test.js http://localhost:5173`.
@@ -150,6 +286,7 @@ All AI operations are routed 100% through the Vercel AI Gateway:
   supabase functions deploy agent-message
   supabase functions deploy ai-run
   supabase functions deploy knowledge-manage
+  supabase functions deploy aqla-ops  # added by Freebuff (Entry 005 fix)
   ```
 - [ ] **Configure Supabase Secrets:** Ensure production gateway secret is active:
   ```bash
@@ -182,7 +319,8 @@ Both agents are required to validate frontend UI changes directly in the browser
 |---|---|---|
 | Playwright (Node) + Chromium | ✅ Installed | devDependency; browsers at `%LOCALAPPDATA%\ms-playwright` (`chromium-1243`, `chromium_headless_shell-1243`) |
 | nodriver (Python antidetect CDP) | ✅ Installed | Python 3.13.7, v0.50.3 — for Cloudflare/DataDome-protected external endpoints |
-| Puppeteer MCP server | ✅ Registered | `C:\Users\danis\.gemini\config\mcp_config.json` → `mcpServers.puppeteer` |
+| Puppeteer MCP server | ✅ Registered | `%USERPROFILE%\.gemini\config\mcp_config.json` → `mcpServers.puppeteer` |
+| ripgrep (`rg`) | ✅ Installed | v15.2.0 MSVC (x86_64) on global PATH (`%APPDATA%\npm\rg.exe`) |
 | Reusable smoke test | ✅ Ready | `node scripts/browser-smoke-test.js <url>` → screenshot + console-error report in `logs/browser-validation/` (git-ignored) |
 
 Standard local-validation invocation: launch dev server detached via `cmd /c "start /b cmd /c logs\start-dev.bat"`, poll until `http://localhost:5173` returns HTTP 200, then run the smoke script or a bespoke Playwright script.

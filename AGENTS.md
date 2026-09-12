@@ -5,7 +5,7 @@
 Both **Antigravity** and **Freebuff** operate on this repository as equal peer agents. To prevent "Agent Drift", duplicate work, broken architectural assumptions, and conflicting logic, every agent MUST follow this protocol on every interaction:
 
 1. **Step 0 — Mandatory Turn-1 Read:**
-   - Before proposing, planning, or writing any code, **read [`AGENT_NOTEBOOK.md`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/AGENT_NOTEBOOK.md) in the repository root**.
+   - Before proposing, planning, or writing any code, **read [`AGENT_NOTEBOOK.md`](AGENT_NOTEBOOK.md) in the repository root**.
    - Review the `Active Architecture & System State` section and the latest handover entry to understand what the other agent recently built, what models are assigned, and what constraints are active.
 2. **Step 1 — Drift Reconciliation:**
    - If you detect that the codebase has drifted or contains broken assumptions from a peer agent:

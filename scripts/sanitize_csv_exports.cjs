@@ -28,7 +28,7 @@ function sanitizeCsv(inputFilePath, outputFilePath) {
 }
 
 const customTargetDir = process.argv[2];
-const uploadedDir = customTargetDir || 'C:/Users/danis/.gemini/antigravity-ide/brain/131450f9-5807-422c-8b5c-e16cac541437/.user_uploaded';
+const uploadedDir = customTargetDir || path.join(__dirname, '../data/csv');
 const outputDir = path.join(__dirname, '../sanitized_imports');
 
 if (!fs.existsSync(outputDir)) {

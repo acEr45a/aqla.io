@@ -10,8 +10,8 @@
 | `handle_new_user` trigger | ✅ Done | `auth.users` INSERT → `public.profiles` |
 | RBAC helper functions | ✅ Done | `is_admin()`, `is_clinician_or_admin()`, `get_current_user_role()` |
 | RLS policies | ✅ Done | All tables have policies per `supabase_complete_schema.sql` |
-| Supabase JS client | ✅ Done | [`supabase.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/lib/supabase.js) |
-| Entity data-access layer | ✅ Done | [`apiClient.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/api/apiClient.js) — full CRUD proxy over Supabase |
+| Supabase JS client | ✅ Done | [`supabase.js`](src/lib/supabase.js) |
+| Entity data-access layer | ✅ Done | [`apiClient.js`](src/api/apiClient.js) — full CRUD proxy over Supabase |
 | Auth methods (email, Google OAuth, reset) | ✅ Done | `apiClient.js` auth module uses `supabase.auth.*` |
 | User data migrated | ✅ Done | 10 profiles, 10 auth users, 19 check-ins, etc. |
 | `.env` with Supabase + Gemini keys | ✅ Done | Has `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `GEMINI_API_KEY` |
@@ -83,14 +83,14 @@ The migration is divided into **6 execution phases**, ordered by dependency. Eac
 
 The `AuthContext.jsx` has critical dead code: `createAxiosClient` (never imported), `appParams.appId` (removed in apiClient), and `base44.auth.redirectToLogin` (doesn't exist on the Supabase-backed apiClient).
 
-#### [MODIFY] [`AuthContext.jsx`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/lib/AuthContext.jsx)
+#### [MODIFY] [`AuthContext.jsx`](src/lib/AuthContext.jsx)
 - Remove `createAxiosClient` usage (lines 27-78) — replace with direct Supabase session check
 - Replace `base44.auth.me()` with `apiClient.auth.me()`
 - Replace `base44.auth.redirectToLogin(...)` with `navigate('/login')`
 - Use `supabase.auth.onAuthStateChange()` for reactive session management
 - Remove `appParams` import and all references to `appParams.token` and `appParams.appId`
 
-#### [MODIFY] [`app-params.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/lib/app-params.js)
+#### [MODIFY] [`app-params.js`](src/lib/app-params.js)
 - Simplify to remove Base44-specific params (`access_token`, `from_url`, `app_base_url`, `app_id`, `functions_version`). Supabase manages sessions via its own localStorage keys.
 
 ---
@@ -143,7 +143,7 @@ CREATE TABLE public.ai_runs (
 );
 ```
 
-#### [MODIFY] [`apiClient.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/api/apiClient.js)
+#### [MODIFY] [`apiClient.js`](src/api/apiClient.js)
 - Add `integrations` namespace with `Core.InvokeLLM` compatibility shim that calls the `ai-run` Edge Function
 - This allows all existing `base44.integrations.Core.InvokeLLM({...})` calls to work immediately through the new gateway without touching every call site
 
@@ -188,7 +188,7 @@ Edge Function that:
 - Inserts assistant response
 - Returns the response (Supabase Realtime delivers it to subscribers)
 
-#### [MODIFY] [`apiClient.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/api/apiClient.js)
+#### [MODIFY] [`apiClient.js`](src/api/apiClient.js)
 Add `agents` namespace:
 ```js
 agents: {
@@ -250,29 +250,29 @@ Port all `base44.functions.invoke(name, payload)` calls to Supabase Edge Functio
 
 ### Phase 6: Cleanup — Remove All Base44 Residue
 
-#### [MODIFY] [`base44Client.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/api/base44Client.js)
+#### [MODIFY] [`base44Client.js`](src/api/base44Client.js)
 - Rewrite to export `apiClient` directly without the `base44` alias, OR
 - Keep the alias file but rename exports so consumers can be migrated incrementally
 
 #### [MODIFY] All ~50 component files importing `base44`
 - Replace `import { base44 } from "@/api/base44Client"` with `import { apiClient } from "@/api/apiClient"` (or keep the alias — this is a naming decision)
 
-#### [MODIFY] [`AppLayout.jsx`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/AppLayout.jsx)
+#### [MODIFY] [`AppLayout.jsx`](src/components/AppLayout.jsx)
 - Remove `base44.appLogs?.logUserInApp?.(pathname)` call (Base44-only analytics)
 - Keep the `SiteVisit.create()` call (already goes through Supabase)
 
-#### [MODIFY] [`OAuthConsent.jsx`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/pages/OAuthConsent.jsx)
+#### [MODIFY] [`OAuthConsent.jsx`](src/pages/OAuthConsent.jsx)
 - Remove or disable — this is a Base44 MCP consent page. If MCP is needed, rewrite for Supabase auth.
 
-#### [MODIFY] [`authReturnTo.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/lib/authReturnTo.js)
+#### [MODIFY] [`authReturnTo.js`](src/lib/authReturnTo.js)
 - Remove Base44-specific param stripping (`app_base_url`, `app_id`, `functions_version`, `from_url`). Keep `access_token` stripping as a general security measure.
 
 #### [MODIFY] Brain map images
 - Download the 2 `media.base44.com` images, add to Supabase Storage, update URLs in:
-  - [`BrainProfileMap.jsx`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/brainmap/BrainProfileMap.jsx)
-  - [`brainRegions.js`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/brainmap/brainRegions.js)
+  - [`BrainProfileMap.jsx`](src/components/brainmap/BrainProfileMap.jsx)
+  - [`brainRegions.js`](src/components/brainmap/brainRegions.js)
 
-#### [MODIFY] [`image.jsx`](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/ui/image.jsx)
+#### [MODIFY] [`image.jsx`](src/components/ui/image.jsx)
 - Remove `media.base44.com` from `WIX_MEDIA_HOSTS` array and Wix Media resize logic (or keep as dead-code-safe fallback)
 
 #### [MODIFY] VoiceCheckIn + useVoiceChat — `GenerateSpeech`
