@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-12 12:40 UTC | **Task:** Repo-wide scrub of leaked local filesystem paths (scripts, docs, notebook)
+> **Last Updated By:** Freebuff on 2026-09-18 06:46 UTC | **Task:** CLI enablement complete — first-run login done, subagent runtime active (Entry 025)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,177 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 025] Freebuff — 2026-09-18 06:46 UTC — CLI enablement complete: first-run login done, subagent runtime active
+- **Task:** Close Entry 021's open item — first-run login of the Freebuff CLI so future tasks can use real parallel subagent spawning instead of this web client's degraded in-session pipeline.
+- **Login mechanics (background harness unavailable):** `run_terminal_command` here has no working BACKGROUND `process_type` (platform rejects it), so the interactive `freebuff login` was launched detached via Entry 018's PowerShell `Start-Process` pattern with stdout/stderr redirected to `logs/freebuff-login.out` / `.err`. The 30s launch command timed out but the process had spawned; the output files captured the one-time auth URL, which was rendered to the user as a clickable button; user completed browser auth.
+- **Verified state (not assumed):** `✓ Logged in as acEr45a` in login output; `~/.config/manicode/credentials.json` created; platform binary `freebuff.exe` (~126 MB) + bundled `rg.exe` 15.2.0 + `tree-sitter.wasm` all present; `freebuff-metadata.json` healthy (version/target).
+- **[DRIFT RESOLVED] Entry 021's auth-location assumption was wrong:** auth state lives in `~/.config/manicode/` — NOT `~/.freebuff*` / `~/.codebuff*`. Launcher source confirms `path.join(homeDir, '.config', 'manicode')` (config-dir env override exists). My earlier probes looked in the wrong dotfolders and would have wrongly reported "no auth state".
+- **⚠ Harness quirk after CLI install:** one code_search call failed with `ENOENT ... C:\Users\danis\.config\manicode\rg.exe` ("Vendored ripgrep not found; ensure @codebuff/sdk is up-to-date or set CODEBUFF_RG_PATH") even though the binary runs fine from bash (`rg --version` → 15.2.0). Workaround: terminal `grep` for content searches. If it persists next session, set `CODEBUFF_RG_PATH`.
+- **No app source touched.** Files: `AGENT_NOTEBOOK.md` only (plus git-ignored `logs/freebuff-login.*` run artifacts). Entry 021's repo changes (`npm run agent:cli` script, `.freebuff/`/`.codebuff/` gitignore) stand as-is; no config file was needed — the runtime is simply active now. Antigravity's Entry 024 mockup overhaul landed mid-session; no conflicts (I touched no source).
+- **Open items:** all of Entries 022/023 still stand — uncommitted backlog (now also including Antigravity's Entry 024 mockup work), Vercel AI Gateway free-tier decision (403 on Claude surfaces), Radix Dialog `aria-describedby` a11y nit.
+
+### [Entry 024] Antigravity — 2026-09-18 06:45 UTC — [RESOLVED] Studio-Grade Landing Mockup Overhaul with Locomotive Scroll & Tactile 3D Obsidian Shader
+- **Task:** Elevate all 4 landing page mockups to meet luxury agency specifications (`/brandkit`, `/gpt-taste`, `/ui-ux-pro-max`), resolve user dissatisfaction ("they look bad, dont have locomotive scroll are absolutely unprofessional are clunky").
+- **Problems Diagnosed & Resolved:**
+  1. **Locomotive Scroll Inertia:** Mockups lacked `<LocoScrollProvider>` momentum physics, resulting in choppy native scrolling. Wrapped `MockupOneTunnel.jsx`, `MockupTwoMatrix.jsx`, `MockupThreeLuxury.jsx`, and `MockupFourUnseen.jsx` in `<LocoScrollProvider>` with `lerp: 0.075`, `duration: 1.25`, and `smoothWheel: true`. Added `data-scroll` and `data-scroll-speed` parallax attributes across sections.
+  2. **Invisible Obsidian Glass Cortex (Mockup 1):** `ObsidianRefractionCanvas.jsx` had an empty shell with `transmission: 0.96` that refracted the black background with no internal mass or highlights. Re-architected with:
+     - Sculptural inner thalamic/cortical core with breathing bioluminescence (`#bef264` / `#38bdf8`, emissiveIntensity 0.22).
+     - 14 quadratic Bezier synaptic firing arcs bridging hemispheres.
+     - 8 Cortical domain nodes with pulsing halos.
+     - Frosted obsidian glass physical shell (`roughness: 0.16`, `ior: 1.52`, `specularColor: #dcfce7`, `clearcoat: 0.95`).
+     - Dual gyroscopic precision telemetry rings.
+     - Fixed persistent viewport stage ensuring the cortex remains visible and rotates choreographically throughout scroll chapters.
+  3. **Particle Readability (Mockup 2):** 22,000 volumetric points of light previously conflicted with hero headline and matrix domain copy. Engineered ambient frosted glass backdrop scrims (`backdrop-blur-[8px] bg-[#04070a]/60` and `bg-[#04070a]/85`) ensuring 100% crisp typography while keeping the full-bleed particle universe active in the periphery.
+  4. **Dock Positioning:** Collapsible `MockupSwitcherDock.jsx` optimized with clean z-indexing and clearance so CTAs are never obscured.
+- **Verification & Visual Proof:**
+  - `npm run typecheck` PASS (exit code 0).
+  - `npm run build` PASS (exit code 0, 21.52s).
+  - Playwright full suite (`audit_mockups_playwright.js`) PASS: 0 console errors, 0 runtime errors.
+  - High-res 1440×900 desktop screenshots captured and verified:
+    - `logs/browser-validation/mockup-qa/Mockup-1-Tunnel-01-hero.png`
+    - `logs/browser-validation/mockup-qa/Mockup-1-Tunnel-02-scrolled.png`
+    - `logs/browser-validation/mockup-qa/Mockup-2-Matrix-01-hero.png`
+    - `logs/browser-validation/mockup-qa/Mockup-2-Matrix-02-scrolled.png`
+    - `logs/browser-validation/mockup-qa/Mockup-4-Unseen-01-hero.png`
+- **Files Touched:**
+  - `src/components/landing/3d/ObsidianRefractionCanvas.jsx`
+  - `src/pages/mockups/MockupOneTunnel.jsx`
+  - `src/pages/mockups/MockupTwoMatrix.jsx`
+  - `src/pages/mockups/MockupThreeLuxury.jsx`
+  - `src/pages/mockups/MockupFourUnseen.jsx`
+  - `AGENT_NOTEBOOK.md`
+- **Open Items / Heads-up for Freebuff:** All 4 mockups now share unified Locomotive Scroll v5 momentum physics and match the luxury agency aesthetic. Vite dev server daemon is active and verified at `http://localhost:5173`. Ready for final user sign-off.
+
+### [Entry 019] Freebuff — 2026-09-18 05:45 UTC — [DRIFT RESOLVED] Member overlay modals gated on non-staff role (Entry 018 Finding 2)
+- **Task:** Resolve Entry 018's flagged UX bug: `ReassessmentPrompt` (z-70, mounted member-wide) rendered over `/admin` (z-50) when the persona's assessment was >14 days stale, hijacking clicks. Prescribed fix from Entry 018: gate member modals on admin/clinician roles.
+- **Bug class widened during planning:** all four member-wide overlays in `AppLayout.jsx` belong to the same class — member-data polls at z-70 while staff routes render inside AppLayout: `ReassessmentPrompt`, `DailyCheckInPrompt`, `RecommendationModal`, and `PlanReviewGate` (worst case: full-screen page-blocking gate). All four are now gated together.
+- **Change (single file, `src/components/AppLayout.jsx`):** Added `STAFF_ROLES = ["admin", "super_admin", "clinician"]`; derived `isStaff`; wrapped the four modal mounts in `{!isStaff && ...}`. No modal internals, no edge functions, no RLS touched.
+- **Behavior notes:** Guests and members are unaffected (role resolves to `"user"`/`null` → modals mount exactly as before, with a timing shift equal to the existing staff-nav resolution instant). Staff on `/admin` and `/clinician` no longer get member modals stacking above the UI. If a future need arises for staff to preview these modals, use the Testing tab personas instead of un-gating.
+- **Execution mode:** Degraded (no subagent spawn tool in this harness) — Planner/Worker/Reviewer run in-session per AGENTS.md fallback; reviewer checklist completed with independent `npm run typecheck` (PASS) + `npm run build` (PASS, 36.85s) after one cosmetic fix round (stray import indentation). Platform `code-reviewer` auto-review on multi-file edits also ran.
+- **Files Touched:** `src/components/AppLayout.jsx`, `AGENT_NOTEBOOK.md`.
+- **Verification:** typecheck PASS (exit 0); build PASS; reviewer 4-point checklist PASS. NOT browser-validated on /admin this session (dev server not running; recommend Antigravity's `browser_subagent` pass or `AGENT_TEST_MODE=ai node scripts/agent-live-viewer.js` to confirm the ops-launcher click lands).
+- **Open Items / Heads-up for Antigravity:** Entry 018 Finding 1 (gateway free tier 403/429) still needs the user decision. The member-modal gating pattern is now the convention — mount future member-wide overlays in AppLayout behind `{!isStaff && ...}`.
+
+### [Entry 022] Freebuff — 2026-09-18 06:20 UTC — [VALIDATED] Entry 019 modal gating proven in browser: 20/20 assertions, admin + member personas
+- **Task:** User asked for full browser validation with the browser tooling and test accounts BEFORE trusting any of the session's changes — specifically that features match the site's styling/behavior.
+- **Method:** New reusable suite `scripts/validate-member-modal-gating.js` (Playwright headless Chromium + vaulted admin persona from `logs/agent-memory/session-state.json` via `loginWithPasscode` + disposable member persona created/destroyed via service key). Dev server launched detached (PowerShell Start-Process; Entry 018 pattern), Vite cold-compile handled with resilient navigation (waitUntil `commit` + 90s + retries).
+- **Phase A — admin persona (the exact Entry 018 failure):** passcode auto-login → `/admin` → **zero z-70 member overlays mounted** (`found=0`); ops-launcher (`aria-label="Open Backend Ops"`) click **lands and the panel opens** (composer `<input>` present); staff `/dashboard` also modal-free — gating is role-scoped as designed.
+- **Phase B — member persona (proves gating didn't break members):** fresh auth user + `test_accounts` row (note: `test_accounts.id` IS the `auth.users` FK) + assessment seeded 20 days stale (`assessments.created_by_id` — no `user_id` column) → member auto-login → **ReassessmentPrompt still appears on `/dashboard`**. Full cleanup verified (assessment, test_accounts row, profile, auth user).
+- **Result: 20 passed / 0 failed, exit 0.** Artifacts: `logs/browser-validation/modal-gating/` (4 screenshots: A1 login, A2 admin-clean, A3 ops-panel-open, B4 member-modal-shown + result.json).
+- **Test-hardening lessons (for future suites):** the "Daily check-in" string exists in dashboard/admin page copy — assert on modal-unique strings ("next check-in is ready", "Retake questionnaire") instead; the Ops composer is a plain `<input>` with no `type` attribute, so `input[type='text']` matches nothing — use `form input`; profiles auto-create via DB trigger on auth signup, so a 409 on explicit profile insert is expected.
+- **Pre-existing issues (NOT from gating, left untouched):** React `<p>`-in-`<div>` hydration warnings on `/login`; a 406 on an `/admin` PostgREST query; a 403 on a fresh member dashboard fetch (empty-account RLS edge). Worth a separate cleanup pass.
+- **Files Touched:** `scripts/validate-member-modal-gating.js` (NEW), `AGENT_NOTEBOOK.md`. No app source changed in this entry (Entry 019's fix is what was validated).
+- **Open Items:** still nothing committed to git (whole backlog from Entry 015 remains uncommitted); CLI first-run login still pending; Entry 018 Finding 1 gateway decision still open.
+
+### [Entry 023] Freebuff — 2026-09-18 06:35 UTC — [CLEAN] All 3 pre-existing console errors fixed; validation suite re-passed 20/20 with 0 console errors
+- **Task:** User asked to clean up the console errors surfaced during Entry 022's validation. Probe (`scripts/probe-console-errors.js`, NEW) pinned exact causes with full component stacks + request URLs.
+- **Fix 1 — invalid HTML nesting on /login:** `AuthLayout.jsx` footer wrapper `<p>` → `<div>` (Login passes a `<div>` footer into the `<p>`; React hydration warning). Tailwind preflight zeroes margins → zero visual change.
+- **Fix 2 — /admin 406 (PGRST116):** `superAdminOps check` used `.limit(1).single()` on empty `super_admin_configs` → PostgREST 406. Switched to `.maybeSingle()` (returns null; `is_super_admin` already handles null). Same latent bug fixed at `captcha_configs` (`getCaptcha`). Both degrade gracefully today, but only because callers swallow errors.
+- **Fix 3 — member /dashboard 403 on `site_visits` POST:** root cause is NOT the INSERT policy (`WITH CHECK (true)`, insert succeeds) — the generic `create()` appends `.select().single()`, and `site_visits` SELECT is admin-only, so RETURNING the row 403s for members. Added `create(record, returnRow = true)` param in `apiClient.js`; AppLayout's per-navigation visit logger now passes `false` (fire-and-forget). **No RLS change made** — policy intact, exactly as designed.
+- **Verification:** probe re-run → HTTP 4xx lines `[]`, login nesting warnings 0; typecheck PASS; build PASS (22.44s); full Entry 022 suite re-run → **20 passed / 0 failed / 0 console errors** (was 6). Dev server stopped, member persona disposed.
+- **Files Touched:** `src/components/AuthLayout.jsx`, `src/api/apiClient.js` (2 maybeSingle + create signature), `src/components/AppLayout.jsx` (one call site), `scripts/probe-console-errors.js` (NEW), `AGENT_NOTEBOOK.md`.
+- **Left alone deliberately:** React Router v7 future-flag warnings (deprecation hints; opting in changes router behavior and needs its own validation round) and WebGL GPU driver messages (hardware/driver-level, not app code). Also flagged: Radix `Missing Description/aria-describedby for DialogContent` warning — accessibility nit, one-liner fix available in any dialog that needs a pass.
+- **Open Items:** everything from Entry 022 still stands (uncommitted backlog, CLI login, gateway decision).
+
+### [Entry 020] Antigravity — 2026-09-18 05:51 UTC — Dual Browser Automation Suite (nodriver + Playwright)
+- **Task:** User requested switching from Playwright to `nodriver` (or using both dynamically) for browser testing and external web inspection.
+- **Background & Value:** Playwright can encounter bot detection / Cloudflare blocks on external design sites (like `unseen.co`). `nodriver` (Python v0.50.3) operates via raw CDP with zero webdriver signatures, providing undetected browsing, native WebGL rendering, and full automation capabilities.
+- **Deliverables & Files Created:**
+  - `scripts/inspect_unseen_nodriver.py` (**NEW**): Undetected inspector for `https://unseen.co` using `nodriver`. Successfully handles interactive enter button overlays, bypasses bot checks, extracts DOM/WebGL canvas details, and captures high-res frames to `logs/browser-validation/unseen-nodriver/`.
+  - `scripts/audit_mockups_nodriver.py` (**NEW**): Full E2E audit suite for all 4 landing mockups + master narrative using `nodriver` with JSON state serialization and screenshot capture to `logs/browser-validation/mockup-qa-nodriver/`.
+  - `scripts/browser_runner.py` (**NEW**): Dynamic orchestrator allowing seamless selection between `--driver=nodriver`, `--driver=playwright`, or `--driver=auto` for any target task.
+  - `package.json`: Added dedicated npm scripts:
+    - `"audit:mockups:nodriver": "python scripts/audit_mockups_nodriver.py"`
+    - `"audit:mockups:playwright": "node scripts/audit_mockups_playwright.js"`
+    - `"inspect:unseen:nodriver": "python scripts/inspect_unseen_nodriver.py"`
+    - `"inspect:unseen:playwright": "node scripts/inspect_unseen.js"`
+- **Verification:**
+  - `npm run typecheck` PASS (clean exit 0).
+  - Executed `scripts/audit_mockups_nodriver.py`: All 5 routes tested, 5 visual proofs captured in `logs/browser-validation/mockup-qa-nodriver/` with clean exit 0.
+  - Executed `scripts/inspect_unseen_nodriver.py`: Successfully navigated `https://unseen.co`, entered 3D space, and captured 3 screenshots with clean exit 0.
+- **Open Items / Heads-up for Freebuff:** Both Playwright and `nodriver` workflows are fully available and co-exist peacefully. Use `nodriver` when automating against bot-protected/Cloudflare endpoints or when webdriver detection breaks a flow; use Playwright for Node-native headless smoke tests.
+
+### [Entry 021] Freebuff — 2026-09-18 05:55 UTC — Freebuff CLI enablement for parallel subagent spawning
+- **Task:** User asked to set up the Freebuff CLI in the repo so future tasks can use real parallel subagent spawning instead of this web client's degraded in-session pipeline.
+- **Findings (verified, not assumed):**
+  - CLI already installed globally: `freebuff` v0.0.177 (= npm `latest`, no update needed) at `~/AppData/Roaming/npm`.
+  - The npm package is a thin launcher (`index.js`/`launcher.js`/`http.js`) that downloads the platform binary (Codebuff-based, per its README) on first interactive launch. No `dist/`, no `.freebuffrc` handling, no subagent names in the wrapper — orchestration lives platform-side in the binary.
+  - Docs (codebuff.com/docs): orchestrator spawns subagents (file-picker, searcher, thinker, editor, reviewer, basher) inside the CLI runtime. Deep-dive blog lists Freebuff's 9 named subagents, incl. `code-reviewer`, matching AGENTS.md's reviewer requirement.
+  - **First-run auth NOT yet done** — no `~/.freebuff*` / `~/.codebuff*` state exists. The binary + login flow materialize on first interactive launch.
+- **Repo changes (trivial edits, exempt from full delegation):**
+  1. `package.json` — added `"agent:cli": "freebuff"` convenience script (launches the interactive CLI in the repo root).
+  2. `.gitignore` — added `.freebuff/` and `.codebuff/` so any future repo-local CLI state/runtime artifacts can never be committed.
+  3. `AGENT_NOTEBOOK.md` — this entry.
+- **No subagent config file created:** the documented `.freebuffrc` toggles (e.g. `--no-subagent <name>`) could not be verified against this launcher build (no `freebuffrc` string in the installed package). Creating speculative config would risk drift; deferred until first launch confirms the schema.
+- **User action required (interactive, cannot be delegated):** run `npm run agent:cli` (or `freebuff`) in the repo → complete the first-run login → the 9-subagent runtime activates for future sessions. AGENTS.md's Planner → Workers (parallel, cap ~2–5) → Reviewer pipeline then maps onto real spawned workers, replacing the degraded fallback.
+- **Verification:** `package.json` parses as valid JSON; `git check-ignore` confirms `.freebuff/` is now ignored; no typecheck/build required (no source changes). The AppLayout fix from Entry 019 remains typecheck+build PASS.
+- **Open Items / Heads-up for Antigravity:** Once the CLI runtime is active, update Section 4 tooling notes if browser-validation should run through the `browser-use` subagent instead of the standalone Playwright/nodriver scripts. Entry 019's browser-validation pass on `/admin` is still open.
+
+### [Entry 018] Freebuff — 2026-09-12 14:12 UTC — Live browser validation: AI surfaces vs free-tier Vercel AI Gateway
+- **Task:** User asked to browser-test Backend Ops, AQLA Architect, and the AQLA Intelligence widget and report whether AI behaves per plan. Ran via the live agent viewer (streamed to user on :5180) with a new `AGENT_TEST_MODE=ai` suite in `scripts/agent-live-viewer.js`.
+- **Result: 3/10 assertions passed — AI is NOT going according to plan.**
+- **Finding 1 — free tier blocks the flagship model:** isolation script (`scripts/isolate-ops-ai.mjs`, API-level, all test conversations cleaned up) proved `backend_ops` + default `anthropic/claude-sonnet-4.5` → `AI Gateway error 403: Free tier users do not have access to this model`. Affects Backend Ops, AQLA Architect, AQLA Intelligence (worker), clinical_summary, weekly_summary, plan_review — every Claude-default surface falls into the canned fallback. Single spaced-out deepseek calls DO work (backend_ops deepseek/gemini-2.5-flash overrides → 200 after cooldown); rapid successive calls hit 429 free-tier rate limits. The model matrix in Section 1.B assumes paid gateway access.
+- **Finding 2 — overlay modal hijacks clicks:** `ReassessmentPrompt` (z-70, mounted member-wide via AppLayout) renders over `/admin` (z-50) when the persona's assessment is >14 days stale — ate the ops-launcher click and shifted the page. Test now dismisses it (`dismissModals()`); real users hit the same overlay on /admin.
+- **Infra fixes to the viewer:** `actGoto` tolerates Vite cold-compile (90s + retry), ops-panel open has actionability retry + diagnostics screenshots (`logs/browser-validation/ai-*.png`), detached launch via PowerShell `Start-Process` (cmd `start /b` pipe inheritance kills the process under this harness).
+- **Files Touched:** `scripts/agent-live-viewer.js` (AI test mode + hardening), `scripts/isolate-ops-ai.mjs` (NEW), `logs/start-agent-ai.bat`, `logs/kill-viewer.ps1` (git-ignored launchers), `AGENT_NOTEBOOK.md`.
+- **Verification:** passcode auto-login ✓, admin renders ✓, ops panel opens ✓ (after modal dismissal), Backend Ops reply ✗ (403 → fallback), Architect reply ✗ (403 → fallback), Intelligence widget panel-open ✗ (test artifact), Intelligence reply ✗ (skipped — panel never opened). Isolation matrix: claude=403 always; deepseek/gemini-2.5-flash=200 spaced, 429 bursty.
+- **Open decision for the user (blocks AI quality):**
+  1. **Upgrade the Vercel AI Gateway to paid credits** → Claude surfaces work as designed (recommended; Section 1.B matrix already assumes this), or
+  2. **Stay free tier** → reassign defaults (backend_ops/architect/aqla_intelligence + clinical workers → `deepseek/deepseek-v3.1`) in `worker-registry.ts` + `OpsConsoleWidget.jsx`, accepting the lower ceiling + 429 bursts, and consider a 403/429-aware model fallback chain in `gateway.ts`.
+- **Heads-up for Antigravity:** ReassessmentPrompt overlaying /admin is a real UX bug (admin route renders inside AppLayout; gate member modals on admin/clinician roles). Viewer AI suite is reusable: `AGENT_TEST_MODE=ai node scripts/agent-live-viewer.js`.
+
+### [Entry 017] Antigravity — 2026-09-12 13:30 UTC — Built Mockup 4 (Unseen Studio Master Cut) & Seamless Page Transition Curtain
+- **Task:** User requested Unseen Studio-level visual craftsmanship (obsidian frosted glass, weightless gyroscope physics, restrained editorial typography) and zero-flash smooth page transitions between mockups.
+- **Files Touched / Created:**
+  - `src/components/common/PageTransitionCurtain.jsx` (**NEW**) — Anime.js v4-driven obsidian shutter curtain (`#06080c`) with 1px luminescent scan beam and telemetry reveal; intercepts route changes and completely prevents white screen flashes.
+  - `src/components/landing/3d/UnseenGlassBrainCanvas.jsx` (**NEW**) — Three.js frosted obsidian glass cortex with physical transmission (`MeshPhysicalMaterial`, `transmission: 0.92`, `roughness: 0.18`), ambient caustics, and subtle cursor velocity parallax damping (`lerp(0.04)`).
+  - `src/pages/mockups/MockupFourUnseen.jsx` (**NEW**) — Unseen Studio master cut landing page featuring spacious editorial layout, live 3D glass cortex, sub-second telemetry cards, and integrated zero-install PsychometricMiniLab.
+  - `src/components/landing/mockups/MockupSwitcherDock.jsx` — Added 4th dock button: `Obsidian Glass` (`/mockup-4`) with emerald active glow.
+  - `src/App.jsx` — Registered `/mockup-4` route, mounted `<PageTransitionCurtain />`, and upgraded `PageLoader` fallback to match the dark branded palette.
+  - `index.html` — Added inline obsidian background styles to `<html>` and `<body>` tags to prevent sub-millisecond browser paint flashes.
+  - `jsconfig.json` — Excluded root `.mjs` test scripts from app typecheck.
+  - `scripts/audit_mockups_playwright.js` (**NEW**) — Reusable Playwright audit script for multi-mockup verification.
+- **Verification:**
+  - `npm run typecheck` PASS (clean exit 0).
+  - `npm run build` PASS (clean exit 0, bundle built in 22.87s with proper code-splitting).
+  - **Playwright Chromium E2E Audit:** Tested all 4 mockups (`/mockup-1`, `/mockup-2`, `/mockup-3`, `/mockup-4`) + interactive click transition from `/mockup-1` to `/mockup-4`.
+    - **Console Errors: 0**
+    - **Page Runtime Errors: 0**
+    - **Visual Proofs:** Captured hero, scroll, and mid-transition frames in `logs/browser-validation/mockup-qa/`. Transition curtain verified covering the screen without white flash.
+- **Open Items / Heads-up for Freebuff:** All 4 mockups and the global transition engine are 100% functional, audited via Playwright, and ready to be committed and deployed alongside the Testing Suite.
+
+### [Entry 016] Freebuff — 2026-09-12 13:20 UTC — `[DRIFT RESOLVED]` All AI agents returned canned fallback — gateway secret was never deployed
+- **Task:** User-reported bug: every AI surface replied with the hardcoded fallback `I understand your question regarding "...". How else can I assist with your cognitive protocols?` and chat appeared dead.
+- **Root cause:** `supabase secrets list` showed **no `VERCEL_AI_GATEWAY_KEY`** on project `xuwifebsymvangjbynkg` — the notebook Section 3 item "Configure Supabase Secrets" had never been executed. Every AI chain (`agent-message` → fallback `ai-run`) 401'd inside `callAiGateway` (key resolved to `""`), twice, and `agents.addMessage` fell through to its hardcoded last-resort string (`src/api/apiClient.js` ~line 541). Edge functions themselves were live and healthy (verified: `ai-run` 400 on empty body, `agent-message` 401 on missing auth). Local `.env` key validated HTTP 200 against `ai-gateway.vercel.sh` before upload.
+- **Actions (user-approved):**
+  1. `npx supabase secrets set VERCEL_AI_GATEWAY_KEY=<from .env>` — value piped via shell var, never echoed.
+  2. `npx supabase secrets unset GEMINI_API_KEY` — retired key was still in the secrets store (Entry 004 removed it from source, not from Supabase secrets).
+  3. E2E proof: `scripts/verify-ai-chat.mjs` (NEW) — vaulted admin test account → `loginWithPasscode` → `verifyOtp` → create `ai_conversations` row → `agent-message` → **HTTP 200 in 7.8s with a real PVT answer, not the fallback**; test conversation cleaned up after.
+- **[DRIFT] Leaked Gemini key found in tracked test file:** `test_ai_surfaces.mjs` line 40 hardcoded a Gemini API key (`const API_KEY = "AQ.Ab8..."`) — Entry 004's grep missed it (variable was just `API_KEY`; the whole file predates the gateway and tests the retired Gemini direct API). Key blanked + legacy banner added. ⚠️ **The key remains in git history AND in `repomix-output.xml`** (regen still deferred per Entry 013 until Antigravity's mockup work lands — note the packed snapshot embeds the key until then).
+- **Files Touched:** Supabase secrets (remote), `test_ai_surfaces.mjs`, `scripts/verify-ai-chat.mjs` (NEW), `AGENT_NOTEBOOK.md`.
+- **No code changes to the AI pipeline** — `apiClient.js`, edge functions, and model assignments are untouched; this was pure deploy-config.
+- **Open Items / Heads-up for Antigravity:**
+  - Frontend needs NO redeploy for this fix — hosted functions pick up the secret immediately. User should hard-refresh and retest any AI surface.
+  - Consider replacing the silent hardcoded fallback in `agents.addMessage` with a visible error state — it masked this outage completely.
+  - `test_ai_surfaces.mjs` is dead weight against the gateway — needs a rewrite against `ai-run`/`agent-message` before anyone trusts its results.
+  - Entry 015's open item still stands: commit & push the Testing Suite + 3D mockups; deployed `aqla-ops` suite logic exists only in this working tree.
+
+### [Entry 015] Freebuff — 2026-09-12 13:05 UTC — `/unlazy` audit: Testing Suite publication status
+- **Task:** User asked to verify whether Antigravity's Entry 006 Testing Suite was actually built AND published. Verdict: **split**.
+- **Backend: PUBLISHED ✓** — Live `aqla-ops` handles `loginWithPasscode` (clean 401 "Invalid passcode" for a bogus code vs generic `{"success":true}` for unknown actions — so the action is genuinely deployed); HEAD's committed source lacks that action, proving deployed code is newer than any commit. Live DB has `test_accounts` (PostgREST returned `200 []`; missing table would 404; `profiles` used as positive control). Migration WAS applied to production.
+- **Frontend: NOT PUBLISHED ✗** — Deployed `AdminDashboard-BfxlWQ9H.js` contains zero suite tokens (no "Testing" tab, "Test Accounts", persona labels, "passcode", "[AI TEST]"); main bundle lacks `loginWithPasscode`/`agent_passcode` (Login.jsx auto-login flow not live). `TestingPanel.jsx` is untracked and never committed; remote `main` = `c0f0481` (pre-suite); `migration/base44-to-supabase` branch lacks it too.
+- **Deploy drift evidence:** Production was redeployed TODAY 12:50 GMT yet still ships `fableCore` (pre-PDF-rename) and contains none of the 3D mockup routes — the deploy was built from stale code, provenance unknown.
+- **Risk:** The deployed `aqla-ops` suite logic exists nowhere in git history — only in this working tree. Losing the tree loses the deployed function's source.
+- **Open Items / Heads-up for Antigravity:** Commit & push the suite (frontend + migration SQL + aqla-ops source), then redeploy the frontend so repo matches production. Local suite code verified complete (all 4 personas, generator modal, data controller, no real placeholders).
+
+### [Entry 014] Antigravity — 2026-09-12 13:00 UTC — Resolved CSS unknownAtRules Linter Warnings
+- **Task:** User requested resolution of `@tailwind` and `@apply` warnings in `src/index.css`.
+- **Files Touched:**
+  - `.vscode/settings.json` — Created with `"css.lint.unknownAtRules": "ignore"`, `"scss.lint.unknownAtRules": "ignore"`, `"less.lint.unknownAtRules": "ignore"`.
+  - `AGENT_NOTEBOOK.md` — Header updated and Entry 014 logged.
+- **Verification:** `npm run build` PASS (clean build in 29.61s).
+- **Open Items / Heads-up for Freebuff:** The IDE CSS validator warnings in `src/index.css` are now muted cleanly via workspace config without breaking Tailwind's PostCSS compilation pipeline.
 
 ### [Entry 013] Freebuff — 2026-09-12 12:40 UTC — Repo-wide local-path scrub
 - **Task:** User approved full scrub of all leaked local-filesystem paths (follow-up to Entry 012).
@@ -288,10 +459,7 @@ All AI operations are routed 100% through the Vercel AI Gateway:
   supabase functions deploy knowledge-manage
   supabase functions deploy aqla-ops  # added by Freebuff (Entry 005 fix)
   ```
-- [ ] **Configure Supabase Secrets:** Ensure production gateway secret is active:
-  ```bash
-  supabase secrets set VERCEL_AI_GATEWAY_KEY="vck_..."
-  ```
+- [x] **Configure Supabase Secrets:** ✅ DONE (Entry 016, 2026-09-12) — `VERCEL_AI_GATEWAY_KEY` set from `.env`; retired `GEMINI_API_KEY` removed from the secrets store.
 - [ ] **Voice Check-In Revamp:** Currently deferred in `VoiceCheckIn.jsx` / worker: `voice_checkin`. Needs architecture alignment with real-time streaming audio.
 
 ---
