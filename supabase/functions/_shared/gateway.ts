@@ -11,12 +11,50 @@ const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
 // and globally burst-throttles everything else (429). Chain is ordered by default-tier preference:
 // deepseek first (the long-standing default), then fast/cheap minis across providers so a 429 on
 // one provider can be absorbed by another.
+// Note: OpenRouter models ("openrouter/" prefix) are deliberately NOT in this chain — they are
+// assigned directly to specific medical workers; if a request for one fails 403/429 it failovers
+// onto this Vercel AI Gateway chain, never the reverse.
 export const FREE_TIER_MODEL_CHAIN = [
   "deepseek/deepseek-v3.1",
   "google/gemini-2.5-flash",
   "openai/gpt-4o-mini",
   "anthropic/claude-3-haiku",
 ];
+
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+interface GatewayRoute {
+  url: string;
+  model: string;
+  isOpenRouter: boolean;
+}
+
+// Models prefixed "openrouter/" route to openrouter.ai (own API key); everything else
+// keeps the Vercel AI Gateway endpoint and its key resolution.
+function resolveGatewayRoute(model: string): GatewayRoute {
+  if (model.startsWith("openrouter/")) {
+    return {
+      url: OPENROUTER_URL,
+      model: model.slice("openrouter/".length),
+      isOpenRouter: true,
+    };
+  }
+  return { url: GATEWAY_URL, model, isOpenRouter: false };
+}
+
+// Key resolution happens per attempt because the fallback chain can mix providers
+// (e.g. an OpenRouter medical model failing over onto the Vercel AI Gateway chain).
+function resolveGatewayKey(explicitKey: string, isOpenRouter: boolean): string {
+  if (explicitKey) return explicitKey;
+  const envNames = isOpenRouter
+    ? ["OPENROUTER_API_KEY", "OPENROUTER_KEY"]
+    : ["VERCEL_AI_GATEWAY_KEY", "VERCEL_AI_GATEWAY_TOKEN", "AI_GATEWAY_KEY", "AI_GATEWAY_API_KEY"];
+  for (const name of envNames) {
+    const value = Deno.env.get(name);
+    if (value) return value;
+  }
+  return "";
+}
 
 export interface GatewayMessage {
   role: "system" | "user" | "assistant" | "tool";
@@ -54,6 +92,9 @@ export interface GatewayResponse {
 // Attempts the requested model; on 403 (model not in tier) or 429 (rate-limited)
 // walks FREE_TIER_MODEL_CHAIN. Other statuses (400/5xx) throw immediately — a 400
 // is a payload bug and retrying it on another model just burns quota.
+// Additionally, a 200 that carries ONLY reasoning tokens (content null/empty and no
+// tool calls — observed on reasoning models like Ling Sante when the token budget is
+// exhausted) is treated as a failed attempt and failover proceeds.
 async function fetchWithModelFallback(
   model: string,
   payload: Record<string, any>,
@@ -71,16 +112,49 @@ async function fetchWithModelFallback(
       // Brief backoff before failover; free-tier 429s are short-window bursts.
       await new Promise((r) => setTimeout(r, 2000));
     }
-    const response = await fetch(GATEWAY_URL, {
+
+    const route = resolveGatewayRoute(attemptModel);
+    const attemptKey = resolveGatewayKey(gatewayKey, route.isOpenRouter);
+    if (route.isOpenRouter && !attemptKey) {
+      // No OpenRouter credential configured — skip OR models instead of surfacing a 401
+      // mid-chain; the next attempt is a regular Vercel AI Gateway model.
+      console.warn(`[gateway] no OPENROUTER_API_KEY set; skipping ${attemptModel}`);
+      continue;
+    }
+
+    const response = await fetch(route.url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${gatewayKey}`,
+        Authorization: `Bearer ${attemptKey}`,
+        ...(route.isOpenRouter
+          ? { "HTTP-Referer": "https://aqla.io", "X-Title": "AQLA" }
+          : {}),
       },
-      body: JSON.stringify({ ...payload, model: attemptModel }),
+      body: JSON.stringify({ ...payload, model: route.model }),
     });
 
-    if (response.ok) return response;
+    if (response.ok) {
+      // Peek (via clone so the caller can still consume the original body) to detect
+      // reasoning-only responses with no usable output.
+      try {
+        const data = await response.clone().json();
+        const message = data?.choices?.[0]?.message;
+        const hasOutput =
+          (typeof message?.content === "string" && message.content.trim().length > 0) ||
+          (Array.isArray(message?.tool_calls) && message.tool_calls.length > 0);
+        if (!hasOutput && i < attemptModels.length - 1) {
+          console.warn(
+            `[gateway] reasoning-only (null content) response on ${attemptModel}; failing over to ${attemptModels[i + 1]}`
+          );
+          lastResponse = response;
+          continue;
+        }
+      } catch {
+        // Non-JSON 200 body — hand it to the caller unchanged.
+      }
+      return response;
+    }
 
     const retryableStatus = response.status === 403 || response.status === 429;
     if (!retryableStatus || i === attemptModels.length - 1) {
@@ -92,7 +166,13 @@ async function fetchWithModelFallback(
     );
   }
 
-  return lastResponse!;
+  if (lastResponse) return lastResponse;
+  // Every attempt was skipped (e.g. no OpenRouter key) — synthesize a 503 so callers
+  // get a normal error path instead of a null response.
+  return new Response(
+    JSON.stringify({ error: { message: "No AI provider available: requested model skipped and no OPENROUTER_API_KEY configured." } }),
+    { status: 503, headers: { "Content-Type": "application/json" } }
+  );
 }
 
 export async function callAiGateway(
@@ -105,12 +185,9 @@ export async function callAiGateway(
     reasoningBudget = "none",
     temperature = 0.7,
     maxTokens = 4096,
-    gatewayKey = opts.gatewayKey ||
-      Deno.env.get("VERCEL_AI_GATEWAY_KEY") ||
-      Deno.env.get("VERCEL_AI_GATEWAY_TOKEN") ||
-      Deno.env.get("AI_GATEWAY_KEY") ||
-      Deno.env.get("AI_GATEWAY_API_KEY") ||
-      "",
+    // Explicit key wins; env keys resolve per-attempt in fetchWithModelFallback
+    // because the fallback chain can mix Vercel AI Gateway and OpenRouter models.
+    gatewayKey = opts.gatewayKey || "",
   } = opts;
 
   // Format tools for OpenAI-compatible schema

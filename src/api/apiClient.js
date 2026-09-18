@@ -655,12 +655,40 @@ export const functions = {
         supabase.from('protocols').select('*').eq('created_by_id', targetId),
         supabase.from('clinician_reviews').select('*').eq('created_by_id', targetId),
       ]);
+      // Directory call (no explicit user_id, i.e. a staff dashboard) must also return the
+      // member list — Clinician.jsx reads d.members. [DRIFT RESOLVED 2026-09-18]: the
+      // Base44 migration dropped this key, leaving the clinician directory permanently
+      // empty. RLS is the boundary: members calling this path still only see what their
+      // own policies allow (their own profile), so this leaks nothing.
+      let members = [];
+      if (!user_id) {
+        const { data: memberProfiles } = await supabase.from('profiles').select('*').eq('role', 'user');
+        const ids = (memberProfiles || []).map((p) => p.id);
+        const { data: memberProtocols } = ids.length
+          ? await supabase.from('protocols').select('*').in('created_by_id', ids)
+          : { data: [] };
+        members = (memberProfiles || []).map((p) => ({
+          ...p,
+          // Legacy-shape alias: clinician consumers (Clinician.jsx cards,
+          // MemberDirectory search, MemberProfilePanel flags) read `name`;
+          // the migrated profiles table only has full_name.
+          name: p.full_name || p.email || 'Member',
+          protocol: (memberProtocols || []).find((pr) => pr.created_by_id === p.id && pr.status === 'active') || null,
+        }));
+      }
+      // Shape convention for the functions layer: callers unwrap `res.data`
+      // (Clinician.jsx, MemberDirectory.jsx, MemberDataPanel.jsx all do).
+      // [DRIFT RESOLVED 2026-09-18]: the interceptor previously returned the payload
+      // bare, so every caller read undefined and rendered permanently-empty panels.
       return {
-        profile: profile.data,
-        domains: domains.data || [],
-        checkIns: checkIns.data || [],
-        protocols: protocols.data || [],
-        reviews: reviews.data || [],
+        data: {
+          profile: profile.data,
+          domains: domains.data || [],
+          checkIns: checkIns.data || [],
+          protocols: protocols.data || [],
+          reviews: reviews.data || [],
+          members,
+        },
       };
     }
 

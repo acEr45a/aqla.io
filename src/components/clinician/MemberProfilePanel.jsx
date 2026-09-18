@@ -3,6 +3,7 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import { apiClient } from "@/api/apiClient";
+import { OPENROUTER_MEDICAL_MODEL } from "@/../supabase/functions/_shared/medical-model.ts";
 import { autoFlagResponse } from "@/lib/clinicalFlag";
 import { notify } from "@/lib/clinicianToast";
 import { localDateKey } from "@/lib/dateKey";
@@ -99,6 +100,9 @@ function AiSummary({ member, checkIns, cognitiveTests, brainDomains }) {
       };
 
       const res = await apiClient.integrations.Core.InvokeLLM({
+        // Clinician-facing member summary → medical model (2026-09-18 scope: Sante on
+        // clinician-facing surfaces only; slug canonical in medical-model.ts).
+        model: OPENROUTER_MEDICAL_MODEL,
         prompt: `You are AQLA Clinical Summary, generating a concise clinical overview for a clinician reviewing an AQLA member.
 
 STRICT ZERO-HALLUCINATION RULES:

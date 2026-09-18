@@ -69,7 +69,6 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
     let res;
     try {
       res = await apiClient.integrations.Core.InvokeLLM({
-        model: "gpt_5_mini",
         prompt: `${INTERVIEW_PROMPT}
 
 Conversation so far:

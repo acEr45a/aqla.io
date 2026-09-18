@@ -1,6 +1,7 @@
 // @ts-nocheck
 // _shared/worker-registry.ts
 // AQLA AI Gateway Worker Registry — multi-provider models via Vercel AI Gateway
+import { OPENROUTER_MEDICAL_MODEL } from "./medical-model.ts";
 
 export interface JsonSchema {
   type: string;
@@ -12,6 +13,9 @@ export interface JsonSchema {
 }
 
 export type GeminiSchema = JsonSchema;
+
+// OPENROUTER_MEDICAL_MODEL is the canonical medical-model slug — defined once in
+// ./medical-model.ts and imported above. Do not re-declare it here.
 
 export interface WorkerDefinition {
   workerId: string;
@@ -31,8 +35,9 @@ export const WORKER_REGISTRY: Record<string, WorkerDefinition> = {
     workerId: "aqla_intelligence",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    // Free-tier reassignment (Entry 018 decision, verified 2026-09-18): was anthropic/claude-sonnet-4.5,
-    // which 403s on the gateway free tier. gateway.ts now failovers 403/429 across providers.
+    // Free-tier reassignment (Entry 018): was anthropic/claude-sonnet-4.5 (403 on free tier).
+    // Stays deepseek: high-volume member chat is latency-sensitive and would exhaust the
+    // OpenRouter free cap; Sante is reserved for clinician-facing analysis (2026-09-18 scope).
     model: "deepseek/deepseek-v3.1",
     thinkingBudget: "medium",
     systemPrompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
@@ -68,7 +73,7 @@ ZERO-HALLUCINATION RULES: Never assert clinical claims not supported by the evid
     workerId: "voice_checkin",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "deepseek/deepseek-v3.1",
+    model: "deepseek/deepseek-v3.1", // stays deepseek: live voice loop is latency-sensitive (2026-09-18 scope)
     thinkingBudget: "low",
     systemPrompt: `You are AQLA, an empathetic and clinically grounded daily check-in assistant.
 Extract structured self-report metrics from the user's transcript and generate a supportive, concise 1-2 sentence response.
@@ -124,7 +129,8 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "plan_review",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
+    // High clinical-risk tier (14-day protocol review, side-effect conservatism) → medical model (2026-09-18).
+    model: "openrouter/inclusionai/ling-3.0-flash-sante:free",
     thinkingBudget: "high",
     systemPrompt: `You are AQLA Intelligence reviewing a completed 14-check-in neural wellness plan. Analyze only the supplied data. Do not diagnose or advise on medication. Account for side effects conservatively. Decide whether to suggest continuing or switching among SPARK, FLOW, DRIVE, LEARN, RESET. A switch is only a suggestion; the user makes the final choice.`,
     responseSchema: {
@@ -148,7 +154,8 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "clinical_summary",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
+    // High clinical-risk tier (clinician briefs, risk flags) → medical model (2026-09-18).
+    model: "openrouter/inclusionai/ling-3.0-flash-sante:free",
     thinkingBudget: "high",
     systemPrompt: `You are an expert clinical neural-health analyst preparing a member summary for a reviewing clinician.
 Synthesize cognitive domain scores, check-in trajectories, protocol adherence, and risk flags into an objective clinical brief.`,

@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-18 07:49 UTC | **Task:** [RESOLVED] AI gateway decision — free-tier model reassignment + 403/429 failover chain in gateway.ts (Entry 028)
+> **Last Updated By:** Antigravity on 2026-09-18 08:57 UTC | **Task:** Fix Mockup 1 scroll mechanics, card skip bug, runway expansion (850vh), and interactive navigation (Entry 031)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,68 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 031] Antigravity — 2026-09-18 08:57 UTC — [RESOLVED] Mockup 1 Scroll Mechanics, Card Skip Bug, Runway Expansion (850vh) & Interactive Controls
+- **User feedback addressed:** User reported Mockup 1 scroll was "way too short", "bugs and doesn't show all the cards", and requested a nodriver audit to diagnose and resolve.
+- **Root causes identified via nodriver diagnosis:**
+  1. Runway too short (`h-[450vh]` yielded only ~1,700px scrollable space in headless / ~2,700px on desktop; each waypoint had less than 500px, causing the entire 5-card journey to flash by in two mouse wheel flicks).
+  2. Framer Motion `<AnimatePresence mode="wait">` queued 550ms exit transitions. Any continuous or inertia scrolling skipped intermediate waypoints entirely (e.g., 0 → 2 without ever mounting 1).
+  3. Concurrent race conditions between Locomotive Scroll listener and native window scroll listener causing rapid boundary micro-jitter.
+  4. Non-interactive left-rail indicators prevented user recovery or intentional jumping.
+  5. In-situ Psychometric Lab lacked sufficient scroll dwell runway.
+- **Changes applied:**
+  1. `src/pages/mockups/MockupOneTunnel.jsx`:
+     - Expanded continuous runway from `450vh` to `850vh` (~6,000px desktop runway; ~1,200px per waypoint).
+     - Switched from `mode="wait"` to `mode="popLayout"` with refined 320ms spring cubic-bezier transitions (`[0.16, 1, 0.3, 1]`) and subtle optical scale/blur.
+     - Single coordinated scroll handler: exclusive Locomotive Scroll when ready, graceful window fallback when not.
+     - Interactive Left Rail: Converted static telemetry dots into clickable navigation buttons that smoothly scroll to the exact center of each waypoint.
+     - Bottom HUD Stepper: Added `[ ← PREV ]`, current stage index (`01 / 05`), and `[ NEXT → ]` buttons for stepped review.
+     - Added interactive jump buttons on Hero ("Scroll or click to fly into tunnel") and Stage 04 ("Proceed to Evidence Passport →").
+- **Verification:**
+  - Automated nodriver audit script (`scripts/test_mockup1_full_audit.py`):
+    - Left rail jump test across all 5 waypoints: PASS (all 5 captured with correct coordinates & badges).
+    - Bottom stepper forward progression: PASS (stages 1→2→3→4→5 cleanly stepped).
+    - Continuous wheel scroll test: PASS (all 5 distinct card headings detected without dropping any card).
+  - Playwright Chromium suite (`scripts/audit_mockups_playwright.js`): PASS across all 4 mockups, 0 console errors, 0 page runtime errors.
+  - `npm run typecheck`: PASS (0 errors).
+  - `npm run build`: PASS (clean production build in 35.64s).
+- **Open items for peer agent:**
+  - Voice lip-sync WIP held local only (`VoiceCheckIn.jsx`, `LipSyncAvatar.jsx`).
+  - OpenRouter medical model deployed live; client ready.
+
+### [Entry 030] Freebuff — 2026-09-18 08:47 UTC — [DEPLOYED] Medical model (inclusionAI Ling 3.0 Flash Sante via OpenRouter) on clinician-facing surfaces, E2E-verified
+- **User mandate:** bring inclusion.ai Ling Flash Sante into "medical risk factoring, evidence-based retrieval and other places it's needed — be meticulous"; provided an OpenRouter key; then narrowed scope: "only in parts where it's actually useful" → chose **clinician-facing only**.
+- **Scope decision (user-confirmed):** Sante = reasoning MoE (124B/5.1B active), measured ~208 reasoning tokens on trivial prompts, ~6s latency, and OpenRouter `:free` daily caps (~50 req/day low-balance). Sweet spot = low-volume × high-stakes × async clinician analysis; WRONG for high-volume latency-sensitive member chat/voice. Assigned: `clinical_summary` + `plan_review` workers + `MemberProfilePanel` clinician summary call. Coach (`aqla_intelligence` worker+persona), `voice_checkin`/VoiceCheckIn, help/ops/architect, admin utility workers all stay deepseek (explicit scope-note comments left in the files).
+- **Deliberately untouched:** embeddings (`openai/text-embedding-3-small`, 768-dim pgvector contract), deterministic `SafetyScreening.jsx` (no model, by design), RLS, ops dropdown (a medical model doesn't belong in the ops/architect selector), `FREE_TIER_MODEL_CHAIN` order (OpenRouter models are never chain members — see below).
+- **Changes:**
+  1. `supabase/functions/_shared/gateway.ts` — `resolveGatewayRoute()`: models prefixed `openrouter/` route to `openrouter.ai/api/v1/chat/completions` with `OPENROUTER_API_KEY`; everything else unchanged (Vercel AI Gateway). Key resolution is now **per-attempt** (chain can mix providers). OpenRouter models w/o configured key are **skipped** (warn + continue; all-skipped synthesizes 503). New guard: a 200 carrying ONLY reasoning tokens (null/empty content, no tool_calls — observed on Sante when max_tokens exhausts into reasoning) is treated as failed attempt → failover. OR requests send `HTTP-Referer: https://aqla.io` + `X-Title: AQLA`.
+  2. `supabase/functions/_shared/medical-model.ts` (NEW) — single canonical slug `openrouter/inclusionai/ling-3.0-flash-sante:free`, imported by BOTH Deno functions and src/ client (verified resolving through tsc + Vite; jsconfig already excludes supabase/).
+  3. `supabase/functions/_shared/worker-registry.ts` — `clinical_summary`, `plan_review` → Sante (with history comments).
+  4. `src/components/clinician/MemberProfilePanel.jsx` — clinician member summary InvokeLLM → `model: OPENROUTER_MEDICAL_MODEL` (dynamic_worker pass-through path verified: body.model → ai-run → callAiGateway).
+  5. `supabase/functions/agent-message/index.ts` — NO model change (aqla_intelligence persona stays deepseek per scope); file redeployed only because it shares gateway.ts.
+  6. `scripts/verify-medical-model-e2e.mjs` (NEW, reusable) — passcode login → ai-run `clinical_summary` → asserts executed model from `ai_runs` ledger.
+- **Secrets:** `OPENROUTER_API_KEY` set on Supabase (piped via shell var from git-ignored `.env`, never echoed; `.env` confirmed git-ignored before write). No client-exposed `VITE_` var — key never reaches the browser bundle.
+- **Verification:** typecheck PASS; build PASS (21.62s). Deployed `ai-run` + `agent-message`. **E2E PASS:** live `clinical_summary` ran at 08:40 UTC on `inclusionai/ling-3.0-flash-sante:free` (ai_runs: status=success, 6081ms), output a properly grounded clinical brief. Failover safety net proven by design: 403/429/null-content → Vercel chain (deepseek→gemini-flash→gpt-4o-mini→haiku).
+- **Pre-flight live probes (OpenRouter, direct):** slug verified via /models; JSON-mode clean (no fences); function calling works in OpenAI format; `reasoning:{effort}` param tolerated.
+- **[DRIFT RESOLVED] (same session, browser-E2E discovery):** `apiClient.functions.invoke('getMemberData')` returned its payload BARE while all three callers (`Clinician.jsx`, `MemberDirectory.jsx`, `MemberDataPanel.jsx`) unwrap `res.data` — the entire clinician dashboard (member directory, check-ins, domains) has rendered permanently empty since the Base44 migration. Fixed by wrapping in `{ data: … }` + adding the missing `members` key (role='user' profiles + active protocol; RLS probed first — staff sessions read 4 member profiles, boundary intact). Also removed the dead `model: "gpt_5_mini"` string from `VoiceCheckIn.jsx`. Browser proof: `scripts/verify-clinician-sante-browser.mjs` 6/6 PASS incl. ai_runs ledger pinning the UI-run summary to `inclusionai/ling-3.0-flash-sante:free` (5447ms success).
+- **Open items / Heads-up for Antigravity:** (1) OpenRouter `:free` caps — if clinician volume ever 429s, members' clinician briefs silently failover to deepseek (acceptable degradation, no action needed); paid Sante route = later upgrade. (2) Vercel AI Gateway Sante promo ends 2026-10-04 — irrelevant now (we route via OpenRouter). (3) VoiceCheckIn.jsx still sends dead legacy `model: "gpt_5_mini"` (harmlessly mapped to deepseek) — separate cleanup candidate. (4) Tunnel mockup WIP + lip-sync WIP still local-only in working tree (Entry 027; Entry 029 closed Antigravity's gates). (5) Notebook Section 1.B model matrix is stale (historical, per Entry 028 banner note in ai_model_matrix.md).
+
+### [Entry 029] Antigravity — 2026-09-18 08:24 UTC — [VERIFIED & CLOSED] 3D Neural Tunnel Flythrough & Locomotive Momentum Overhaul (GATES.md)
+- **Task:** Final verification and ledger closure for Mockup 1 (`/mockup-1`) neural tunnel overhaul with silky Locomotive momentum scroll, Lenis CSS, and cybernetic HUD waypoints.
+- **Gates Verified & Passed:**
+  1. `G1` (Locomotive Scroll fix): Forced `isTouchDevice = false` on Windows devices in [LocoScrollProvider.jsx](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/lib/LocoScrollProvider.jsx) + Lenis stylesheet in [index.css](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/index.css). PASS.
+  2. `G2` (Tunnel 3D Engine): [FullscreenTunnelBrainCanvas.jsx](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/landing/3d/FullscreenTunnelBrainCanvas.jsx) with 12 Catmull-Rom spline axon tubes, MeshPhysicalMaterial frosted obsidian core, synaptic pulse arcs, and `WAYPOINT_CAMERA_DEPTHS` tracking. PASS.
+  3. `G3` (Mockup 1 Continuous Journey): [MockupOneTunnel.jsx](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/pages/mockups/MockupOneTunnel.jsx) with 5 cybernetic HUD waypoints (Z: 22.0 down to 3.6), embedded PsychometricMiniLab reaction time trial, and framer-motion telemetry transitions. PASS.
+  4. `G4` (Typecheck): `npm run typecheck` passes with zero errors. PASS.
+  5. `G5` (Production Build): `npm run build` succeeds cleanly in 24.95s. PASS.
+  6. `G6` (Automated Visual QA): Playwright Chromium full suite across all 4 mockups (`/mockup-1`, `/mockup-2`, `/mockup-3`, `/mockup-4`) executed with 0 console errors, 0 runtime errors, and verified hero/scrolled screenshots in `logs/browser-validation/mockup-qa/`. PASS.
+- **Files Touched:**
+  - [GATES.md](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/GATES.md)
+  - [scripts/audit_mockups_playwright.js](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/scripts/audit_mockups_playwright.js)
+  - [AGENT_NOTEBOOK.md](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/AGENT_NOTEBOOK.md)
+- **Open Items for Peer Agent:**
+  - Local voice lip-sync WIP ([VoiceCheckIn.jsx](file:///c:/Users/danis/Downloads/aqla%20github%20repo/aqla.io/src/components/today/VoiceCheckIn.jsx), `LipSyncAvatar.jsx`) remains uncommitted pending backend pipeline.
+  - Edge function deployments for `ai-run` and `agent-message` pending Supabase CLI deploy.
 
 ### [Entry 028] Freebuff — 2026-09-18 07:49 UTC — [RESOLVED] Entry 018 gateway decision: free-tier reassignment + cross-provider failover chain
 - **Decision executed:** user chose "stay free tier" — reassign Claude-default surfaces to deepseek AND add a 403/429-aware fallback chain.

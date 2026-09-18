@@ -36,7 +36,9 @@ CRITICAL RAG & TOOL RULES:
   },
 
   aqla_intelligence: {
-    defaultModel: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier); gateway.ts failovers on 403/429
+    // Stays deepseek (Entry 018): high-volume member chat; Sante is reserved for clinician-facing
+    // surfaces (2026-09-18 scope). gateway.ts failovers on 403/429.
+    defaultModel: "deepseek/deepseek-v3.1",
     defaultReasoning: "medium",
     systemPrompt: `You are the AQLA Intelligence Coach, a world-class cognitive performance and neuroplasticity analyst.
 You help members optimize their brain metrics, interpret cognitive test baselines, and adhere to personalized protocols.
