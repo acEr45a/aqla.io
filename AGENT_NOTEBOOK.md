@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-18 06:46 UTC | **Task:** CLI enablement complete — first-run login done, subagent runtime active (Entry 025)
+> **Last Updated By:** Freebuff on 2026-09-18 07:12 UTC | **Task:** [COMMITTED] Full backlog committed in 11 logical groups — deployed aqla-ops source now in git history (Entry 026)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,23 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 026] Freebuff — 2026-09-18 07:12 UTC — [COMMITTED] Entire working-tree backlog committed in logical groups
+- **Task:** Resolve Entry 015/022/023/025's open item — commit everything uncommitted so the deployed `aqla-ops` source and the mockup work are safe in git history. Reviewer checklist run in-session (degraded mode): independent `npm run typecheck` PASS + `npm run build` PASS (25.09s) on the committed state; scope-vs-brief and cross-file impact verified; RLS untouched.
+- **Commit groups (on top of 350ccf7):**
+  1. `c9ead8e` feat(admin): testing suite + migration + GATES.md + deployed-matching `aqla-ops`/`agent-message` sources (Entry 006)
+  2. `967961f` refactor(pdf): Fable → AQLA PDF rename (Entry 007)
+  3. `62c275c` feat(landing): 4 mockups + canvases + transition curtain + routes (Entries 009–011/017/024; App.jsx amended in)
+  4. `d7ad3af` fix(layout): member-modal staff gating (Entry 019)
+  5. `6e93ba6` feat(admin): is_test_account in dashboard metrics (partial-staged from mixed apiClient.js)
+  6. `2c357be` fix(api): console-error fixes + probe (Entry 023)
+  7. `1f10077` test(browser): gating suite, agent viewer, gateway audit scripts
+  8. `d3d402b` chore(tooling): .vscode, index.html paint-flash styles, npm scripts/deps, nodriver suite, legacy Gemini key blank-out in test_ai_surfaces.mjs, `__pycache__` gitignored
+  9. `98dc9a0` feat(voice): LipSyncAvatar in VoiceCheckIn (unlogged feature, committed honestly)
+  10. `34b81ad` + final: docs(notebook): Entries 024–026
+- **Security scan before committing:** service keys only via `.env`; test passcodes only via git-ignored `logs/agent-memory/session-state.json`; only inline credential is the by-design-public Supabase anon key (RLS is the boundary). `import_and_sync.py` personal emails remain a pre-existing tracked item (Entry 013) — needs user decision, not silently touched. Known-remaining history risks (Entry 013/016) unchanged: CSVs with production data + old secrets live in git *history*; cleaning needs rewrite + force-push (user decision).
+- **NOT pushed:** main auto-deploys to Vercel on push; that's a production action awaiting explicit user go-ahead.
+- **Open items:** AI gateway free-tier decision (Claude surfaces 403); Radix dialog `aria-describedby` nit; production frontend redeploy is stale vs this tree (Entry 015) — a push would fix it.
 
 ### [Entry 025] Freebuff — 2026-09-18 06:46 UTC — CLI enablement complete: first-run login done, subagent runtime active
 - **Task:** Close Entry 021's open item — first-run login of the Freebuff CLI so future tasks can use real parallel subagent spawning instead of this web client's degraded in-session pipeline.
