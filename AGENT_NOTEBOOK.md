@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Antigravity on 2026-09-18 08:57 UTC | **Task:** Fix Mockup 1 scroll mechanics, card skip bug, runway expansion (850vh), and interactive navigation (Entry 031)
+> **Last Updated By:** Freebuff on 2026-09-18 13:40 UTC | **Task:** [REMOVED] InvokeLLM legacy shim deleted — all client AI centralized in worker-registry via runAiWorker (Entry 033)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,15 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 033] Freebuff — 2026-09-18 09:30 UTC — [REMOVED] InvokeLLM/legacy shim fully deleted; every client AI call centralized in worker-registry via runAiWorker → ai-run
+- **User directive:** "completely removing InvokeLLM and replacing with our existing infrastructure" — chose **full centralization** (prompts/schemas live ONLY server-side).
+- **New primitive:** `runAiWorker(workerId, inputData, { model, prompt, timeoutMs })` in `apiClient.js` — thin caller over `ai-run`. Deleted: `directGeminiInvoke` export + `integrations.Core.InvokeLLM`. `GenerateSpeech` stays (browser TTS, not LLM infra). `dynamic_worker` escape hatch retained for 2 internal prompt-style callers (role-gated + audited).
+- **Registry changes (`worker-registry.ts`):** `voice_checkin` reworked to the full interview contract (INTERVIEW_PROMPT rules moved verbatim; schema = reply/extracted_values/complete/interpretation); `clinician_message_draft` → Sante (clinician-facing per Entry 030 scope); NEW workers: `aqla_intelligence_turn` (member chat, deepseek), `clinician_member_snapshot` (Sante; the MemberProfilePanel zero-hallucination prompt), `inbox_thread_summary`, `inbox_smart_replies`, `inbox_composer_refine`, `inbox_action_items` (clinician audience, deepseek, prompts moved verbatim from inboxAi.js).
+- **Migrated call sites:** Coach.jsx + useAqlaCoach.js → `aqla_intelligence_turn`; VoiceCheckIn.jsx → `voice_checkin` (client now sends conversation/captured/latest only); analyzePlanReview.js → `plan_review`; weeklySummary.js → `weekly_summary`; clinicalFlag.draftFollowUp → `clinical_followup_draft`; MemberProfilePanel.jsx → `clinician_member_snapshot` (client model-string import eliminated); inboxAi.js ×4 → inbox workers. Net: ~250 lines of client prompts deleted; every call now role-gated + ai_runs-audited with model governance in one file.
+- **Verification:** zero `InvokeLLM`/`directGeminiInvoke` code references repo-wide (comment banners only); typecheck PASS; build PASS (45.4s); worker E2E (`scripts/verify-runaiworker-e2e.mjs`) 5/5 — chat reply, plan_review + clinical_summary structured outputs, inbox summary, ai_runs ledger proves plan_review + clinical_summary on Sante; browser suite 6/6 with UI run pinned to `clinician_member_snapshot` on Sante (4043ms). `ai-run` redeployed.
+- **Note:** AGENT_NOTEBOOK.md staged version = HEAD + this entry only (Antigravity's concurrent uncommitted edits preserved in working tree).
+
 
 ### [Entry 031] Antigravity — 2026-09-18 08:57 UTC — [RESOLVED] Mockup 1 Scroll Mechanics, Card Skip Bug, Runway Expansion (850vh) & Interactive Controls
 - **User feedback addressed:** User reported Mockup 1 scroll was "way too short", "bugs and doesn't show all the cards", and requested a nodriver audit to diagnose and resolve.

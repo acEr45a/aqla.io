@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/apiClient";
+import { apiClient, runAiWorker } from "@/api/apiClient";
 
 // Inline note appended to flagged user-facing agent messages.
 export const CLINICAL_NOTE = "Clinically noted — a clinician may review and follow up.";
@@ -76,25 +76,10 @@ export async function manualFlagResponse({ message, admin }) {
 // summarise what the assistant said and ask one clarifying question — no new
 // clinical claims, dosing, or diagnoses.
 export async function draftFollowUp({ messageSnippet, userName }) {
-  const res = await apiClient.integrations.Core.InvokeLLM({
-    prompt: `You are drafting a short follow-up message from an AQLA clinician to a member, based on a flagged AI assistant message.
-
-STRICT RULES:
-- Only summarise what the assistant already said — never introduce new clinical claims, supplement dosing, or diagnoses.
-- End with exactly one clarifying question.
-- Keep it warm and human, 2-4 sentences.
-- Address the member by name if known: ${userName || "there"}.
-- Do not claim the member has a condition.
-
-Flagged assistant message:
-"""
-${messageSnippet}
-"""`,
-    response_json_schema: {
-      type: "object",
-      properties: { draft: { type: "string" } },
-      required: ["draft"],
-    },
+  // Centralized in worker-registry.ts: clinical_followup_draft (clinician-gated).
+  const res = await runAiWorker("clinical_followup_draft", {
+    member_name: userName || "there",
+    flagged_assistant_message: messageSnippet,
   });
   return res?.draft || "";
 }

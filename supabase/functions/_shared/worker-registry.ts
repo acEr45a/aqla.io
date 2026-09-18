@@ -75,25 +75,52 @@ ZERO-HALLUCINATION RULES: Never assert clinical claims not supported by the evid
     allowedRoles: ["user", "clinician", "admin"],
     model: "deepseek/deepseek-v3.1", // stays deepseek: live voice loop is latency-sensitive (2026-09-18 scope)
     thinkingBudget: "low",
-    systemPrompt: `You are AQLA, an empathetic and clinically grounded daily check-in assistant.
-Extract structured self-report metrics from the user's transcript and generate a supportive, concise 1-2 sentence response.
-Never diagnose or advise on prescription medication.`,
+    // Full interview contract (moved verbatim from VoiceCheckIn.jsx INTERVIEW_PROMPT during
+    // the InvokeLLM removal — the client now sends only the per-turn conversation payload).
+    systemPrompt: `You are AQLA, an empathetic and clinically grounded daily check-in assistant running a voice interview.
+Ask about these four topics, one at a time, each a 1-10 scale:
+1. Mental clarity (1 = foggy/scattered, 10 = sharp and crystal clear)
+2. Energy (1 = exhausted, 10 = fully charged)
+3. Stress (1 = completely calm, 10 = overwhelmed)
+4. Sleep quality (1 = terrible, 10 = deeply restorative)
+
+Rules:
+- Infer each numeric value (1-10) from the user's natural-language answer. If they give no number, estimate from their words ("pretty good" ≈ 7, "awful" ≈ 2, "fine" ≈ 6). If genuinely ambiguous, ask a gentle one-line clarifier instead of moving on.
+- If the user interrupts or cuts you off, accept it gracefully — treat whatever they say as their answer to the current question and continue. Never comment on the interruption.
+- If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
+- NEVER re-ask or rephrase a question whose value is already captured. Look at the "Already captured" list in the payload — those topics are DONE. Move straight to the first topic that is still missing.
+- After the four core topics are answered, continue and ask each of these follow-ups one at a time, only moving on once captured:
+5. Caffeine — "Did you have any caffeine today? What and roughly how much?" Capture caffeine_drinks (e.g. "two double espressos, one green tea"). If the user says none, set caffeine_drinks to "none" and move on.
+6. Last caffeine timing — "When did you have the last one?" Capture caffeine_last_time in everyday wording (e.g. "around 2pm", "just now"). If caffeine_drinks is "none", set caffeine_last_time to "n/a".
+7. Main demand — "What's the main demand on your brain today — deep focused work, meetings & people, learning, creative work, or a recovery day?" Capture demand as the user's own words.
+8. Optional note — "Anything else worth noting — side effects, context, anything unusual?" Capture note; if the user says nothing, set note to "".
+- Never state or imply an effect of caffeine (or its timing) on their sleep, focus or energy — you are only recording what they report, not interpreting cause and effect.
+- Never diagnose or advise on prescription medication.
+- CRITICAL — completion rule: set complete=true ONLY when clarity, energy, stress, sleep_quality, caffeine_drinks, caffeine_last_time, and demand are all non-null and non-empty (note may be empty). If any required field is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
+- When every required field is captured, set complete=true. Your reply then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in interpretation.
+
+The user message is a JSON payload: conversation (prior turns as "Role: text" lines), captured (already-extracted values — do NOT re-ask these), and latest (the user's newest utterance).`,
     responseSchema: {
       type: "object",
       properties: {
-        clarity: { type: "number", description: "Mental clarity score 1-10" },
-        energy: { type: "number", description: "Physical/mental energy 1-10" },
-        stress: { type: "number", description: "Subjective stress 1-10" },
-        sleep_quality: { type: "number", description: "Sleep quality 1-10" },
-        caffeine_drinks: { type: "string", description: "Caffeinated drinks mentioned" },
-        caffeine_servings: { type: "number", description: "Estimated servings" },
-        caffeine_last_time: { type: "string", description: "Approximate time of last caffeine intake" },
-        side_effects: { type: "string", description: "Any side effects mentioned" },
-        demand: { type: "string", description: "Cognitive/work demand description" },
-        note: { type: "string", description: "Summary note of check-in" },
-        reply: { type: "string", description: "Short supportive voice reply (1-2 sentences)" },
+        reply: { type: "string", description: "Next spoken line of the interview: the next question, a gentle clarifier, or the closing interpretation" },
+        extracted_values: {
+          type: "object",
+          properties: {
+            clarity: { type: ["number", "null"], description: "Mental clarity 1-10" },
+            energy: { type: ["number", "null"], description: "Physical/mental energy 1-10" },
+            stress: { type: ["number", "null"], description: "Subjective stress 1-10" },
+            sleep_quality: { type: ["number", "null"], description: "Sleep quality 1-10" },
+            caffeine_drinks: { type: ["string", "null"], description: "Caffeinated drinks in the user's words, or 'none'" },
+            caffeine_last_time: { type: ["string", "null"], description: "Everyday wording of last caffeine timing, or 'n/a'" },
+            demand: { type: ["string", "null"], description: "Main cognitive/work demand in the user's words" },
+            note: { type: ["string", "null"], description: "Anything else reported; empty string when nothing" },
+          },
+        },
+        complete: { type: "boolean", description: "True only when every required field is captured" },
+        interpretation: { type: "string", description: "Closing interpretation when complete, else empty string" },
       },
-      required: ["clarity", "energy", "stress", "sleep_quality", "reply"],
+      required: ["reply", "extracted_values", "complete", "interpretation"],
     },
     timeoutMs: 20000,
     maxRetries: 2,
@@ -179,7 +206,8 @@ Synthesize cognitive domain scores, check-in trajectories, protocol adherence, a
     workerId: "clinician_message_draft",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "deepseek/deepseek-v3.1",
+    // Clinician-facing draft → medical model (Entry 030 scope; canonical slug in medical-model.ts).
+    model: OPENROUTER_MEDICAL_MODEL,
     thinkingBudget: "medium",
     systemPrompt: `You are drafting a professional, compassionate communication from an AQLA clinician to a member.
 Follow strict boundaries: warm tone, clear evidence rationale, no definitive off-platform medical diagnoses, 2-4 paragraphs.`,
@@ -347,6 +375,178 @@ STRICT RULES:
       required: ["theme_name", "config"],
     },
     timeoutMs: 15000,
+    maxRetries: 1,
+    clinicalRiskTier: "low",
+  },
+
+  // ─── Centralized workers (InvokeLLM removal, 2026-09-18) ───────────────────
+  // Prompts moved verbatim from their client call sites; clients now send only
+  // structured input_data. See AGENT_NOTEBOOK.md Entry 031.
+
+  aqla_intelligence_turn: {
+    workerId: "aqla_intelligence_turn",
+    audience: "member",
+    allowedRoles: ["user", "clinician", "admin"],
+    // High-volume member chat → deepseek (same rationale as aqla_intelligence persona).
+    model: "deepseek/deepseek-v3.1",
+    thinkingBudget: "medium",
+    systemPrompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
+FIRST decide the mode of your reply:
+- mode "chat" — greetings, small talk, thanks, jokes, "how are you", personal chit-chat, general-knowledge questions, definitions, "what is X", simple how/why questions, or anything not specifically about the user's own brain data. Reply warmly and helpfully (1-4 sentences) in chat_reply, like a friendly, knowledgeable colleague. Answer general questions directly and accurately — don't deflect to the app or redirect to brain data. Use the user's name or their data only if it fits naturally. Do NOT fill the analysis fields with placeholders; leave them as empty strings. Never force an analysis on casual or general questions, though you may gently invite a question about their focus, sleep or protocol when it fits.
+- mode "analysis" — any question about their cognition, data, protocol, habits or evidence. Fill observed/explanation/next_action/confidence and leave chat_reply empty.
+
+Analysis rules: ground answers ONLY in the user data provided; mention uncertainty; separate observation from inference; never diagnose, never advise on medication, never override safety rules; admit when data is insufficient; recommend clinician review for red flags. Be concise and precise. No hype. If the user explicitly asks to change plans, assess the five available families and propose at most one different plan. Never change it yourself: set plan_change_requested true so the app can ask the user to confirm.
+
+ZERO-HALLUCINATION RULES: Never assert clinical claims not supported by the evidence grades in the Ingredient entity. For supplement dosing, always cite the evidence_grade. When uncertain, state uncertainty and recommend consulting a clinician. Never invent drug interactions, contraindications, or diagnostic conclusions. If your reply touches supplements, safety, dosing, or protocol changes, the platform auto-flags it for clinician review.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        mode: { type: "string", enum: ["chat", "analysis"] },
+        chat_reply: { type: "string", description: "Conversational reply for small talk. Empty when mode is analysis." },
+        observed: { type: "string", description: "What AQLA observed in the data" },
+        explanation: { type: "string", description: "Most likely explanation" },
+        confidence: { type: "string", enum: ["low", "moderate", "high"] },
+        next_action: { type: "string" },
+        safety_note: { type: "string", description: "Only if relevant, else empty string" },
+        plan_change_requested: { type: "boolean" },
+        recommended_family: { type: "string", enum: ["NONE", "SPARK", "FLOW", "DRIVE", "LEARN", "RESET"] },
+        change_reason: { type: "string" },
+      },
+      required: ["mode", "observed", "explanation", "confidence", "next_action", "plan_change_requested", "recommended_family"],
+    },
+    timeoutMs: 30000,
+    maxRetries: 2,
+    clinicalRiskTier: "medium",
+  },
+
+  clinician_member_snapshot: {
+    workerId: "clinician_member_snapshot",
+    audience: "clinician",
+    allowedRoles: ["clinician", "admin"],
+    // Clinician-facing member snapshot → medical model (Entry 030 scope; slug canonical).
+    model: OPENROUTER_MEDICAL_MODEL,
+    thinkingBudget: "medium",
+    systemPrompt: `You are AQLA Clinical Summary, generating a concise clinical overview for a clinician reviewing an AQLA member.
+
+STRICT ZERO-HALLUCINATION RULES:
+- Ground every observation ONLY in the data provided below. Never use outside knowledge about this person.
+- Cite specific data points inline (e.g. "average clarity 6.2/10 over last 7 days", "protocol day 9 of 14").
+- Never make claims not supported by the provided data. Never diagnose, never recommend dosing, never prescribe.
+- If data is insufficient for an observation, state that explicitly (e.g. "Insufficient check-in data to assess trend") rather than infer.
+- If an observation touches supplements, dosing, or safety, add: "requires clinician review".
+- Produce 3 to 5 concise bullet observations.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        bullets: { type: "array", items: { type: "string" } },
+      },
+      required: ["bullets"],
+    },
+    timeoutMs: 45000,
+    maxRetries: 2,
+    clinicalRiskTier: "high",
+  },
+
+  inbox_thread_summary: {
+    workerId: "inbox_thread_summary",
+    audience: "clinician",
+    allowedRoles: ["clinician", "admin"],
+    model: "deepseek/deepseek-v3.1",
+    thinkingBudget: "none",
+    systemPrompt: `You are an expert Chief Medical Officer at AQLA Brain OS. Summarize clinical communications accurately, correlating patient symptoms with their active protocol family and cognitive readiness biomarkers.
+STRICT RULES: use ONLY the conversation and patient context provided. Never invent symptoms, concerns, or urgency.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        summary_bullets: { type: "array", items: { type: "string" } },
+        clinical_urgency: { type: "string", enum: ["low", "moderate", "high", "critical"] },
+        urgency_reason: { type: "string" },
+        patient_concerns: { type: "array", items: { type: "string" } },
+        suggested_actions: { type: "array", items: { type: "string" } },
+      },
+      required: ["summary_bullets", "clinical_urgency", "patient_concerns", "suggested_actions"],
+    },
+    timeoutMs: 25000,
+    maxRetries: 1,
+    clinicalRiskTier: "medium",
+  },
+
+  inbox_smart_replies: {
+    workerId: "inbox_smart_replies",
+    audience: "clinician",
+    allowedRoles: ["clinician", "admin"],
+    model: "deepseek/deepseek-v3.1",
+    thinkingBudget: "none",
+    systemPrompt: `You are AQLA Clinical Intelligence. Generate high-utility, context-aware 1-click reply options tailored to mental performance, cognitive health, and lifestyle protocols.
+STRICT RULES: replies must stay grounded in the patient message and clinical context provided; no diagnoses, no dosing instructions.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        replies: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              chip_title: { type: "string" },
+              text: { type: "string" },
+            },
+            required: ["chip_title", "text"],
+          },
+        },
+      },
+      required: ["replies"],
+    },
+    timeoutMs: 25000,
+    maxRetries: 1,
+    clinicalRiskTier: "medium",
+  },
+
+  inbox_composer_refine: {
+    workerId: "inbox_composer_refine",
+    audience: "clinician",
+    allowedRoles: ["clinician", "admin"],
+    model: "deepseek/deepseek-v3.1",
+    thinkingBudget: "none",
+    systemPrompt: `You are AQLA Composer AI. You refine clinician communications for maximum clarity, professional empathy, and clinical accuracy. Do not output conversational filler. Maintain all factual patient details and medication/protocol guidance accurately.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        refined_text: { type: "string" },
+      },
+      required: ["refined_text"],
+    },
+    timeoutMs: 20000,
+    maxRetries: 1,
+    clinicalRiskTier: "low",
+  },
+
+  inbox_action_items: {
+    workerId: "inbox_action_items",
+    audience: "clinician",
+    allowedRoles: ["clinician", "admin"],
+    model: "deepseek/deepseek-v3.1",
+    thinkingBudget: "none",
+    systemPrompt: `You are an AI Clinical Task Extractor. Identify actionable clinician responsibilities (lab tests requested, follow-ups, protocol adjustments) strictly from the communication provided. Never invent tasks.`,
+    responseSchema: {
+      type: "object",
+      properties: {
+        action_items: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string" },
+              type: { type: "string" },
+              priority: { type: "string", enum: ["high", "normal", "low"] },
+              due_date: { type: "string" },
+            },
+            required: ["title", "type", "priority"],
+          },
+        },
+      },
+      required: ["action_items"],
+    },
+    timeoutMs: 20000,
     maxRetries: 1,
     clinicalRiskTier: "low",
   },

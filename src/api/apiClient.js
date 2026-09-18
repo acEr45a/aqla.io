@@ -299,52 +299,37 @@ export const auth = {
   },
 };
 
-// Direct client AI caller securely routed through Supabase Edge Function ai-run
-export async function directGeminiInvoke({
-  prompt,
-  response_json_schema,
-  system_instruction,
-  model = 'deepseek/deepseek-v3.1',
-  worker_id = 'dynamic_worker',
-}) {
+// First-party AI caller: every client AI request routes through the ai-run edge
+// function and the server-side worker registry (role gating, model governance,
+// ai_runs audit). Prompts and schemas live ONLY in
+// supabase/functions/_shared/worker-registry.ts — call sites send structured
+// input_data plus an optional per-call model override.
+// (InvokeLLM / directGeminiInvoke legacy shims removed 2026-09-18 — Entry 031.)
+export async function runAiWorker(workerId, inputData = {}, { model, prompt, timeoutMs = 45000 } = {}) {
   try {
     const { data, error } = await supabase.functions.invoke('ai-run', {
       body: {
-        worker_id,
-        prompt,
-        response_json_schema,
-        system_instruction,
-        model,
+        worker_id: workerId,
+        input_data: inputData,
+        ...(prompt ? { prompt } : {}),
+        ...(model ? { model } : {}),
       },
     });
 
     if (error) {
-      throw new Error(`Edge function invocation failed: ${error.message || error}`);
+      throw new Error(`AI worker '${workerId}' failed: ${error.message || error}`);
     }
 
-    const text = data?.text || data?.candidates?.[0]?.content?.parts?.[0]?.text || (typeof data === 'string' ? data : '');
-
-    if (response_json_schema) {
-      try {
-        const parsed = typeof data?.parsed === 'object' ? data.parsed : JSON.parse(text);
-        return { ...parsed, text, data: parsed };
-      } catch {
-        return { text, data: { text } };
-      }
-    }
-    return { text, data: text };
+    return data;
   } catch (err) {
-    console.error('[directGeminiInvoke] Invocation failed:', err);
+    console.error(`[runAiWorker:${workerId}]`, err);
     throw err;
   }
 }
 
-// AQLA AI Gateway Integration layer (replaces Core.InvokeLLM & GenerateSpeech)
+// AQLA AI Integration layer (GenerateSpeech = browser TTS; LLM calls use runAiWorker)
 export const integrations = {
   Core: {
-    async InvokeLLM({ prompt, response_json_schema, worker_id = 'dynamic_worker', system_instruction, model = 'deepseek/deepseek-v3.1', ...rest }) {
-      return directGeminiInvoke({ prompt, response_json_schema, worker_id, system_instruction, model });
-    },
 
     async GenerateSpeech({ text }) {
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
@@ -525,7 +510,7 @@ export const agents = {
       console.warn('[agents.addMessage] Edge function fallback:', err.message);
       // Graceful fallback to ai-run / direct invocation
       try {
-        const fallbackRes = await directGeminiInvoke({
+        const fallbackRes = await runAiWorker('dynamic_worker', {}, {
           prompt: content,
           model: metadata?.model_override || 'deepseek/deepseek-v3.1',
         });
@@ -1117,7 +1102,7 @@ export const functions = {
       const { task, instruction, raw, context } = payload;
       const prompt = instruction || raw || `Perform AI task: ${task || 'assist'}. Context: ${JSON.stringify(context || {})}`;
       try {
-        const aiRes = await directGeminiInvoke({ prompt });
+        const aiRes = await runAiWorker('dynamic_worker', {}, { prompt });
         return { data: aiRes, ...aiRes };
       } catch {
         return { data: { text: 'Protocol drafted successfully.' } };

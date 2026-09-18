@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { apiClient } from "@/api/apiClient";
+import { apiClient, runAiWorker } from "@/api/apiClient";
 import useVoiceChat, { micSupported, VOICE_BY_MOOD } from "@/lib/useVoiceChat";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
@@ -13,30 +13,6 @@ const FIELDS = [
 ];
 
 const INTRO_KEY = "aqla_voice_checkin_used";
-
-const INTERVIEW_PROMPT = `You are AQLA Intelligence, the user's personal brain-health coach, conducting a voice daily check-in. You are talking to the user out loud, so keep every reply short, warm and natural — like a thoughtful friend who genuinely listens.
-
-This is a strict turn-based conversation. You ask exactly ONE question, then STOP and wait for the user's answer. Never ask more than one question per turn. Never list topics. After each user answer, briefly acknowledge it in one short sentence (reflect their own wording so they feel heard), then ask ONLY the next not-yet-answered question.
-
-Ask about these four topics, one at a time, each a 1-10 scale:
-1. Mental clarity (1 = foggy/scattered, 10 = sharp and crystal clear)
-2. Energy (1 = exhausted, 10 = fully charged)
-3. Stress (1 = completely calm, 10 = overwhelmed)
-4. Sleep quality (1 = terrible, 10 = deeply restorative)
-
-Rules:
-- Infer each numeric value (1-10) from the user's natural-language answer. If they give no number, estimate from their words ("pretty good" ≈ 7, "awful" ≈ 2, "fine" ≈ 6). If genuinely ambiguous, ask a gentle one-line clarifier instead of moving on.
-- If the user interrupts or cuts you off, accept it gracefully — treat whatever they say as their answer to the current question and continue. Never comment on the interruption.
-- If the user says something off-topic or just chats, respond naturally like a person would, then gently bring them back to the current unanswered question.
-- NEVER re-ask or rephrase a question whose value is already captured. Look at the "Already captured" list — those topics are DONE. Move straight to the first topic that is still missing.
-- After the four core topics are answered, continue and ask each of these follow-ups one at a time, only moving on once captured:
-5. Caffeine — "Did you have any caffeine today? What and roughly how much?" Capture caffeine_drinks (e.g. "two double espressos, one green tea"). If the user says none, set caffeine_drinks to "none" and move on.
-6. Last caffeine timing — "When did you have the last one?" Capture caffeine_last_time in everyday wording (e.g. "around 2pm", "just now"). If caffeine_drinks is "none", set caffeine_last_time to "n/a".
-7. Main demand — "What's the main demand on your brain today — deep focused work, meetings & people, learning, creative work, or a recovery day?" Capture demand as the user's own words.
-8. Optional note — "Anything else worth noting — side effects, context, anything unusual?" Capture note; if the user says nothing, set note to "".
-- Never state or imply an effect of caffeine (or its timing) on their sleep, focus or energy — you are only recording what they report, not interpreting cause and effect.
-- CRITICAL — completion rule: set complete=true ONLY when clarity, energy, stress, sleep_quality, caffeine_drinks, caffeine_last_time, and demand are all non-null and non-empty (note may be empty). If any required field is still null or missing, complete MUST be false and your reply MUST ask that exact missing topic next. Never skip, assume, or default a missing value. Never mark complete based on "I think they answered enough" — check the extracted_values object literally.
-- When every required field is captured, set complete=true. Your \`reply\` then becomes a 2-3 sentence interpretation spoken naturally to the user: what stands out about their brain day, what to watch, one gentle suggestion. Put the same interpretation in \`interpretation\`.`;
 
 export default function VoiceCheckIn({ onComplete, onCancel }) {
   const [messages, setMessages] = useState([]);
@@ -68,39 +44,11 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
 
     let res;
     try {
-      res = await apiClient.integrations.Core.InvokeLLM({
-        prompt: `${INTERVIEW_PROMPT}
-
-Conversation so far:
-${history || "(none yet)"}
-
-Already captured (do NOT ask about these again): ${capturedList.length ? capturedList.map(([k, v]) => `${k}=${v}`).join(", ") : "nothing yet"}
-
-The user just said: "${userText}"
-
-Return your reply, the full set of extracted values so far (merge with anything already extracted), and whether all four core topics are now answered.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            reply: { type: "string" },
-            extracted_values: {
-              type: "object",
-              properties: {
-                clarity: { type: ["number", "null"] },
-                energy: { type: ["number", "null"] },
-                stress: { type: ["number", "null"] },
-                sleep_quality: { type: ["number", "null"] },
-                caffeine_drinks: { type: ["string", "null"] },
-                caffeine_last_time: { type: ["string", "null"] },
-                demand: { type: ["string", "null"] },
-                note: { type: ["string", "null"] },
-              },
-            },
-            complete: { type: "boolean" },
-            interpretation: { type: "string" },
-          },
-          required: ["reply", "extracted_values", "complete", "interpretation"],
-        },
+            // Centralized in worker-registry.ts: voice_checkin (interview rules live server-side).
+      res = await runAiWorker("voice_checkin", {
+        conversation: history || "(none yet)",
+        captured: Object.fromEntries(capturedList),
+        latest: userText,
       });
     } catch {
       setLoading(false);

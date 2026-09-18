@@ -1,4 +1,4 @@
-import { apiClient } from "@/api/apiClient";
+import { apiClient, runAiWorker } from "@/api/apiClient";
 import { localDateKey } from "@/lib/dateKey";
 
 // Sunday-anchored key for the current week, e.g. "week-2026-07-26"
@@ -35,26 +35,12 @@ export async function generateWeeklySummary() {
   // No fabricated output: require real signals from this week.
   if (weekCheckIns.length < 3) return null;
 
-  const res = await apiClient.integrations.Core.InvokeLLM({
-    prompt: `You are AQLA Intelligence writing an end-of-week summary for one user.
-STRICT RULES: use ONLY the data below. Never invent numbers, times, windows, trends or events. If a field cannot be supported by the data, return an empty string for it. State uncertainty when the sample is small. No diagnosis, no medication advice.
-
-Daily check-ins this week (1-10 scales): ${JSON.stringify(weekCheckIns.map((c) => ({ date: c.date, clarity: c.clarity, energy: c.energy, stress: c.stress, sleep_quality: c.sleep_quality, caffeine_servings: c.caffeine_servings, caffeine_last_time: c.caffeine_last_time, demand: c.demand, note: c.note })))}
-Training sessions this week: ${JSON.stringify(weekSessions.map((s) => ({ game: s.game_id, score: s.score, date: s.completed_date })))}
-Brain Map domains (from assessment): ${JSON.stringify(domains.map((d) => ({ name: d.domain_name, score: d.score, trend: d.trend })))}
-Active protocol: ${JSON.stringify(protocols[0] ? { name: protocols[0].name, family: protocols[0].family, objective: protocols[0].objective } : "none")}`,
-    response_json_schema: {
-      type: "object",
-      properties: {
-        headline: { type: "string" },
-        observed: { type: "string" },
-        pattern: { type: "string" },
-        training: { type: "string" },
-        next_week_focus: { type: "string" },
-        confidence: { type: "string", enum: ["low", "moderate", "high"] },
-      },
-      required: ["headline", "observed", "next_week_focus", "confidence"],
-    },
+  // Centralized in worker-registry.ts: weekly_summary (prompt + schema live server-side).
+  const res = await runAiWorker("weekly_summary", {
+    daily_check_ins: weekCheckIns.map((c) => ({ date: c.date, clarity: c.clarity, energy: c.energy, stress: c.stress, sleep_quality: c.sleep_quality, caffeine_servings: c.caffeine_servings, caffeine_last_time: c.caffeine_last_time, demand: c.demand, note: c.note })),
+    training_sessions: weekSessions.map((s) => ({ game: s.game_id, score: s.score, date: s.completed_date })),
+    brain_domains: domains.map((d) => ({ name: d.domain_name, score: d.score, trend: d.trend })),
+    active_protocol: protocols[0] ? { name: protocols[0].name, family: protocols[0].family, objective: protocols[0].objective } : null,
   });
 
   return {

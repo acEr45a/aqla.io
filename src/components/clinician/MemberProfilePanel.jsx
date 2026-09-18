@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
-import { apiClient } from "@/api/apiClient";
-import { OPENROUTER_MEDICAL_MODEL } from "@/../supabase/functions/_shared/medical-model.ts";
+import { apiClient, runAiWorker } from "@/api/apiClient";
 import { autoFlagResponse } from "@/lib/clinicalFlag";
 import { notify } from "@/lib/clinicianToast";
 import { localDateKey } from "@/lib/dateKey";
@@ -99,30 +98,9 @@ function AiSummary({ member, checkIns, cognitiveTests, brainDomains }) {
         assessment_responses: member.assessment?.responses || {},
       };
 
-      const res = await apiClient.integrations.Core.InvokeLLM({
-        // Clinician-facing member summary → medical model (2026-09-18 scope: Sante on
-        // clinician-facing surfaces only; slug canonical in medical-model.ts).
-        model: OPENROUTER_MEDICAL_MODEL,
-        prompt: `You are AQLA Clinical Summary, generating a concise clinical overview for a clinician reviewing an AQLA member.
-
-STRICT ZERO-HALLUCINATION RULES:
-- Ground every observation ONLY in the data provided below. Never use outside knowledge about this person.
-- Cite specific data points inline (e.g. "average clarity 6.2/10 over last 7 days", "protocol day 9 of 14").
-- Never make claims not supported by the provided data. Never diagnose, never recommend dosing, never prescribe.
-- If data is insufficient for an observation, state that explicitly (e.g. "Insufficient check-in data to assess trend") rather than infer.
-- If an observation touches supplements, dosing, or safety, add: "requires clinician review".
-- Produce 3 to 5 concise bullet observations.
-
-MEMBER DATA:
-${JSON.stringify(payload, null, 2)}
-
-Return a JSON object with a "bullets" array of 3-5 strings.`,
-        response_json_schema: {
-          type: "object",
-          properties: { bullets: { type: "array", items: { type: "string" } } },
-          required: ["bullets"],
-        },
-      });
+      // Centralized in worker-registry.ts: clinician_member_snapshot (Sante via OpenRouter,
+      // zero-hallucination rules live server-side).
+      const res = await runAiWorker("clinician_member_snapshot", payload);
       const out = (res?.bullets || []).filter(Boolean);
       setBullets(out.length ? out : ["No observations generated."]);
       // Auto-flag if the summary contains clinical content (supplements/dosing/safety).
