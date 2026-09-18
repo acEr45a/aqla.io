@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, useLocation } from "react-router-dom";
+
+const STAFF_ROLES = ["admin", "super_admin", "clinician"];
 import GuestTestSync from "@/components/GuestTestSync";
 import AqlaAssistant from "@/components/coach/AqlaAssistant";
 import ReassessmentPrompt from "@/components/ReassessmentPrompt";
@@ -62,8 +64,9 @@ export default function AppLayout() {
       path: pathname,
       date: localDateKey(),
       ...meta,
-    }).catch(() => {});
+    }, false).catch(() => {});
   }, [pathname]);
+  const isStaff = STAFF_ROLES.includes(role);
   const extraNav = [];
   if (role === "clinician" || role === "admin" || role === "super_admin") {
     extraNav.push({ to: "/inbox", label: "Clinical Inbox", icon: Mail });
@@ -79,10 +82,14 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background aqla-glow">
       <GuestTestSync />
       {!onAdmin && !onCoach && <AqlaAssistant />}
-      <ReassessmentPrompt />
-      <DailyCheckInPrompt />
-      <RecommendationModal />
-      <PlanReviewGate />
+      {/* Member-only overlays: gated on non-staff role so staff modals never
+          stack over /admin or /clinician (Entry 018: ReassessmentPrompt ate
+          the ops-launcher click on /admin). Role is already resolved here for
+          the staff nav; timing shift equals nav-appearance timing. */}
+      {!isStaff && <ReassessmentPrompt />}
+      {!isStaff && <DailyCheckInPrompt />}
+      {!isStaff && <RecommendationModal />}
+      {!isStaff && <PlanReviewGate />}
       <aside className="hidden md:flex fixed inset-y-0 left-0 w-56 flex-col border-r border-border/60 bg-sidebar/60 backdrop-blur-md z-40">
         <div className="px-6 py-7 flex items-center gap-2.5">
           <AqlaLogo showWordmark={false} className="shrink-0 text-foreground" />
