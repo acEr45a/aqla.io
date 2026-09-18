@@ -118,13 +118,17 @@ function createEntityProxy(entityName) {
       }
     },
 
-    async create(record) {
+    async create(record, returnRow = true) {
       const { data: userData } = await supabase.auth.getUser();
       const payload = { ...record };
       if (userData?.user?.id && !payload.created_by_id) {
         payload.created_by_id = userData.user.id;
       }
-      const { data, error } = await supabase.from(tableName).insert([payload]).select().single();
+      // returnRow=false for fire-and-forget inserts into tables whose SELECT
+      // policy is stricter than INSERT (e.g. site_visits: anyone may insert,
+      // only admins may select) — otherwise RETURNING triggers a 403.
+      const query = supabase.from(tableName).insert([payload]);
+      const { data, error } = returnRow ? await query.select().single() : await query;
       if (error) throw error;
       return data;
     },
@@ -664,7 +668,8 @@ export const functions = {
       const { action, target_user_id, config } = payload;
       if (action === 'check') {
         const { data: me } = await supabase.auth.getUser();
-        const { data: cfg } = await supabase.from('super_admin_configs').select('*').limit(1).single();
+        // maybeSingle: empty table must return null, not 406 (PGRST116)
+        const { data: cfg } = await supabase.from('super_admin_configs').select('*').limit(1).maybeSingle();
         const isSuper = cfg?.super_admin_ids?.includes(me?.user?.id);
         return { is_super_admin: !!isSuper };
       }
@@ -681,7 +686,7 @@ export const functions = {
         return { success: true };
       }
       if (action === 'getCaptcha') {
-        const { data } = await supabase.from('captcha_configs').select('*').limit(1).single();
+        const { data } = await supabase.from('captcha_configs').select('*').limit(1).maybeSingle();
         return data || {};
       }
       if (action === 'saveCaptcha') {
