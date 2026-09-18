@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { apiClient } from "@/api/apiClient";
 import { Loader2, Sparkles, FileDown, RotateCcw } from "lucide-react";
-import { DEFAULT_THEME, loadPdfTheme } from "@/lib/pdf/fableCore";
-import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
-import { generateFableWeeklyPdf } from "@/lib/pdf/fableWeekly";
-import { generateFableEndOfPlanPdf } from "@/lib/pdf/fableEndOfPlan";
+import { DEFAULT_THEME, loadPdfTheme } from "@/lib/pdf/aqlaPdfCore";
+import { generateDailyPdf } from "@/lib/pdf/aqlaPdfDaily";
+import { generateWeeklyPdf } from "@/lib/pdf/aqlaPdfWeekly";
+import { generateEndOfPlanPdf } from "@/lib/pdf/aqlaPdfEndOfPlan";
 import { localDateKey } from "@/lib/dateKey";
 
 const SWATCH_LABELS = { bg: "Background", panel: "Panel", border: "Border", text: "Text", muted: "Muted", faint: "Faint", accent: "Accent", positive: "Positive", negative: "Negative", warning: "Warning" };
@@ -36,16 +36,16 @@ export default function PdfStudioPanel() {
   const reset = async () => {
     const rows = await apiClient.entities.PdfTheme.list("-updated_date", 10);
     await Promise.all(rows.map((r) => apiClient.entities.PdfTheme.delete(r.id)));
-    setNote("Theme reset to Fable defaults.");
+    setNote("Theme reset to AQLA PDF defaults.");
     refresh();
   };
 
   const blank = (kind) => {
     const args = { user: { full_name: "Sample User" }, protocol: null, checkIns: [], domains: [], cognitiveTests: [], sessions: [], theme };
-    if (kind === "daily") return generateFableDailyPdf(args);
+    if (kind === "daily") return generateDailyPdf(args);
     const start = new Date();
     start.setDate(start.getDate() - (kind === "weekly" ? 6 : 13));
-    const gen = kind === "weekly" ? generateFableWeeklyPdf : generateFableEndOfPlanPdf;
+    const gen = kind === "weekly" ? generateWeeklyPdf : generateEndOfPlanPdf;
     gen({ ...args, periodStart: localDateKey(start), periodEnd: localDateKey(new Date()) });
   };
 
@@ -55,7 +55,7 @@ export default function PdfStudioPanel() {
     <div className="aqla-panel rounded-2xl p-5 md:p-6 space-y-6">
       <div>
         <h3 className="font-display text-lg text-foreground">PDF Studio</h3>
-        <p className="mt-1 text-sm text-muted-foreground">Edit the Fable document theme with AI. Changes apply instantly to every PDF users download.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Edit the AQLA PDF document theme with AI. Changes apply instantly to every PDF users download.</p>
       </div>
 
       <div className="flex flex-wrap gap-3">

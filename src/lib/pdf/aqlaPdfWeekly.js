@@ -1,15 +1,15 @@
-// Fable weekly summary PDF — 4 pages.
+// AQLA PDF weekly summary — 4 pages.
 import { localDateKey } from "@/lib/dateKey";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
-import { Fable } from "@/lib/pdf/fableCore";
-import { periodData, adherenceDash, trendBlock, checkInTable, trainingBlock, domainBlock, insightBullets } from "@/lib/pdf/fablePeriod";
+import { AqlaPdf } from "@/lib/pdf/aqlaPdfCore";
+import { periodData, adherenceDash, trendBlock, checkInTable, trainingBlock, domainBlock, insightBullets } from "@/lib/pdf/aqlaPdfPeriod";
 
-export function generateFableWeeklyPdf({ periodStart, periodEnd, user, protocol, checkIns = [], sessions = [], domains = [], cognitiveTests = [], theme }) {
+export function generateWeeklyPdf({ periodStart, periodEnd, user, protocol, checkIns = [], sessions = [], domains = [], cognitiveTests = [], theme }) {
   const pd = periodData({ periodStart, periodEnd, checkIns, sessions, cognitiveTests });
   const firstName = user?.full_name?.split(" ")[0] || "there";
   const familyMeta = PROTOCOL_FAMILIES.find((x) => x.key === protocol?.family);
 
-  const f = new Fable({
+  const f = new AqlaPdf({
     docTitle: "Weekly Summary",
     rightTop: `${pd.fmt(pd.start)} — ${pd.fmt(pd.end)}`,
     rightBottom: `${firstName}'s report`,

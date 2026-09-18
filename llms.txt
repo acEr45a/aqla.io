@@ -12,7 +12,7 @@
 5. [Psychometric & Gamified Cognitive Test Battery](#5-psychometric--gamified-cognitive-test-battery)
 6. [3D Brain Topography & Neural Visualization Engine](#6-3d-brain-topography--neural-visualization-engine)
 7. [Clinical Messaging & Governance Suite](#7-clinical-messaging--governance-suite)
-8. [Automated Clinical PDF Engine (Fable Architecture)](#8-automated-clinical-pdf-engine-fable-architecture)
+8. [Automated Clinical PDF Engine (AQLA PDF Architecture)](#8-automated-clinical-pdf-engine-aqla-pdf-architecture)
 9. [Safety Screening, Contraindications & Crisis Triage](#9-safety-screening-contraindications--crisis-triage)
 10. [Technical Stack, Data Flow & Security Standards](#10-technical-stack-data-flow--security-standards)
 11. [Complete Application Route Directory & User Journeys](#11-complete-application-route-directory--user-journeys)
@@ -124,9 +124,9 @@ The Clinical Inbox is an enterprise-grade, high-contrast, dark-mode workspace at
 
 ---
 
-## 8. Automated Clinical PDF Engine (Fable Architecture)
+## 8. Automated Clinical PDF Engine (AQLA PDF Architecture)
 
-AQLA utilizes an in-memory client-side PDF engine (`fableCore.js`, `fableDaily.js`, `fableWeekly.js`, `fablePeriod.js`) generating vector PDF reports:
+AQLA utilizes an in-memory client-side PDF engine (`aqlaPdfCore.js`, `aqlaPdfDaily.js`, `aqlaPdfWeekly.js`, `aqlaPdfPeriod.js`) generating vector PDF reports:
 - **Daily Clinical Action Plan**: Summary of target protocol, scheduled interventions, contraindications, and domain focus.
 - **7-Day Readiness & Trend Report**: Comprehensive multi-page clinical dossier incorporating adherence dashboards, domain radar visualizations, readiness trend lines, and clinical insight bullets.
 - **Zero-Storage In-Memory Delivery**: PDFs are generated as memory blobs / base64 data URIs, supporting instant local viewing, direct printing, or 1-click email attachment without persisting PHI to unencrypted third-party storage.

@@ -1,15 +1,15 @@
-// Fable daily protocol PDF — 2 pages.
+// AQLA PDF daily protocol — 2 pages.
 import { localDateKey } from "@/lib/dateKey";
 import { PROTOCOL_FAMILIES } from "@/lib/protocols";
-import { Fable, readinessOf, prettyTest } from "@/lib/pdf/fableCore";
+import { AqlaPdf, readinessOf, prettyTest } from "@/lib/pdf/aqlaPdfCore";
 
-export function generateFableDailyPdf({ user, protocol, checkIns = [], domains = [], healthProfile, cognitiveTests = [], theme }) {
+export function generateDailyPdf({ user, protocol, checkIns = [], domains = [], healthProfile, cognitiveTests = [], theme }) {
   const today = localDateKey();
   const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   const firstName = user?.full_name?.split(" ")[0] || "there";
   const familyMeta = PROTOCOL_FAMILIES.find((x) => x.key === protocol?.family);
 
-  const f = new Fable({ docTitle: "Daily Protocol", rightTop: dateStr, rightBottom: `${firstName}'s plan`, theme });
+  const f = new AqlaPdf({ docTitle: "Daily Protocol", rightTop: dateStr, rightBottom: `${firstName}'s plan`, theme });
   const { doc, t } = f;
   const latest = checkIns[0];
   const checkedInToday = checkIns.some((c) => c.date === today);

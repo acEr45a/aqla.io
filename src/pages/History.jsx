@@ -3,10 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { apiClient } from "@/api/apiClient";
 import ReportRow from "@/components/history/ReportRow";
 import PlanHistoryCard from "@/components/history/PlanHistoryCard";
-import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
-import { generateFableWeeklyPdf } from "@/lib/pdf/fableWeekly";
-import { generateFableEndOfPlanPdf } from "@/lib/pdf/fableEndOfPlan";
-import { loadPdfTheme } from "@/lib/pdf/fableCore";
+import { generateDailyPdf } from "@/lib/pdf/aqlaPdfDaily";
+import { generateWeeklyPdf } from "@/lib/pdf/aqlaPdfWeekly";
+import { generateEndOfPlanPdf } from "@/lib/pdf/aqlaPdfEndOfPlan";
+import { loadPdfTheme } from "@/lib/pdf/aqlaPdfCore";
 import { localDateKey } from "@/lib/dateKey";
 
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
@@ -59,7 +59,7 @@ export default function History() {
       apiClient.entities.DailyCheckIn.list("-date", 60),
       loadPdfTheme(),
     ]);
-    generateFableDailyPdf({
+    generateDailyPdf({
       user, protocol,
       checkIns: checkIns.filter((c) => c.date <= archive.date),
       domains, healthProfile: profiles[0], cognitiveTests: tests, theme,
@@ -68,7 +68,7 @@ export default function History() {
 
   const downloadPeriod = async (kind, start, end, protocol) => {
     const [data, theme] = await Promise.all([fetchPeriodData(), loadPdfTheme()]);
-    const gen = kind === "weekly" ? generateFableWeeklyPdf : generateFableEndOfPlanPdf;
+    const gen = kind === "weekly" ? generateWeeklyPdf : generateEndOfPlanPdf;
     gen({
       periodStart: localDateKey(start),
       periodEnd: localDateKey(end),

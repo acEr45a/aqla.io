@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FileDown, Loader2, AlertTriangle } from "lucide-react";
 import { apiClient } from "@/api/apiClient";
-import { generateFableDailyPdf } from "@/lib/pdf/fableDaily";
-import { loadPdfTheme } from "@/lib/pdf/fableCore";
+import { generateDailyPdf } from "@/lib/pdf/aqlaPdfDaily";
+import { loadPdfTheme } from "@/lib/pdf/aqlaPdfCore";
 import { localDateKey } from "@/lib/dateKey";
 
 export default function DailyPlanPdfButton({ user, protocol, checkIns = [], domains, className }) {
@@ -23,7 +23,7 @@ export default function DailyPlanPdfButton({ user, protocol, checkIns = [], doma
         loadPdfTheme(),
       ]);
       const freshProtocol = freshProtocols[0] || protocol;
-      generateFableDailyPdf({
+      generateDailyPdf({
         user,
         protocol: freshProtocol,
         checkIns: fullCheckIns.length ? fullCheckIns : checkIns,

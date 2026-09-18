@@ -1,8 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import { localDateKey } from "@/lib/dateKey";
-import { Fable, loadPdfTheme, readinessOf } from "@/lib/pdf/fableCore";
+import { AqlaPdf, loadPdfTheme, readinessOf } from "@/lib/pdf/aqlaPdfCore";
 import { DOMAINS } from "@/lib/scoring";
-import { domainBlock } from "@/lib/pdf/fablePeriod";
+import { domainBlock } from "@/lib/pdf/aqlaPdfPeriod";
 
 /**
  * Enterprise Patient Clinical Context & AQLA Data Attachment Generator
@@ -134,7 +134,7 @@ export async function generatePatientDailyPlanPdfAttachment(patientContext) {
   const today = localDateKey();
   const firstName = patientContext.name?.split(" ")[0] || "Patient";
 
-  const f = new Fable({
+  const f = new AqlaPdf({
     docTitle: "Daily Protocol Plan",
     rightTop: today,
     rightBottom: `${firstName}'s AQLA Plan`,
@@ -191,7 +191,7 @@ export async function generatePatientWeeklyReportPdfAttachment(patientContext) {
   const start = localDateKey(new Date(Date.now() - 7 * 86400000));
   const firstName = patientContext.name?.split(" ")[0] || "Patient";
 
-  const f = new Fable({
+  const f = new AqlaPdf({
     docTitle: "7-Day Readiness Report",
     rightTop: `${start} — ${today}`,
     rightBottom: `${firstName}'s Report`,

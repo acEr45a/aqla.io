@@ -9,7 +9,7 @@ AQLA (aqla.io) is an advanced web-based cognitive optimization and clinical inte
 - **Gamified Cognitive Assessment Battery**: Standardized psychometric paradigms including Reaction Time, N-Back, Stroop Interference, Trail Making, and Corsi Block Tapping.
 - **Dynamic 3D Brain Mapping**: Interactive Three.js/WebGL neural topography visualizing domain balance, bottlenecks, and longitudinal trends.
 - **Clinical Email Suite**: High-contrast, dark-mode clinical messaging workspace with Supabase Realtime synchronization, Gemini AI intelligence assist, and in-app multi-format record viewers.
-- **Automated Clinical Reporting (Fable Engine)**: Client-side vector PDF generation producing clinical Daily Action Plans and 7-Day Cognitive Readiness Reports.
+- **Automated Clinical Reporting (AQLA PDF Engine)**: Client-side vector PDF generation producing clinical Daily Action Plans and 7-Day Cognitive Readiness Reports.
 - **Safety Screening & Clinical Triage**: Multi-tier safety screening algorithms with automated contraindication detection and crisis resource routing.
 
 ## Public Sitemap & Documentation Links

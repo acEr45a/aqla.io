@@ -1,5 +1,5 @@
-// Shared render blocks for period-based Fable reports (weekly + end-of-plan).
-import { readinessOf, avgOf, prettyTest, inPeriod } from "@/lib/pdf/fableCore";
+// Shared render blocks for period-based AQLA PDF reports (weekly + end-of-plan).
+import { readinessOf, avgOf, prettyTest, inPeriod } from "@/lib/pdf/aqlaPdfCore";
 
 export function periodData({ periodStart, periodEnd, checkIns = [], sessions = [], cognitiveTests = [] }) {
   const start = new Date(periodStart);

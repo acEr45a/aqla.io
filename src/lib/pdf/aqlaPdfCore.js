@@ -1,4 +1,4 @@
-// Fable PDF engine — strict 12-column grid, hard #0A0A0A pages, AQLA branding on every page.
+// AQLA PDF engine — strict 12-column grid, hard #0A0A0A pages, AQLA branding on every page.
 // All drawing goes through this class: the cursor (this.y) is the single source of truth,
 // page breaks repaint the background + header automatically. No incremental coordinate math.
 import { jsPDF } from "jspdf";
@@ -47,7 +47,7 @@ export const inPeriod = (dateStr, start, end) => {
   return d >= start && d <= end;
 };
 
-export class Fable {
+export class AqlaPdf {
   constructor({ docTitle, rightTop, rightBottom, theme }) {
     const merged = { ...DEFAULT_THEME, ...(theme || {}) };
     this.t = {};
