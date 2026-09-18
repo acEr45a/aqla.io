@@ -11,6 +11,12 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Lazy-loaded page components for route-level code splitting
 const Landing = lazy(() => import('@/pages/Landing'));
+const LandingMockup = lazy(() => import('@/pages/LandingMockup'));
+const MockupOneTunnel = lazy(() => import('@/pages/mockups/MockupOneTunnel'));
+const MockupTwoMatrix = lazy(() => import('@/pages/mockups/MockupTwoMatrix'));
+const MockupThreeLuxury = lazy(() => import('@/pages/mockups/MockupThreeLuxury'));
+const MockupFourUnseen = lazy(() => import('@/pages/mockups/MockupFourUnseen'));
+import PageTransitionCurtain from '@/components/common/PageTransitionCurtain';
 const Start = lazy(() => import('@/pages/Start'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
@@ -46,14 +52,23 @@ const AdminSecurityGate = lazy(() => import('@/components/admin/AdminSecurityGat
 const ClinicalInboxPage = lazy(() => import('@/pages/ClinicalInboxPage'));
 
 const PageLoader = () => (
-  <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50">
-    <div className="w-7 h-7 border-3 border-muted border-t-primary rounded-full animate-spin"></div>
+  <div className="fixed inset-0 flex items-center justify-center bg-[#06080c] z-50">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"></div>
+      <span className="text-[10px] font-mono tracking-[0.25em] text-white/40 uppercase">AQLA // LOADING</span>
+    </div>
   </div>
 );
 
 // These routes must render immediately — never block them with global full-screen spinners.
 const PUBLIC_ROUTES = [
   "/",
+  "/mockup",
+  "/mockup-1",
+  "/mockup-2",
+  "/mockup-3",
+  "/mockup-4",
+  "/landing-v2",
   "/start",
   "/login",
   "/register",
@@ -98,9 +113,17 @@ const AuthenticatedApp = () => {
 
   // Render the main app with code-split lazy routes
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={<Landing />} />
+    <>
+      <PageTransitionCurtain />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/mockup" element={<MockupOneTunnel />} />
+          <Route path="/mockup-1" element={<MockupOneTunnel />} />
+          <Route path="/mockup-2" element={<MockupTwoMatrix />} />
+          <Route path="/mockup-3" element={<MockupThreeLuxury />} />
+          <Route path="/mockup-4" element={<MockupFourUnseen />} />
+          <Route path="/landing-v2" element={<LandingMockup />} />
         <Route path="/start" element={<Start />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -143,6 +166,7 @@ const AuthenticatedApp = () => {
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Suspense>
+    </>
   );
 };
 
