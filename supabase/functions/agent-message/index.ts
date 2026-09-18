@@ -146,7 +146,6 @@ serve(async (req) => {
         userId: user.id,
         userRole,
         adminClient,
-        geminiApiKey,
         isConfirmed: true,
       });
 

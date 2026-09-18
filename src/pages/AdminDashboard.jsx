@@ -23,7 +23,7 @@ import ManualEmailComposer from "@/components/admin/ManualEmailComposer";
 import GameRatingsPanel from "@/components/admin/GameRatingsPanel";
 import OpsConsoleWidget from "@/components/admin/OpsConsoleWidget";
 import AppHealthPanel from "@/components/admin/AppHealthPanel";
-import TestModeToggle from "@/components/admin/TestModeToggle";
+import TestingPanel from "@/components/admin/TestingPanel";
 import ProtocolCleanupPanel from "@/components/admin/ProtocolCleanupPanel";
 import NotifyClinicianCard from "@/components/admin/NotifyClinicianCard";
 import AdminRoster from "@/components/superadmin/AdminRoster";
@@ -40,6 +40,7 @@ const TABS = [
 { id: "users", label: "Users & access" },
 { id: "ops", label: "Backend Ops" },
 { id: "memberData", label: "Member data" },
+{ id: "testing", label: "Testing" },
 { id: "development", label: "Development" }];
 
 
@@ -119,7 +120,6 @@ export default function AdminDashboard() {
         {tab === "overview" &&
         <>
             <AppHealthPanel />
-            <TestModeToggle />
             <ProtocolCleanupPanel />
             <UserComplaintsPanel />
             <div className="grid gap-5 lg:grid-cols-2">
@@ -152,6 +152,7 @@ export default function AdminDashboard() {
         }
         {tab === "ops" && <BackendOpsSummary />}
         {tab === "memberData" && <MemberDataPanel />}
+        {tab === "testing" && <TestingPanel />}
         {tab === "development" && <DevelopmentPanel />}
         {tab === "superAdmin" && isSuperAdmin &&
         <>

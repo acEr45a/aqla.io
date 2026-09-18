@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "@/api/apiClient";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { getPublicSettings, executeV3, renderV2, getV2Response, verifyCaptchaToken } from "@/lib/captcha";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,44 @@ export default function Login() {
       navigate(returnTo, { replace: true });
     }
   }, [isAuthenticated, isLoadingAuth, returnTo, navigate]);
+
+  // Auto-login via passcode for AI agents (e.g., ?passcode=ABC123 or ?agent_passcode=ABC123)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const passcode = params.get("passcode") || params.get("agent_passcode");
+    if (!passcode) return;
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke("aqla-ops", {
+          body: { action: "loginWithPasscode", passcode },
+        });
+        if (cancelled) return;
+        if (fnError || data?.error) throw new Error(data?.error || fnError?.message || "Passcode login failed");
+
+        // Use the returned email to verify OTP via token hash
+        if (data?.token_hash) {
+          const { error: verifyErr } = await supabase.auth.verifyOtp({
+            token_hash: data.token_hash,
+            type: "magiclink",
+          });
+          if (verifyErr) throw verifyErr;
+          navigate(returnTo, { replace: true });
+        } else {
+          throw new Error("Passcode login did not return a valid token");
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err?.message || "Passcode login failed");
+          setLoading(false);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { getPublicSettings().then(setSettings).catch(() => {}); }, []);
   useEffect(() => {
