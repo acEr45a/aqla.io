@@ -9,7 +9,14 @@
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "agent:live": "node scripts/agent-live-viewer.js",
+    "agent:cli": "freebuff",
+    "agent:status": "node -e \"fetch('http://localhost:5180/healthz').then(r=>r.json()).then(d=>{const a=d.agent;console.log('\\n=== Freebuff Agent Status ===');console.log('State  :', a.agentState);console.log('Goal   :', a.goal||'(none)');console.log('Persona:', a.persona||'(none)');console.log('Ticker :', a.ticker?.slice(0,120)||'(none)');console.log('Uptime :', Math.floor(d.uptime_s/60)+'m '+d.uptime_s%60+'s');console.log('=============================\\n')}).catch(()=>console.log('\\n⚠  Viewer offline — run: npm run agent:live\\n'))\"",
+    "audit:mockups:nodriver": "python scripts/audit_mockups_nodriver.py",
+    "audit:mockups:playwright": "node scripts/audit_mockups_playwright.js",
+    "inspect:unseen:nodriver": "python scripts/inspect_unseen_nodriver.py",
+    "inspect:unseen:playwright": "node scripts/inspect_unseen.js"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
@@ -48,6 +55,7 @@
     "@stripe/stripe-js": "^5.2.0",
     "@supabase/supabase-js": "^2.112.3",
     "@tanstack/react-query": "^5.84.1",
+    "animejs": "^4.5.0",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -100,7 +108,8 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",
-    "vite": "^6.1.0"
+    "vite": "^6.1.0",
+    "ws": "^8.21.3"
   },
   "overrides": {
     "react": "^19.2.8",

@@ -37,13 +37,16 @@
  * Total: 26 AI Surfaces
  */
 
-const API_KEY = "AQ.Ab8RN6KgIs6VjN0ZUW4-ptFBgEODTQ4FOAcNEX7jCn9hSO-big";
-const MODELS_FALLBACK = [
-  "models/gemini-3.6-flash",
-  "models/gemini-flash-latest",
-  "models/gemini-3.7-flash",
-  "models/gemini-2.5-flash-lite",
-];
+// LEGACY: this script predates the Vercel AI Gateway migration (Entry 004) and
+// targets the retired Gemini direct API. Kept for historical reference only.
+// The hardcoded key that used to live here has been removed (leaked credential
+// scrub); a live rewrite of this suite against ai-run/agent-message is tracked
+// in AGENT_NOTEBOOK.md Section 3.
+const API_KEY = ""; // retired — see header comment
+const MODELS_FALLBACK = [];
+if (!process.env.VERCEL_AI_GATEWAY_KEY) {
+  console.warn("NOTE: test_ai_surfaces.mjs is legacy (Gemini direct API retired). Rewrite against ai-run/agent-message before relying on its results.");
+}
 
 const GREEN = "\x1b[32m";
 const RED   = "\x1b[31m";

@@ -47,7 +47,14 @@ out/
 # LOGS & DIAGNOSTICS
 # ==============================================================================
 logs/
+logs/agent-memory/
 *.log
+
+# ==============================================================================
+# FREEBUFF / CODEBUFF CLI LOCAL STATE (global tool, never commit runtime artifacts)
+# ==============================================================================
+.freebuff/
+.codebuff/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -86,4 +93,7 @@ ehthumbs.db
 # LOCAL TESTING & TEMPORARY SCRIPTS
 # ==============================================================================
 *.local
+__pycache__/
+*.pyc
 .superpowers/
+.unlazy/

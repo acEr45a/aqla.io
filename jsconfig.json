@@ -16,5 +16,5 @@
     "resolveJsonModule": true,
     "types": []
   },
-  "exclude": ["node_modules", "dist", "supabase", "src/vite-plugins", "src/components/ui", "src/api", "src/lib"]
+  "exclude": ["node_modules", "dist", "supabase", "src/vite-plugins", "src/components/ui", "src/api", "src/lib", "test_ai_surfaces.mjs", "scripts"]
 } 
