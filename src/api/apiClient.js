@@ -850,6 +850,7 @@ export const functions = {
           role: u.role || 'user',
           plan: u.plan || null,
           created_at: u.created_at,
+          is_test_account: Boolean(u.is_test_account),
         }));
 
         const visitsData = {
