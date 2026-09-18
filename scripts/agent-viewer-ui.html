@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AQLA · Freebuff Live Agent Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #060810;
+    --surface:   #0c0f1a;
+    --surface2:  #111626;
+    --border:    rgba(255,255,255,0.07);
+    --border2:   rgba(255,255,255,0.12);
+    --text:      #e8edf5;
+    --muted:     #6b7a99;
+    --dim:       #3d4a66;
+    --accent:    #3de8b0;
+    --accent-g:  #1bba83;
+    --blue:      #5b9cf6;
+    --purple:    #9b7cf8;
+    --warn:      #f5c842;
+    --danger:    #f05;
+    --danger2:   #ff2255;
+
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+    --font-sans: 'Inter', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ─────────────────────────────────────────────────── */
+  #app {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 48px 1fr;
+    grid-template-areas:
+      "topbar topbar"
+      "main   sidebar";
+    height: 100vh;
+  }
+
+  /* ── Top bar ────────────────────────────────────────────────── */
+  #topbar {
+    grid-area: topbar;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(8px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .logo-sep { color: var(--dim); font-weight: 400; }
+  .logo-sub { color: var(--muted); font-weight: 400; font-size: 11px; }
+
+  .top-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    white-space: nowrap;
+    transition: border-color .2s, color .2s;
+  }
+  .chip .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--dim);
+    transition: background .3s, box-shadow .3s;
+  }
+  .chip.live { border-color: rgba(61,232,176,.3); color: var(--accent); }
+  .chip.live .dot {
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .chip.err { border-color: rgba(255,0,85,.3); color: var(--danger2); }
+  .chip.err .dot { background: var(--danger2); }
+
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 4px var(--accent); }
+    50% { box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(61,232,176,.3); }
+  }
+
+  #agentStateChip { font-size: 10px; }
+
+  .spacer { flex: 1; }
+
+  /* takeover btn */
+  #takeoverBtn {
+    padding: 7px 14px;
+    border: 1px solid rgba(255,0,85,.4);
+    background: rgba(255,0,85,.05);
+    color: #ff3366;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    cursor: pointer;
+    transition: all .2s;
+    animation: takeover-idle 3s ease-in-out infinite;
+  }
+  #takeoverBtn:hover { background: rgba(255,0,85,.15); border-color: rgba(255,0,85,.7); }
+  #takeoverBtn.active {
+    background: rgba(255,0,85,.9); color: #fff;
+    border-color: var(--danger2);
+    box-shadow: 0 0 16px rgba(255,0,85,.5);
+    animation: none;
+  }
+  @keyframes takeover-idle {
+    0%,100% { box-shadow: 0 0 0 rgba(255,0,85,0); }
+    50% { box-shadow: 0 0 8px rgba(255,0,85,.25); }
+  }
+  #resumeBtn {
+    display: none;
+    padding: 7px 14px;
+    border: 1px solid rgba(61,232,176,.4);
+    background: rgba(61,232,176,.08);
+    color: var(--accent);
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  #resumeBtn:hover { background: rgba(61,232,176,.18); }
+  body.takeover #resumeBtn { display: inline-block; }
+
+  /* ── Main canvas area ───────────────────────────────────────── */
+  #main {
+    grid-area: main;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #canvas {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+    cursor: crosshair;
+    image-rendering: auto;
+  }
+
+  /* takeover overlay */
+  #takeoverOverlay {
+    display: none;
+    position: absolute; inset: 0;
+    border: 2px solid var(--danger2);
+    pointer-events: none;
+    z-index: 10;
+  }
+  #takeoverOverlay::after {
+    content: "⚠  HUMAN CONTROL  —  agent paused";
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    background: var(--danger2); color: #fff;
+    padding: 5px 16px; border-radius: 20px;
+    font-family: var(--font-mono); font-weight: 700; font-size: 11px; letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  body.takeover #takeoverOverlay { display: block; }
+
+  /* ── Waiting / offline state ────────────────────────────────── */
+  #offlinePanel {
+    position: absolute; inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(61,232,176,.04) 0%, #000 65%);
+    z-index: 5;
+  }
+  #offlinePanel.hidden { display: none; }
+
+  .offline-orb {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 38%, rgba(61,232,176,.15), transparent 70%);
+    border: 1.5px solid rgba(61,232,176,.2);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+    animation: orb-breathe 3s ease-in-out infinite;
+    position: relative;
+  }
+  .offline-orb::before {
+    content: '';
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 1px solid rgba(61,232,176,.08);
+    animation: orb-ring 3s ease-in-out infinite reverse;
+  }
+  .offline-orb svg { opacity: .5; }
+  @keyframes orb-breathe {
+    0%,100% { box-shadow: 0 0 20px rgba(61,232,176,.1); transform: scale(1); }
+    50% { box-shadow: 0 0 40px rgba(61,232,176,.2); transform: scale(1.04); }
+  }
+  @keyframes orb-ring {
+    0%,100% { transform: scale(1); opacity: .5; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
+
+  .offline-title {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  #offlineSub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    text-align: center;
+    max-width: 340px;
+    line-height: 1.6;
+  }
+
+  /* mini activity ticker on the waiting screen */
+  #offlineLog {
+    width: 380px;
+    max-height: 180px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+  }
+  .olog-line {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.02);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: olog-in .25s ease;
+  }
+  .olog-line.accent { color: var(--accent); border-color: rgba(61,232,176,.15); }
+  .olog-line.blue { color: var(--blue); border-color: rgba(91,156,246,.15); }
+  .olog-line.err { color: var(--danger2); border-color: rgba(255,0,85,.15); }
+  @keyframes olog-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* keystroke float */
+  .ks-float {
+    position: absolute;
+    padding: 4px 10px;
+    background: rgba(61,232,176,.92);
+    color: #031a0e;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 700; font-size: 11px;
+    pointer-events: none;
+    animation: ks-anim 900ms ease-out forwards;
+    white-space: nowrap;
+    z-index: 20;
+  }
+  @keyframes ks-anim {
+    0% { opacity: 0; transform: translate(-50%, 6px) scale(.85); }
+    15% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -36px) scale(1); }
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────────────── */
+  #sidebar {
+    grid-area: sidebar;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel {
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .panel-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-body { padding: 0 14px 12px; }
+
+  /* Goal */
+  #hudGoal {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text);
+    word-break: break-word;
+  }
+  #hudGoal.idle { color: var(--muted); font-style: italic; }
+
+  /* Persona */
+  .persona-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(155,124,248,.1);
+    border: 1px solid rgba(155,124,248,.25);
+    color: var(--purple);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .persona-tag .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  /* Ticker */
+  #tickerRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    min-height: 34px;
+  }
+  .ticker-tag {
+    flex-shrink: 0;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    background: rgba(91,156,246,.15);
+    color: var(--blue);
+    margin-top: 1px;
+  }
+  .ticker-tag.act { background: rgba(61,232,176,.12); color: var(--accent); }
+  .ticker-tag.err { background: rgba(255,0,85,.12); color: var(--danger2); }
+  .ticker-tag.pass { background: rgba(61,232,176,.12); color: var(--accent); }
+  .ticker-tag.fail { background: rgba(255,0,85,.12); color: var(--danger2); }
+  #hudTickerText {
+    font-size: 11px;
+    color: var(--text);
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  /* Credentials */
+  .cred-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .cred-kv { min-width: 0; }
+  .cred-k {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1px;
+  }
+  .cred-v {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
+  .copy-btn {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    background: rgba(91,156,246,.1);
+    color: var(--blue);
+    border: 1px solid rgba(91,156,246,.3);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { background: rgba(91,156,246,.25); }
+  .copy-btn.ok { background: rgba(61,232,176,.15); color: var(--accent); border-color: rgba(61,232,176,.4); }
+
+  /* scroll area */
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  /* Test results */
+  #testResults { display: flex; flex-direction: column; gap: 3px; }
+  .result-row {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    border: 1px solid transparent;
+    transition: background .2s;
+  }
+  .result-row.pass { background: rgba(61,232,176,.04); border-color: rgba(61,232,176,.1); }
+  .result-row.fail { background: rgba(255,0,85,.04); border-color: rgba(255,0,85,.1); }
+  .result-row.run  { background: rgba(91,156,246,.05); border-color: rgba(91,156,246,.15); animation: pulse-row 1.2s ease-in-out infinite; }
+  @keyframes pulse-row { 0%,100% { opacity: 1; } 50% { opacity: .7; } }
+  .result-mark { font-family: var(--font-mono); font-weight: 700; width: 14px; flex-shrink: 0; font-size: 12px; }
+  .result-row.pass .result-mark { color: var(--accent); }
+  .result-row.fail .result-mark { color: var(--danger2); }
+  .result-row.run  .result-mark { color: var(--blue); }
+  .result-name { flex: 1; color: var(--text); }
+  .result-detail { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+  #resultSummary {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  #resultSummary b { color: var(--text); }
+  #resultSummary .pass-count { color: var(--accent); font-weight: 700; }
+  #resultSummary .fail-count { color: var(--danger2); font-weight: 700; }
+
+  /* Memory */
+  .mem-run {
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .mem-run-when { font-size: 9px; color: var(--dim); margin-bottom: 2px; font-family: var(--font-mono); }
+  .mem-run-what { color: var(--text); }
+  .mem-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .mem-badge.ok { background: rgba(61,232,176,.12); color: var(--accent); }
+  .mem-badge.regr { background: rgba(255,0,85,.12); color: var(--danger2); }
+
+  .verified-strip {
+    padding: 8px 10px;
+    background: rgba(61,232,176,.04);
+    border: 1px solid rgba(61,232,176,.1);
+    border-radius: 8px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--accent);
+    line-height: 1.7;
+  }
+  .verified-strip .vs-label { font-size: 9px; font-weight: 700; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; margin-bottom: 4px; }
+
+  .empty-note { font-size: 11px; color: var(--dim); font-style: italic; padding: 4px 0; }
+
+  /* Footer */
+  .sidebar-footer {
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--dim);
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="logo">
+      AQLA
+      <span class="logo-sep">//</span>
+      <span class="logo-sub">freebuff live agent viewer</span>
+    </div>
+    <div class="top-divider"></div>
+    <span class="chip" id="wsChip"><span class="dot"></span><span id="wsChipText">connecting…</span></span>
+    <span class="chip" id="fpsChip"><span class="dot" style="background:var(--blue)"></span><b id="fpsVal">0</b>&nbsp;fps</span>
+    <span class="chip" id="agentStateChip"><span class="dot" style="background:var(--purple)"></span><span id="agentStateTxt">agent: idle</span></span>
+    <div class="spacer"></div>
+    <button id="resumeBtn">▶ RESUME AGENT</button>
+    <button id="takeoverBtn" title="Pause agent and control the browser yourself">⚠ EMERGENCY TAKEOVER</button>
+  </div>
+
+  <!-- MAIN STAGE -->
+  <div id="main">
+    <canvas id="canvas" width="1280" height="800"></canvas>
+    <div id="takeoverOverlay"></div>
+
+    <!-- Waiting / offline panel -->
+    <div id="offlinePanel">
+      <div class="offline-orb">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </div>
+      <div class="offline-title">◍ WAITING FOR STREAM</div>
+      <div id="offlineSub">Launch <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-size:10px">npm run agent:live</code> to start the Freebuff agent session</div>
+      <div id="offlineLog"></div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+
+    <!-- Goal + ticker -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Mission</span>
+      </div>
+      <div class="panel-body">
+        <div id="hudGoal" class="idle">Waiting for agent to declare a goal…</div>
+        <div id="personaBadge" style="display:none" class="persona-tag">
+          <span class="dot"></span><span id="personaName">—</span>
+        </div>
+        <div id="tickerRow">
+          <span class="ticker-tag" id="tickerTag">IDLE</span>
+          <span id="hudTickerText">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credentials -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Test Account</span>
+      </div>
+      <div class="panel-body" id="credBox">
+        <div class="empty-note">No test account loaded yet.</div>
+      </div>
+    </div>
+
+    <!-- Scrollable section -->
+    <div class="sidebar-scroll">
+
+      <!-- Test Results -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Test Results</span>
+        </div>
+        <div class="panel-body">
+          <div id="testResults"></div>
+          <div id="resultSummary"></div>
+        </div>
+      </div>
+
+      <!-- Memory -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Memory Inspector</span>
+        </div>
+        <div class="panel-body">
+          <div id="memoryBox"><div class="empty-note">Loading persistent memory…</div></div>
+        </div>
+      </div>
+
+    </div><!-- end sidebar-scroll -->
+
+    <div class="sidebar-footer">
+      takeover → CDP Input.dispatchMouseEvent / Input.dispatchKeyEvent<br>
+      stream → Page.startScreencast (JPEG, 60fps cap)
+    </div>
+  </div><!-- end sidebar -->
+
+</div><!-- end app -->
+
+<script>
+(() => {
+  "use strict";
+
+  /* ── Elements ──────────────────────────────────────────────── */
+  const canvas       = document.getElementById("canvas");
+  const ctx          = canvas.getContext("2d");
+  const wsChip       = document.getElementById("wsChip");
+  const wsChipText   = document.getElementById("wsChipText");
+  const fpsVal       = document.getElementById("fpsVal");
+  const agentStateTxt= document.getElementById("agentStateTxt");
+  const agentStateChip = document.getElementById("agentStateChip");
+  const takeoverBtn  = document.getElementById("takeoverBtn");
+  const resumeBtn    = document.getElementById("resumeBtn");
+  const hudGoal      = document.getElementById("hudGoal");
+  const personaBadge = document.getElementById("personaBadge");
+  const personaName  = document.getElementById("personaName");
+  const tickerTag    = document.getElementById("tickerTag");
+  const hudTickerText= document.getElementById("hudTickerText");
+  const credBox      = document.getElementById("credBox");
+  const testResults  = document.getElementById("testResults");
+  const resultSummary= document.getElementById("resultSummary");
+  const memoryBox    = document.getElementById("memoryBox");
+  const offlinePanel = document.getElementById("offlinePanel");
+  const offlineSub   = document.getElementById("offlineSub");
+  const offlineLog   = document.getElementById("offlineLog");
+  const main         = document.getElementById("main");
+
+  /* ── State ─────────────────────────────────────────────────── */
+  let ws = null;
+  let takeover = false;
+  let latestFrame = null;
+  let frameCount = 0;
+  let dirty = false;
+  let cur = { x: 0, y: 0 };
+  let target = { x: 0, y: 0 };
+  let haveCursor = false;
+  let ripples = [];
+  let connected = false;
+  const MAX_OFFLINE_LOG = 8;
+
+  /* ── Offline log helper (shows activity while no stream) ──── */
+  function offlineAppend(text, cls = "") {
+    if (offlinePanel.classList.contains("hidden")) return;
+    const el = document.createElement("div");
+    el.className = "olog-line" + (cls ? " " + cls : "");
+    el.textContent = `${new Date().toLocaleTimeString()}  ${text}`;
+    offlineLog.prepend(el);
+    while (offlineLog.children.length > MAX_OFFLINE_LOG) {
+      offlineLog.removeChild(offlineLog.lastChild);
+    }
+  }
+
+  /* ── WebSocket ─────────────────────────────────────────────── */
+  function connect() {
+    const proto = location.protocol === "https:" ? "wss:" : "ws:";
+    ws = new WebSocket(`${proto}//${location.host}/ws`);
+    ws.onopen = () => {
+      connected = true;
+      wsChip.classList.add("live");
+      wsChipText.textContent = "stream live";
+      offlineAppend("WebSocket connected to viewer server", "accent");
+    };
+    ws.onclose = () => {
+      connected = false;
+      wsChip.classList.remove("live");
+      wsChip.classList.remove("err");
+      wsChipText.textContent = "reconnecting…";
+      // Don't hide offline panel when we lose the ws - only when frames arrive
+      offlineAppend("Connection lost — retrying in 1.2s…", "err");
+      setTimeout(connect, 1200);
+    };
+    ws.onerror = () => {
+      wsChip.classList.add("err");
+      try { ws.close(); } catch (_) {}
+    };
+    ws.onmessage = (ev) => {
+      let msg;
+      try { msg = JSON.parse(ev.data); } catch (_) { return; }
+      handle(msg);
+    };
+  }
+
+  function handle(m) {
+    switch (m.t) {
+      case "frame":
+        latestFrame = m;
+        dirty = true;
+        offlinePanel.classList.add("hidden");
+        frameCount++;
+        break;
+      case "cursor":
+        target.x = m.x; target.y = m.y;
+        if (!haveCursor) { cur.x = m.x; cur.y = m.y; haveCursor = true; }
+        break;
+      case "click":
+        ripples.push({ x: m.x, y: m.y, t0: performance.now() });
+        floatKey(m.x, m.y, m.button === "right" ? "R-CLICK" : "CLICK");
+        break;
+      case "key":
+        floatKey(null, null, m.key);
+        break;
+      case "typing":
+        floatKey(m.x, m.y, m.text);
+        break;
+      case "state": {
+        const s = m.state || "idle";
+        agentStateTxt.textContent = `agent: ${s}`;
+        // colour the agent state chip
+        agentStateChip.classList.remove("live","err");
+        if (s === "acting" || s === "testing" || s === "memory") agentStateChip.classList.add("live");
+        if (s === "error") agentStateChip.classList.add("err");
+        offlineAppend(`[STATE] ${s}`, s === "error" ? "err" : s === "done" ? "accent" : "");
+        break;
+      }
+      case "hud": {
+        if (m.goal !== undefined) {
+          hudGoal.textContent = m.goal || "—";
+          hudGoal.classList.toggle("idle", !m.goal);
+        }
+        if (m.persona !== undefined) {
+          personaBadge.style.display = m.persona ? "inline-flex" : "none";
+          personaName.textContent = m.persona || "—";
+        }
+        if (m.ticker !== undefined) {
+          const kind = m.tickerKind || "info";
+          tickerTag.textContent = kind.toUpperCase();
+          tickerTag.className = "ticker-tag" + (kind !== "info" ? " " + kind : "");
+          hudTickerText.textContent = m.ticker;
+          offlineAppend(m.ticker, kind === "pass" ? "accent" : kind === "fail" || kind === "err" ? "err" : kind === "act" ? "blue" : "");
+        }
+        break;
+      }
+      case "creds":
+        renderCreds(m.creds);
+        break;
+      case "assert":
+        addResult(m);
+        break;
+      case "summary":
+        renderSummary(m);
+        break;
+      case "memory":
+        renderMemory(m.memory);
+        break;
+      case "takeover-ack":
+        if (!m.ok) {
+          takeover = false;
+          document.body.classList.remove("takeover");
+          takeoverBtn.classList.remove("active");
+          takeoverBtn.textContent = "⚠ EMERGENCY TAKEOVER";
+        }
+        break;
+    }
+  }
+
+  /* ── Canvas render loop ─────────────────────────────────────── */
+  function resizeCanvas() {
+    if (!latestFrame) return;
+    if (canvas.width !== latestFrame.w || canvas.height !== latestFrame.h) {
+      canvas.width = latestFrame.w;
+      canvas.height = latestFrame.h;
+    }
+  }
+
+  function draw() {
+    requestAnimationFrame(draw);
+    if (!latestFrame || !dirty) return;
+    resizeCanvas();
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // ripples
+      const now = performance.now();
+      ripples = ripples.filter(r => now - r.t0 < 700);
+      for (const r of ripples) {
+        const p = (now - r.t0) / 700;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, 6 + p * 36, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(61,232,176,${(1 - p) * 0.9})`;
+        ctx.lineWidth = 3 * (1 - p) + .5;
+        ctx.stroke();
+      }
+      // smooth cursor
+      cur.x += (target.x - cur.x) * 0.35;
+      cur.y += (target.y - cur.y) * 0.35;
+      if (haveCursor) {
+        // halo
+        ctx.beginPath();
+        ctx.arc(cur.x, cur.y, 12, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(61,232,176,0.14)";
+        ctx.fill();
+        // ring
+        ctx.beginPath();
+        ctx.arc(cur.x, cur.y, 12, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(61,232,176,0.85)";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // dot
+        ctx.beginPath();
+        ctx.arc(cur.x, cur.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#3de8b0";
+        ctx.fill();
+        // crosshair ticks
+        ctx.strokeStyle = "rgba(61,232,176,0.75)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        [[cur.x-18,cur.y,cur.x-13,cur.y],[cur.x+13,cur.y,cur.x+18,cur.y],
+         [cur.x,cur.y-18,cur.x,cur.y-13],[cur.x,cur.y+13,cur.x,cur.y+18]].forEach(([x1,y1,x2,y2]) => {
+          ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+        });
+        ctx.stroke();
+      }
+    };
+    img.src = latestFrame.data;
+    dirty = false;
+  }
+  requestAnimationFrame(draw);
+
+  // FPS counter
+  setInterval(() => {
+    fpsVal.textContent = frameCount;
+    frameCount = 0;
+  }, 1000);
+
+  /* ── Keystroke floats ──────────────────────────────────────── */
+  function floatKey(x, y, text) {
+    const el = document.createElement("div");
+    el.className = "ks-float";
+    el.textContent = text;
+    if (x == null) {
+      const r = canvas.getBoundingClientRect();
+      el.style.left = `${r.width / 2}px`;
+      el.style.top = "20px";
+    } else {
+      el.style.left = `${x}px`;
+      el.style.top = `${Math.max(24, y - 20)}px`;
+    }
+    main.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+
+  /* ── HUD renderers ─────────────────────────────────────────── */
+  function renderCreds(creds) {
+    credBox.innerHTML = "";
+    if (!creds) {
+      credBox.innerHTML = '<div class="empty-note">No test account loaded yet.</div>';
+      return;
+    }
+    const fields = [
+      ["Email",    creds.email],
+      ["Passcode", creds.passcode],
+      ["Label",    creds.label],
+      ["Auto-login URL", creds.login_url || `http://localhost:5174/login?passcode=${creds.passcode || ""}`],
+    ];
+    for (const [k, v] of fields) {
+      if (!v) continue;
+      const row = document.createElement("div");
+      row.className = "cred-item";
+      const kv = document.createElement("div");
+      kv.className = "cred-kv";
+      kv.innerHTML = `<div class="cred-k">${k}</div><div class="cred-v">${v}</div>`;
+      const btn = document.createElement("button");
+      btn.className = "copy-btn";
+      btn.textContent = "COPY";
+      btn.onclick = () => {
+        navigator.clipboard.writeText(v).then(() => {
+          btn.textContent = "✓";
+          btn.classList.add("ok");
+          setTimeout(() => { btn.textContent = "COPY"; btn.classList.remove("ok"); }, 1600);
+        });
+      };
+      row.append(kv, btn);
+      credBox.appendChild(row);
+    }
+  }
+
+  function addResult(m) {
+    const row = document.createElement("div");
+    row.className = `result-row ${m.ok ? "pass" : "fail"}`;
+    row.innerHTML = `
+      <span class="result-mark">${m.ok ? "✓" : "✗"}</span>
+      <span class="result-name">${m.name}</span>
+      ${m.detail ? `<span class="result-detail" title="${m.detail}">${m.detail}</span>` : ""}
+    `;
+    testResults.appendChild(row);
+    row.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function renderSummary(m) {
+    const total = m.total || 0;
+    const passed = m.passed || 0;
+    const failed = total - passed;
+    const regressions = m.regressions || 0;
+    resultSummary.innerHTML =
+      `<span class="pass-count">${passed}</span>/${total} passed` +
+      (failed ? ` · <span class="fail-count">${failed} failed</span>` : "") +
+      (regressions ? ` · <span class="fail-count">${regressions} regression${regressions !== 1 ? "s" : ""}</span>` : "");
+  }
+
+  function renderMemory(memory) {
+    memoryBox.innerHTML = "";
+    if (!memory || !memory.runs || !memory.runs.length) {
+      memoryBox.innerHTML = '<div class="empty-note">No prior runs recorded. This run will become memory #1.</div>';
+      return;
+    }
+    const runs = [...memory.runs].slice(-10).reverse();
+    for (const run of runs) {
+      const item = document.createElement("div");
+      item.className = "mem-run";
+      const badge = run.regressions_found > 0
+        ? `<span class="mem-badge regr">${run.regressions_found} REGRESSION${run.regressions_found !== 1 ? "S" : ""}</span>`
+        : `<span class="mem-badge ok">VERIFIED</span>`;
+      item.innerHTML = `
+        <div class="mem-run-when">${new Date(run.at).toLocaleString()}</div>
+        <div class="mem-run-what">${run.summary || run.surface || "test run"}${badge}</div>
+      `;
+      memoryBox.appendChild(item);
+    }
+    if (Array.isArray(memory.verified_components) && memory.verified_components.length) {
+      const strip = document.createElement("div");
+      strip.className = "verified-strip";
+      strip.innerHTML = `<div class="vs-label">Verified Components</div>${memory.verified_components.join("  ·  ")}`;
+      memoryBox.appendChild(strip);
+    }
+  }
+
+  /* ── Takeover ──────────────────────────────────────────────── */
+  takeoverBtn.addEventListener("click", () => {
+    takeover = !takeover;
+    document.body.classList.toggle("takeover", takeover);
+    takeoverBtn.classList.toggle("active", takeover);
+    takeoverBtn.textContent = takeover ? "✕ TAKEOVER ACTIVE" : "⚠ EMERGENCY TAKEOVER";
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ t: takeover ? "takeover-on" : "takeover-off" }));
+    }
+  });
+  resumeBtn.addEventListener("click", () => {
+    takeover = false;
+    document.body.classList.remove("takeover");
+    takeoverBtn.classList.remove("active");
+    takeoverBtn.textContent = "⚠ EMERGENCY TAKEOVER";
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ t: "resume-agent" }));
+    }
+  });
+
+  function pageCoords(ev) {
+    const rect = canvas.getBoundingClientRect();
+    if (!latestFrame) return null;
+    return {
+      x: (ev.clientX - rect.left) * (latestFrame.w / rect.width),
+      y: (ev.clientY - rect.top) * (latestFrame.h / rect.height),
+    };
+  }
+
+  canvas.addEventListener("mousemove", ev => {
+    if (!takeover) return;
+    const p = pageCoords(ev);
+    if (p && ws && ws.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({ t: "takeover-mousemove", x: p.x, y: p.y }));
+  });
+  canvas.addEventListener("mousedown", ev => {
+    if (!takeover) return;
+    const p = pageCoords(ev);
+    if (p && ws && ws.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({ t: "takeover-mousedown", x: p.x, y: p.y, button: ev.button }));
+  });
+  canvas.addEventListener("mouseup", ev => {
+    if (!takeover) return;
+    const p = pageCoords(ev);
+    if (p && ws && ws.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({ t: "takeover-mouseup", x: p.x, y: p.y, button: ev.button }));
+  });
+  window.addEventListener("keydown", ev => {
+    if (!takeover) return;
+    ev.preventDefault();
+    if (ws && ws.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({
+        t: "takeover-key", key: ev.key, code: ev.code,
+        text: ev.key.length === 1 ? ev.key : `[${ev.key}]`,
+        modifiers: { ctrl: ev.ctrlKey, alt: ev.altKey, shift: ev.shiftKey, meta: ev.metaKey },
+      }));
+  }, { capture: true });
+  window.addEventListener("keyup", ev => {
+    if (!takeover) return;
+    ev.preventDefault();
+    if (ws && ws.readyState === WebSocket.OPEN)
+      ws.send(JSON.stringify({ t: "takeover-keyup", key: ev.key, code: ev.code }));
+  }, { capture: true });
+
+  connect();
+
+  // Offline log keeps showing heartbeat while waiting
+  offlineAppend("Viewer loaded — waiting for agent stream…", "blue");
+  setInterval(() => {
+    if (!latestFrame && connected)
+      offlineAppend("Agent browser not yet launched — start the test run", "");
+  }, 8000);
+})();
+</script>
+</body>
+</html>
