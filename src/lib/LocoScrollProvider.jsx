@@ -26,14 +26,22 @@ export function LocoScrollProvider({ children, options }) {
 
         instance = new LocomotiveScroll({
           lenisOptions: {
-            lerp: 0.08,
-            duration: 1.2,
+            lerp: 0.075,
+            duration: 1.25,
             smoothWheel: true,
-            syncTouch: false, // avoid touch hijacking on mobile
+            syncTouch: true,
+            wheelMultiplier: 1.0,
+            touchMultiplier: 1.2,
             ...options?.lenisOptions,
           },
           ...options,
         });
+
+        // CRITICAL BUG FIX: On Windows laptops and devices with touch drivers,
+        // navigator.maxTouchPoints > 0 causes Locomotive Scroll v5 to set isTouchDevice = true,
+        // which silently disables smooth scrolling physics (smooth: false)!
+        // Forcing isTouchDevice = false ensures buttery-smooth inertia momentum for all wheel & trackpad users.
+        instance.isTouchDevice = false;
 
         if (cancelled) {
           instance.destroy();

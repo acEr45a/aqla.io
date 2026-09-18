@@ -46,6 +46,7 @@ const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
 const AccountManagement = lazy(() => import('@/pages/AccountManagement'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
+const Docs = lazy(() => import('@/pages/Docs'));
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
 const CommunityInsights = lazy(() => import('@/pages/CommunityInsights'));
 const AdminSecurityGate = lazy(() => import('@/components/admin/AdminSecurityGate'));
@@ -63,6 +64,7 @@ const PageLoader = () => (
 // These routes must render immediately — never block them with global full-screen spinners.
 const PUBLIC_ROUTES = [
   "/",
+  "/docs",
   "/mockup",
   "/mockup-1",
   "/mockup-2",
@@ -118,6 +120,7 @@ const AuthenticatedApp = () => {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/docs" element={<Docs />} />
           <Route path="/mockup" element={<MockupOneTunnel />} />
           <Route path="/mockup-1" element={<MockupOneTunnel />} />
           <Route path="/mockup-2" element={<MockupTwoMatrix />} />

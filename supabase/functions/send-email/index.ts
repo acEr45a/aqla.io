@@ -14,14 +14,14 @@ const RESEND_API_URL = "https://api.resend.com/emails";
 const DEFAULT_FROM = "AQLA <noreply@aqla.io>";
 
 function buildProfessionalEmail({ subject, contentHtml, paragraphs, actionButton }) {
-  const bodyContent = contentHtml || (paragraphs || []).map((p) => `<p style="margin: 0 0 16px 0; font-size: 14px; color: #a1a7b0; line-height: 1.65;">${p}</p>`).join("");
+  const bodyContent = contentHtml || (paragraphs || []).map((p) => `<p style="margin: 0 0 16px 0; font-size: 14px; color: #9ca3af; line-height: 1.65;">${p}</p>`).join("");
   const buttonHtml = actionButton
     ? `
       <table cellpadding="0" cellspacing="0" border="0" style="margin: 28px 0 12px 0;">
         <tr>
-          <td align="center" style="background-color: #ffffff; border-radius: 9999px;">
-            <a href="${actionButton.url}" target="_blank" style="display: inline-block; padding: 12px 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; color: #0c0d0e; text-decoration: none; border-radius: 9999px; letter-spacing: 0.02em;">
-              ${actionButton.label}
+          <td align="center">
+            <a href="${actionButton.url}" target="_blank" style="display: inline-block; padding: 14px 36px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 600; color: #0c0d0e; background-color: #c9f24e; text-decoration: none; border-radius: 12px; letter-spacing: 0.02em; box-shadow: 0 4px 20px rgba(201, 242, 78, 0.25);">
+              ${actionButton.label} &rarr;
             </a>
           </td>
         </tr>
@@ -40,25 +40,40 @@ function buildProfessionalEmail({ subject, contentHtml, paragraphs, actionButton
   <table width="100%" bgcolor="#0c0d0e" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; width: 100% !important; background-color: #0c0d0e;">
     <tr>
       <td align="center" style="padding: 48px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; background-color: #141619; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 20px; overflow: hidden; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; background-color: #131518; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);">
           <tr>
-            <td height="3" style="background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); line-height: 3px; font-size: 3px;">&nbsp;</td>
+            <td height="3" style="background: linear-gradient(90deg, #c9f24e 0%, #10b981 100%); line-height: 3px; font-size: 3px;">&nbsp;</td>
           </tr>
           <tr>
-            <td style="padding: 36px 36px 32px 36px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <td style="padding: 40px 36px 32px 36px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 32px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 24px;">
                 <tr>
-                  <td align="left" style="font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #ffffff; text-transform: uppercase; padding-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.07);">
-                    AQLA
+                  <td align="left">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align: middle; padding-right: 12px;">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="34" height="34" style="display: block;">
+                            <path d="M8.5 32.5 18.5 11.5 28.5 32.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="m28.5 32.5 7.5 -8.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+                            <path d="m12.8 23.5 7.8 0" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+                            <circle cx="22.5" cy="23.5" r="7.5" fill="#C9F24E" opacity="0.22"/>
+                            <circle cx="22.5" cy="23.5" r="3.6" fill="#C9F24E"/>
+                          </svg>
+                        </td>
+                        <td style="vertical-align: middle;">
+                          <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.22em; color: #ffffff; text-transform: uppercase; display: block; line-height: 1;">AQLA</span>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <h1 style="margin: 28px 0 16px 0; font-size: 21px; font-weight: 500; color: #ffffff; letter-spacing: -0.01em; line-height: 1.3;">
+              <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 500; color: #ffffff; letter-spacing: -0.01em; line-height: 1.3;">
                 ${subject}
               </h1>
 
-              <div style="font-size: 14px; line-height: 1.65; color: #a1a7b0;">
+              <div style="font-size: 14px; line-height: 1.65; color: #9ca3af;">
                 ${bodyContent}
               </div>
 
@@ -66,7 +81,7 @@ function buildProfessionalEmail({ subject, contentHtml, paragraphs, actionButton
             </td>
           </tr>
           <tr>
-            <td style="background-color: #0f1113; border-top: 1px solid rgba(255, 255, 255, 0.06); padding: 20px 36px; text-align: center;">
+            <td style="background-color: #0e1012; border-top: 1px solid rgba(255, 255, 255, 0.05); padding: 20px 36px; text-align: center;">
               <p style="margin: 0; font-size: 11px; color: #4b5563; line-height: 1.5;">
                 &copy; ${new Date().getFullYear()} AQLA.io &middot; Advanced Cognitive Operating System
               </p>

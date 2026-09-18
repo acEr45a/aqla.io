@@ -3,6 +3,7 @@ import { apiClient, runAiWorker } from "@/api/apiClient";
 import useVoiceChat, { micSupported, VOICE_BY_MOOD } from "@/lib/useVoiceChat";
 import { loadVoicePrefs } from "@/lib/voicePrefs";
 import VoiceButton, { VoiceStatus } from "@/components/coach/VoiceButton";
+import LipSyncAvatar from "@/components/today/LipSyncAvatar";
 import { RotateCcw, Send, Check, MessageCircle } from "lucide-react";
 
 const FIELDS = [
@@ -33,6 +34,7 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
   const isComplete = messages.some((m) => m.role === "aqla" && m.complete);
   const interpretation = [...messages].reverse().find((m) => m.role === "aqla" && m.interpretation)?.interpretation || "";
   const answeredCount = FIELDS.filter((f) => typeof collected[f.key] === "number").length;
+  const latestAqlaMsg = [...messages].reverse().find((m) => m.role === "aqla")?.text || "";
 
   const runInterview = useCallback(async (msgArray, userText) => {
     setLoading(true);
@@ -44,7 +46,7 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
 
     let res;
     try {
-            // Centralized in worker-registry.ts: voice_checkin (interview rules live server-side).
+      // Centralized in worker-registry.ts: voice_checkin (interview rules live server-side).
       res = await runAiWorker("voice_checkin", {
         conversation: history || "(none yet)",
         captured: Object.fromEntries(capturedList),
@@ -179,7 +181,16 @@ export default function VoiceCheckIn({ onComplete, onCancel }) {
         </div>
       ) : (
         <>
-          <div className="max-h-64 overflow-y-auto scrollbar-none space-y-3 pr-1">
+          <div className="flex justify-center -my-2">
+            <LipSyncAvatar
+              speaking={voice.speaking}
+              listening={voice.listening}
+              text={voice.speaking ? latestAqlaMsg : ""}
+              onInterrupt={voice.stopSpeaking}
+            />
+          </div>
+
+          <div className="max-h-48 overflow-y-auto scrollbar-none space-y-3 pr-1">
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">

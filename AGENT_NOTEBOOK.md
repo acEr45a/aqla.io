@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-18 13:40 UTC | **Task:** [REMOVED] InvokeLLM legacy shim deleted — all client AI centralized in worker-registry via runAiWorker (Entry 033)
+> **Last Updated By:** Antigravity on 2026-09-18 14:20 UTC | **Task:** Supabase Custom SMTP Setup & Complete Auth Email Suite Redesign (Entry 034)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -57,6 +57,26 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 
 ## 2. Handover Changelog
 
+### [Entry 034] Antigravity — 2026-09-18 14:20 UTC — [COMPLETED] Supabase Custom SMTP Guide & Full Auth Email Suite Redesign
+- **Auth Email Suite Redesigned**: Created 5 universal XHTML 1.0 email templates under `templates/emails/` matching AQLA Dark Luxury Tech standards (`#0C0D0E`, `#131518`, `#C9F24E` lime accents, 3px top gradient bar, embedded neural mark, zero emojis):
+  - `templates/emails/confirm-signup.html`: Registration confirmation as a direct **1-click Magic Link** (`{{ .ConfirmationURL }}`), requiring no OTP codes.
+  - `templates/emails/reset-password.html`: Password recovery with 1-hour expiration callout and direct reset CTA.
+  - `templates/emails/magic-link.html`: Passwordless login link with 15-minute expiration notice.
+  - `templates/emails/invite-user.html`: Platform user/clinician invitation.
+  - `templates/emails/change-email.html`: Security verification for changing account email address.
+- **Edge Function Redeployed**: Updated `supabase/functions/sendAdminOtp/index.ts` to use matching brand tokens and redeployed to project `xuwifebsymvangjbynkg` (Version 11, Status: `ACTIVE`).
+- **Visual Auditing**: Rendered full-page preview screenshots for all templates via Playwright.
+
+### [Entry 033] Antigravity — 2026-09-18 13:54 UTC — [VERIFIED] Resend Webhook Integration, Edge Function Deployment (`resend-inbound`), & E2E Verification
+- **Signing Secret Integration:** Updated `.env` with user-provided signing secret `whsec_75veljHtUqzCs6y0YgT4Mh21BLH3vakj` under `RESEND_WEBHOOK_SECRET` and `SVIX_WEBHOOK_SECRET`.
+- **Edge Function Deployment:** Deployed `supabase/functions/resend-inbound` to Supabase project `xuwifebsymvangjbynkg` with `verify_jwt: false` (ID: `47ef7609-2807-425e-b074-61c00708ad3e`, Status: `ACTIVE`).
+- **Resend MCP Audits:**
+  - Verified `aqla.io` domain status: `verified`, sending: `enabled`.
+  - Verified webhook `2d8287bc-0d0b-4c50-8eb7-97b7acbea627` on endpoint `https://xuwifebsymvangjbynkg.supabase.co/functions/v1/resend-inbound` with all email events subscribed.
+  - Verified outbound emails: recent transactional OTPs and clinical reviews all in `delivered` status.
+  - Verified inbound email inbox: receiving actively on `clinician@ndapape.resend.app`.
+- **Live Endpoint Test:** Unsigned POST rejected with 401; signed HMAC-SHA256 payload accepted with 200 OK (`success: true`, message and thread created in DB).
+
 ### [Entry 033] Freebuff — 2026-09-18 09:30 UTC — [REMOVED] InvokeLLM/legacy shim fully deleted; every client AI call centralized in worker-registry via runAiWorker → ai-run
 - **User directive:** "completely removing InvokeLLM and replacing with our existing infrastructure" — chose **full centralization** (prompts/schemas live ONLY server-side).
 - **New primitive:** `runAiWorker(workerId, inputData, { model, prompt, timeoutMs })` in `apiClient.js` — thin caller over `ai-run`. Deleted: `directGeminiInvoke` export + `integrations.Core.InvokeLLM`. `GenerateSpeech` stays (browser TTS, not LLM infra). `dynamic_worker` escape hatch retained for 2 internal prompt-style callers (role-gated + audited).
@@ -65,6 +85,15 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 - **Verification:** zero `InvokeLLM`/`directGeminiInvoke` code references repo-wide (comment banners only); typecheck PASS; build PASS (45.4s); worker E2E (`scripts/verify-runaiworker-e2e.mjs`) 5/5 — chat reply, plan_review + clinical_summary structured outputs, inbox summary, ai_runs ledger proves plan_review + clinical_summary on Sante; browser suite 6/6 with UI run pinned to `clinician_member_snapshot` on Sante (4043ms). `ai-run` redeployed.
 - **Note:** AGENT_NOTEBOOK.md staged version = HEAD + this entry only (Antigravity's concurrent uncommitted edits preserved in working tree).
 
+### [Entry 032] Antigravity — 2026-09-18 13:21 UTC — [COMPLETED] README Overhaul, Brandkit Banner, Developer Docs & Live `/docs` Page
+- **Brand Assets**: Extracted standalone SVG mark `public/images/aqla-logo.svg` and generated dark-tech 16:9 hero banner `public/images/aqla-banner.jpg` using the brandkit skill + Imagen model.
+- **README Rewrite**: Fully updated `README.md` to be professional, product-first, zero emojis, clean header layout, capability matrix, tech stack, local quickstart, and a complete documentation links table.
+- **Developer Documentation**: Created comprehensive developer docs in `docs/`:
+  - `docs/architecture.md`: System design, module directory tree, data flow & edge functions table.
+  - `docs/getting-started.md`: Local development, prerequisites, environment configuration, and verification commands.
+  - `docs/contributing.md`: Contribution guidelines, type safety, security boundary rules, and PR process.
+- **Live `/docs` Hub Page**: Created `src/pages/Docs.jsx` and registered `/docs` as a public route in `src/App.jsx`. Provides a high-level, product-focused documentation view (How It Works, Data & Privacy, Chrome Extension, The Platform) accessible without authentication.
+- **Verification**: `npm run typecheck` passed cleanly; `npm run build` completed in 29.54s with code 0.
 
 ### [Entry 031] Antigravity — 2026-09-18 08:57 UTC — [RESOLVED] Mockup 1 Scroll Mechanics, Card Skip Bug, Runway Expansion (850vh) & Interactive Controls
 - **User feedback addressed:** User reported Mockup 1 scroll was "way too short", "bugs and doesn't show all the cards", and requested a nodriver audit to diagnose and resolve.

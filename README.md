@@ -1,122 +1,109 @@
-# Aqla.io
+<p align="center">
+  <img src="public/images/aqla-logo.svg" width="72" height="72" alt="AQLA Logo" />
+</p>
 
-A premium personal brain operating system that analyzes your unique cognitive patterns, lifestyle, and habits to build a data-driven, evidence-informed protocol for peak mental performance.
- 
----
+<h1 align="center">AQLA</h1>
 
-## 📑 Table of Contents
+<p align="center">
+  <b>Personal Brain Operating System & Precision Cognitive Performance Platform</b>
+</p>
 
-1. [Overview](https://www.google.com/search?q=%23overview)
-2. [Tech Stack & Infrastructure](https://www.google.com/search?q=%23tech-stack--infrastructure)
-3. [Project Structure](https://www.google.com/search?q=%23project-structure)
-4. [Development Workflow](https://www.google.com/search?q=%23development-workflow)
-5. [Environment Variables](https://www.google.com/search?q=%23environment-variables)
-6. [Getting Started Locally](https://www.google.com/search?q=%23getting-started-locally)
-
----
-
-## 🔍 Overview
-
-Aqla.io is a production-grade web application engineered to function as a personal brain operating system. It processes user cognitive patterns, lifestyle metrics, and daily habits to generate data-driven, evidence-informed performance protocols. 
+<p align="center">
+  <img src="public/images/aqla-banner.jpg" width="100%" alt="AQLA Neural Brand Banner" />
+</p>
 
 ---
 
-## 🚀 Tech Stack & Infrastructure
+## Overview
 
-* **Frontend Framework:** React / Vite styled with Tailwind CSS
-* **Hosting & CI/CD:** Vercel (Automatic continuous deployments tied to the `main` branch)
-* **Domain & DNS Management:** Cloudflare routing (`aqla.io`)
-* **Authentication:** Google OAuth client configuration
-* **UI & Component Generation:** v0 by Vercel (Isolated Pull Requests for visual updates)
-* **Backend & Logic Management:** Google Antigravity (Local desktop AI execution, database structuring, and API logic)
-* **Version Control:** GitHub
+AQLA is a high-performance web platform engineered to measure, analyze, and optimize cognitive readiness. By processing reaction variance, working memory paradigms, and stress markers, AQLA builds personalized, data-driven neuroplasticity protocols designed to unlock peak mental performance.
 
 ---
 
-## 📁 Project Structure
+## Core Capabilities
 
-```text
-aqla.io/
-├── public/               # Static assets, logos, and favicons
-├── src/
-│   ├── components/       # Reusable UI components (v0 & manual edits)
-│   ├── pages/            # Main application views and routing
-│   ├── hooks/            # Custom application hooks
-│   ├── services/         # API integrations, Google OAuth, and core services
-│   ├── App.jsx           # Root application component
-│   └── main.jsx          # Application entry point
-├── .env.example          # Template for environment variables
-├── package.json          # Project dependencies and npm scripts
-└── README.md             # Project documentation
-
-```
+- **5-Domain Cognitive Architecture**: Continuous measurement across Focus Depth, Working Memory, Executive Control, Processing Speed, and Cognitive Resilience.
+- **Adaptive Neuroplasticity Regimens**: Dynamic 7-day and 14-day protocol progressions (SPARK, RESTORE, HYPERFOCUS, NEUROSHIELD, FLOW) tailored to daily baseline scores.
+- **Gamified Psychometric Battery**: Standardized assessment paradigms including Reaction Time, N-Back, Stroop Interference, Trail Making, and Corsi Block Tapping.
+- **Dynamic 3D Brain Mapping**: WebGL-powered 3D neural topography visualizer showing real-time domain balance and longitudinal trends.
+- **AI Intelligence Coach**: Evidence-backed conversational assistant built for cognitive readiness guidance and habit adherence.
+- **Chrome Companion Extension**: Side-panel browser integration delivering micro-interventions and real-time focus prompts during active work.
 
 ---
 
-## 🛠️ Development Workflow
+## Documentation
 
-This project is powered by a decentralized multi-tool setup:
+Comprehensive documentation is split between product-facing guides on the web app and technical reference guides in the repository:
 
-1. **Frontend & Interface Updates (v0):**
-* Prompt v0 to construct or update UI features.
-* Review code changes inside automatically generated Pull Requests on GitHub before merging into `main`.
-
-
-2. **Backend, Database & Core Logic (Google Antigravity):**
-* Open the repository locally on your desktop via Google Antigravity.
-* Use desktop AI agents to manage database configurations, schema migrations, and backend functions.
-
-
-3. **Continuous Deployment (Vercel & Cloudflare):**
-* Every successful merge into the `main` branch instantly triggers a production build on Vercel, deploying updates live to `aqla.io`.
-
-
+| Guide | Target Audience | Location |
+|---|---|---|
+| **Product Documentation** | Users & Overview | [aqla.io/docs](https://aqla.io/docs) |
+| **System Architecture** | Developers & Engineers | [`docs/architecture.md`](docs/architecture.md) |
+| **Getting Started Guide** | Local Setup & Verification | [`docs/getting-started.md`](docs/getting-started.md) |
+| **Contributing Standards** | Contributors & PR Reviewers | [`docs/contributing.md`](docs/contributing.md) |
 
 ---
 
-## 🔐 Environment Variables
+## Tech Stack & Infrastructure
 
-Ensure your local `.env` or `.env.local` file contains the appropriate configurations before running the app:
-
-```env
-VITE_API_URL=your_backend_api_url_here
-VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id_here
-VITE_SUPABASE_URL=your_supabase_project_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-```
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion, Three.js / React Three Fiber
+- **Backend & Database**: Supabase (PostgreSQL 17, Row-Level Security, Auth, Realtime)
+- **AI Infrastructure**: Vercel AI Gateway abstraction layer (`gateway.ts`) routing DeepSeek v3.1, Claude Sonnet 4.5, and OpenAI Vector Embeddings (`vector(768)`)
+- **Hosting & CI/CD**: Vercel continuous deployment pipeline tied to `main` branch
 
 ---
 
-## 💻 Getting Started Locally
+## Getting Started Locally
 
-To clone and run Aqla.io on your local machine using Google Antigravity or a terminal:
+### 1. Clone the repository
 
-1. **Clone the repository:**
 ```bash
-git clone <your-repository-url>
-cd aqla-io
-
+git clone https://github.com/aqla-io/aqla.io.git
+cd aqla.io
 ```
 
+### 2. Install dependencies
 
-2. **Install dependencies:**
 ```bash
 npm install
-
 ```
 
+### 3. Setup Environment Variables
 
-3. **Run the development server:**
+Copy `.env.example` to `.env` and populate your Supabase configuration:
+
+```env
+VITE_SUPABASE_URL=https://your-supabase-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### 4. Run the development server
+
 ```bash
 npm run dev
-
 ```
 
-
+Visit `http://localhost:5173` in your browser.
 
 ---
 
-## 📄 License
+## Verification & Build Script Commands
 
-Private project. All rights reserved.
+Before submitting pull requests, run verification scripts:
+
+```bash
+# Typecheck TypeScript & JavaScript configs
+npm run typecheck
+
+# Production build test
+npm run build
+
+# Code style lint check
+npm run lint
+```
+
+---
+
+## License
+
+Private and proprietary project. All rights reserved. Unauthorized copying, modification, distribution, or commercial use is strictly prohibited.

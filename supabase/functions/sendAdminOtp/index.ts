@@ -123,24 +123,48 @@ serve(async (req) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AQLA Admin Verification Code</title>
 </head>
-<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<body style="margin: 0; padding: 0; width: 100% !important; background-color: #0c0d0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
   <table width="100%" bgcolor="#0c0d0e" cellpadding="0" cellspacing="0" border="0" style="table-layout: fixed; width: 100% !important;">
     <tr><td align="center" style="padding: 48px 16px;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 520px; background-color: #141619; border: 1px solid rgba(255,255,255,0.09); border-radius: 20px; overflow: hidden;">
-        <tr><td height="3" style="background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc); line-height: 3px; font-size: 3px;">&nbsp;</td></tr>
-        <tr><td style="padding: 36px;">
-          <p style="font-size: 15px; font-weight: 700; letter-spacing: 0.22em; color: #fff; text-transform: uppercase; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.07); margin: 0 0 24px 0;">AQLA</p>
-          <h1 style="margin: 0 0 12px 0; font-size: 21px; font-weight: 500; color: #fff;">Admin Verification Code</h1>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; background-color: #131518; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        <tr><td height="3" style="background: linear-gradient(90deg, #c9f24e 0%, #10b981 100%); line-height: 3px; font-size: 3px;">&nbsp;</td></tr>
+        <tr><td style="padding: 40px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 24px;">
+            <tr>
+              <td align="left">
+                <table cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="vertical-align: middle; padding-right: 12px;">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="34" height="34" style="display: block;">
+                        <path d="M8.5 32.5 18.5 11.5 28.5 32.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="m28.5 32.5 7.5 -8.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+                        <path d="m12.8 23.5 7.8 0" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
+                        <circle cx="22.5" cy="23.5" r="7.5" fill="#C9F24E" opacity="0.22"/>
+                        <circle cx="22.5" cy="23.5" r="3.6" fill="#C9F24E"/>
+                      </svg>
+                    </td>
+                    <td style="vertical-align: middle;">
+                      <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.22em; color: #ffffff; text-transform: uppercase; display: block; line-height: 1;">AQLA</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 500; color: #ffffff; letter-spacing: -0.01em; line-height: 1.3;">Admin Verification Code</h1>
           <p style="margin: 0 0 24px 0; font-size: 14px; color: #9ca3af; line-height: 1.6;">Use the one-time passcode below to verify your administrator session on the AQLA Console:</p>
           <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
-            <tr><td align="center" style="background: #1c1f24; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 22px 16px;">
-              <span style="font-family: ui-monospace, monospace; font-size: 36px; font-weight: 700; letter-spacing: 0.35em; color: #fff; display: block; padding-left: 0.35em;">${code}</span>
+            <tr><td align="center" style="background: #1a1c21; border: 1px solid rgba(201,242,78,0.25); border-radius: 14px; padding: 22px 16px; box-shadow: inset 0 0 20px rgba(201,242,78,0.05);">
+              <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 38px; font-weight: 700; letter-spacing: 0.35em; color: #c9f24e; display: block; padding-left: 0.35em;">${code}</span>
             </td></tr>
           </table>
-          <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280;">This code expires in <strong style="color: #9ca3af;">10 minutes</strong> and can only be used once.</p>
-          <p style="margin: 0; font-size: 12px; color: #6b7280;">If you did not initiate this request, contact your security team immediately.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #1a1c21; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 20px;">
+            <tr><td style="padding: 14px 18px;">
+              <p style="margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">This code expires in <strong style="color: #c9f24e;">10 minutes</strong> and can only be used once. If you did not initiate this request, contact your security team immediately.</p>
+            </td></tr>
+          </table>
         </td></tr>
-        <tr><td style="background-color: #0f1113; border-top: 1px solid rgba(255,255,255,0.06); padding: 20px 36px; text-align: center;">
+        <tr><td style="background-color: #0e1012; border-top: 1px solid rgba(255,255,255,0.05); padding: 20px 36px; text-align: center;">
           <p style="margin: 0; font-size: 11px; color: #4b5563;">&copy; ${new Date().getFullYear()} AQLA.io &middot; Advanced Cognitive Operating System</p>
           <p style="margin: 4px 0 0 0; font-size: 11px; color: #374151;">Sent securely from <span style="color: #6b7280;">noreply@aqla.io</span></p>
         </td></tr>
