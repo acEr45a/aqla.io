@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-18 07:12 UTC | **Task:** [COMMITTED] Full backlog committed in 11 logical groups — deployed aqla-ops source now in git history (Entry 026)
+> **Last Updated By:** Freebuff on 2026-09-18 07:35 UTC | **Task:** [PUSHED] Backlog to origin minus voice lip-sync WIP (held back local); rebase mistake caught & recovered (Entry 027)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,13 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 027] Freebuff — 2026-09-18 07:35 UTC — [PUSHED] origin/main = backlog minus voice lip-sync; WIP held local; rebase error self-caught and recovered
+- **Task:** User approved push but ordered the half-built voice lip-sync feature held back ("nothing is made" — no backend behind it yet); keep it as local uncommitted WIP, push everything else.
+- **⚠ Operator error, self-caught, recovered:** first rebase to drop the lip-sync commit used `--onto 2c357be` (wrong upstream — `98dc9a0`'s parent is `d3d402b`). That silently dropped THREE commits: the lip-sync one AND `1f10077` (test suites) AND `d3d402b` (tooling). Detected because `__pycache__/` reappeared untracked and suite scripts vanished from disk. Recovered via pre-saved tip `logs/pre-rebase-recovery.txt` (`03ea3ac`): `git reset --hard 03ea3ac` → redo with `--onto d3d402b`. Correct history verified commit-by-commit. Lesson: `git rebase --onto A B` keeps commits AFTER B — verify the parent of the dropped commit, not a nearby one; and always diff the tree against the pre-rebase tip afterwards.
+- **Final pushed state (origin/main = e56103b):** all 10 backlog commits incl. deployed-matching `aqla-ops` source; production frontend un-stales (Entry 015 closed); Vercel auto-deploys. Verified BEFORE push: stash voice WIP → `npm run typecheck` PASS → `npm run build` PASS (26.89s) → pop. Working tree after push = only voice WIP (`M VoiceCheckIn.jsx`, `?? LipSyncAvatar.jsx`) + git-ignored pycache/unlazy dirs.
+- **Voice lip-sync WIP (LOCAL ONLY, not pushed):** `src/components/today/LipSyncAvatar.jsx` + VoiceCheckIn mount. Needs: backend avatar/voice pipeline, then re-commit. Do not assume it's deployed.
+- **Open items:** AI gateway free-tier decision (Claude surfaces 403 → canned fallbacks); Radix dialog `aria-describedby` nit; `import_and_sync.py` personal emails (Entry 013, user decision); git-history rewrite for CSVs/old secrets (Entry 013/016, user decision).
 
 ### [Entry 026] Freebuff — 2026-09-18 07:12 UTC — [COMMITTED] Entire working-tree backlog committed in logical groups
 - **Task:** Resolve Entry 015/022/023/025's open item — commit everything uncommitted so the deployed `aqla-ops` source and the mockup work are safe in git history. Reviewer checklist run in-session (degraded mode): independent `npm run typecheck` PASS + `npm run build` PASS (25.09s) on the committed state; scope-vs-brief and cross-file impact verified; RLS untouched.
