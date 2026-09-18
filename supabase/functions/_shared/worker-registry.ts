@@ -31,7 +31,9 @@ export const WORKER_REGISTRY: Record<string, WorkerDefinition> = {
     workerId: "aqla_intelligence",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "anthropic/claude-sonnet-4.5",
+    // Free-tier reassignment (Entry 018 decision, verified 2026-09-18): was anthropic/claude-sonnet-4.5,
+    // which 403s on the gateway free tier. gateway.ts now failovers 403/429 across providers.
+    model: "deepseek/deepseek-v3.1",
     thinkingBudget: "medium",
     systemPrompt: `You are AQLA Intelligence, a calm, evidence-aware brain-performance analyst inside the AQLA app.
 FIRST decide the mode of your reply:
@@ -97,7 +99,7 @@ Never diagnose or advise on prescription medication.`,
     workerId: "weekly_summary",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "anthropic/claude-sonnet-4.5",
+    model: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
     thinkingBudget: "medium",
     systemPrompt: `You are AQLA Intelligence writing an end-of-week summary for one user.
 STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, trends or events. If a field cannot be supported by the data, return an empty string for it. State uncertainty when the sample is small. No diagnosis, no medication advice.`,
@@ -122,7 +124,7 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "plan_review",
     audience: "member",
     allowedRoles: ["user", "clinician", "admin"],
-    model: "anthropic/claude-sonnet-4.5",
+    model: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
     thinkingBudget: "high",
     systemPrompt: `You are AQLA Intelligence reviewing a completed 14-check-in neural wellness plan. Analyze only the supplied data. Do not diagnose or advise on medication. Account for side effects conservatively. Decide whether to suggest continuing or switching among SPARK, FLOW, DRIVE, LEARN, RESET. A switch is only a suggestion; the user makes the final choice.`,
     responseSchema: {
@@ -146,7 +148,7 @@ STRICT RULES: use ONLY the data provided. Never invent numbers, times, windows, 
     workerId: "clinical_summary",
     audience: "clinician",
     allowedRoles: ["clinician", "admin"],
-    model: "anthropic/claude-sonnet-4.5",
+    model: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
     thinkingBudget: "high",
     systemPrompt: `You are an expert clinical neural-health analyst preparing a member summary for a reviewing clinician.
 Synthesize cognitive domain scores, check-in trajectories, protocol adherence, and risk flags into an objective clinical brief.`,

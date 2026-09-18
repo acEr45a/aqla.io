@@ -1,5 +1,5 @@
 # AGENT_NOTEBOOK.md
-> **Last Updated By:** Freebuff on 2026-09-18 07:35 UTC | **Task:** [PUSHED] Backlog to origin minus voice lip-sync WIP (held back local); rebase mistake caught & recovered (Entry 027)
+> **Last Updated By:** Freebuff on 2026-09-18 07:49 UTC | **Task:** [RESOLVED] AI gateway decision — free-tier model reassignment + 403/429 failover chain in gateway.ts (Entry 028)
 
 Welcome to the shared inter-agent notebook for the AQLA codebase. Both **Antigravity** and **Freebuff** must read this document on Turn 1 of every session and update it before finalizing any work.
 
@@ -56,6 +56,20 @@ All AI operations are routed 100% through the Vercel AI Gateway:
 ---
 
 ## 2. Handover Changelog
+
+### [Entry 028] Freebuff — 2026-09-18 07:49 UTC — [RESOLVED] Entry 018 gateway decision: free-tier reassignment + cross-provider failover chain
+- **Decision executed:** user chose "stay free tier" — reassign Claude-default surfaces to deepseek AND add a 403/429-aware fallback chain.
+- **Evidence base (probed live, not assumed — `scripts/probe-free-tier-models.mjs`, reusable):** free tier EXCLUDES flagships with 403 (`claude-sonnet-4.5`, `deepseek-v3.2/v4-flash/v4-pro`; probe infers `gpt-5-pro` likewise), but the large mini/small catalog IS free-eligible (deepseek-v3.1, deepseek-r1, gemini-2.5-flash, gpt-4o-mini, claude-3-haiku all verified 200 with correct spacing). The 429s from the first probe were a GLOBAL free-tier burst bucket (~2 req/min across all models) plus per-model windows — proven by first-contact models 429ing and by spaced probes flipping 429→200/400-passed-gate. gpt-4o-mini's 400 ("max_output_tokens ≥ 16") proves the free-tier gate PASSED (provider-side error). Rate-limit responses carry no Retry-After headers.
+- **Changes:**
+  1. `supabase/functions/_shared/gateway.ts` — `FREE_TIER_MODEL_CHAIN` = [deepseek-v3.1, gemini-2.5-flash, gpt-4o-mini, claude-3-haiku]; `fetchWithModelFallback()` attempts the requested model, then walks the chain on 403/429 only (2s backoff between attempts; 400/5xx throw immediately — a payload bug must not burn quota). Other callers unaffected (signature unchanged).
+  2. `supabase/functions/_shared/worker-registry.ts` — 4 Claude-default workers → `deepseek/deepseek-v3.1`: `aqla_intelligence`, `weekly_summary`, `plan_review`, `clinical_summary`.
+  3. `supabase/functions/agent-message/index.ts` — 3 Claude-default personas → `deepseek/deepseek-v3.1`: `aqla_intelligence`, `backend_ops_operations`, `backend_ops_architect`. During an intermediate edit I briefly renamed the architect key to a PLACEHOLDER string; caught and restored in the same session (final grep verifies keys `backend_ops_operations`/`backend_ops_architect` intact at lines 50/63 with selector logic at 210 untouched).
+  4. `src/components/admin/OpsConsoleWidget.jsx` — runtime defaults → deepseek-v3.1 for ops/architect; dropdown Tier 1 relabeled "(paid tier)", Tier 2 renamed "Free Tier" and gains claude-3-haiku + deepseek options; reasoning toggles untouched.
+  5. `ai_model_matrix.md` — staleness banner added (its Claude rows and MemberProfilePanel row are historical; MemberProfilePanel.jsx no longer exists on disk).
+- **Verification:** typecheck PASS, build PASS (35.01s). Edge functions are TypeScript-checked by tsc via jsconfig (jsconfig excludes `supabase` — so NOT: typecheck does NOT cover supabase/. Relied on same-session grep verification + hand-review of gateway.ts changes; a bad intermediate rename was caught this way).
+- **⚠ DEPLOY REQUIRED (source now differs from live):** `ai-run` (imports worker-registry) and `agent-message` must be redeployed to Supabase for the reassignment+chain to take effect; `OpsConsoleWidget.jsx` ships with the next Vercel deploy. Until then, live Claude surfaces still 403→canned fallback.
+- **Free-tier ops guidance (from probe):** keep AI calls spaced; bursts 429 globally (~2 req/min) and per-model windows vary (gemini needed ~4min). The chain absorbs this for single-shot calls; the 5-turn agent loop may still need retries.
+- **Open items:** deploy `ai-run` + `agent-message`; optional live E2E of the chain (`AGENT_TEST_MODE=ai`); Radix dialog a11y nit; Entry 013 history-rewrite decisions; voice lip-sync WIP still local-only (needs backend).
 
 ### [Entry 027] Freebuff — 2026-09-18 07:35 UTC — [PUSHED] origin/main = backlog minus voice lip-sync; WIP held local; rebase error self-caught and recovered
 - **Task:** User approved push but ordered the half-built voice lip-sync feature held back ("nothing is made" — no backend behind it yet); keep it as local uncommitted WIP, push everything else.

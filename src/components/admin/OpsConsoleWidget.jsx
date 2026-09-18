@@ -98,9 +98,12 @@ export default function OpsConsoleWidget() {
   const endRef = useRef(null);
 
   // Runtime Model & Reasoning Configuration
+  // Free-tier defaults (Entry 018 decision): sonnet-4.5 403s on the gateway free tier.
+  // DeepSeek V3.1 is the free-tier default; the edge function failovers 403/429 across
+  // providers, so the dropdown stays available for paid-tier upgrades.
   const [selectedModelByMode, setSelectedModelByMode] = useState({
-    ops: "anthropic/claude-sonnet-4.5",
-    architect: "anthropic/claude-sonnet-4.5",
+    ops: "deepseek/deepseek-v3.1",
+    architect: "deepseek/deepseek-v3.1",
   });
   const [selectedReasoningByMode, setSelectedReasoningByMode] = useState({
     ops: "high",
@@ -440,9 +443,9 @@ export default function OpsConsoleWidget() {
                     }
                     className="bg-secondary/40 border border-border/60 text-[11px] font-medium rounded-lg px-2 py-0.5 text-foreground focus:outline-none w-full truncate"
                   >
-                    <optgroup label="Tier 1 — Flagship">
+                    <optgroup label="Tier 1 — Flagship (paid tier)">
                       <option value="anthropic/claude-sonnet-4.5">
-                        Claude Sonnet 4.5 (Default)
+                        Claude Sonnet 4.5 (Paid tier)
                       </option>
                       <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
                       <option value="openai/gpt-4o">OpenAI GPT-4o</option>
@@ -452,10 +455,11 @@ export default function OpsConsoleWidget() {
                       </option>
                       <option value="deepseek/deepseek-v3.1">DeepSeek V3.1</option>
                     </optgroup>
-                    <optgroup label="Tier 2 — Fast & Diagnostic">
+                    <optgroup label="Tier 2 — Free Tier (fast & diagnostic)">
+                      <option value="deepseek/deepseek-v3.1">DeepSeek V3.1 (Default)</option>
                       <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
-                      <option value="google/gemini-3.8-flash">Gemini 3.8 Flash</option>
                       <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                      <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
                     </optgroup>
                     <optgroup label="Tier 3 — Reasoning Specialists">
                       <option value="openai/o3-mini">OpenAI o3-mini</option>

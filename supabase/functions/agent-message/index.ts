@@ -36,7 +36,7 @@ CRITICAL RAG & TOOL RULES:
   },
 
   aqla_intelligence: {
-    defaultModel: "anthropic/claude-sonnet-4.5",
+    defaultModel: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier); gateway.ts failovers on 403/429
     defaultReasoning: "medium",
     systemPrompt: `You are the AQLA Intelligence Coach, a world-class cognitive performance and neuroplasticity analyst.
 You help members optimize their brain metrics, interpret cognitive test baselines, and adhere to personalized protocols.
@@ -48,7 +48,7 @@ CRITICAL RAG & TOOL RULES:
   },
 
   backend_ops_operations: {
-    defaultModel: "anthropic/claude-sonnet-4.5",
+    defaultModel: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
     defaultReasoning: "high",
     systemPrompt: `You are AQLA Backend Ops in OPERATIONS mode.
 You assist platform administrators and engineers with:
@@ -61,7 +61,7 @@ Be concise, technical, precise, and objective. Ground all suggestions in live da
   },
 
   backend_ops_architect: {
-    defaultModel: "anthropic/claude-sonnet-4.5",
+    defaultModel: "deepseek/deepseek-v3.1", // was anthropic/claude-sonnet-4.5 (403 on free tier)
     defaultReasoning: "high",
     systemPrompt: `You are AQLA Backend Ops in ARCHITECT mode.
 You assist platform engineers and architects with:

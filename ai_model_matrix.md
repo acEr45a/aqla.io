@@ -1,5 +1,11 @@
 # AQLA AI Model Matrix — Complete Interface-to-Model Mapping (Updated)
 
+> ⚠️ **PARTIALLY STALE (2026-09-18):** `MemberProfilePanel.jsx` no longer exists, and all Claude-default
+> surfaces were reassigned to free-tier models with a 403/429 failover chain in `gateway.ts` — see
+> `AGENT_NOTEBOOK.md` Entry 028. Assignments below marked Claude Sonnet 4.5 are historical.
+> Authoritative sources: `supabase/functions/_shared/worker-registry.ts` (workers),
+> `supabase/functions/agent-message/index.ts` (ops personas), `src/components/admin/OpsConsoleWidget.jsx` (UI defaults).
+
 > All models verified live on the **Vercel AI Gateway** (`https://ai-gateway.vercel.sh/v1`) using your `vck_` API key. Gateway balance: **$4.99**.
 > **DeepSeek V3.1** confirmed working (200 OK) on the free tier at **$0.25 / 1M input** and **$0.95 / 1M output** (62% cheaper output than Gemini Flash).
 
